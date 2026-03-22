@@ -47,6 +47,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        
         mainCam = Camera.main;
     }
 
@@ -65,6 +66,13 @@ public class PlayerController : MonoBehaviour
             lookDirection.y = 0f;
 
             transform.forward = lookDirection;
+        }
+
+        if (isShooting && Time.time >= nextFireTime)
+        {
+            Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+
+            nextFireTime = Time.time + fireRate;
         }
     }
 

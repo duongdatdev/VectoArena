@@ -53,6 +53,19 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         Ray ray = mainCam.ScreenPointToRay(mousePos);
+
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+
+        if (groundPlane.Raycast(ray, out float rayDistance))
+        {
+            Vector3 point = ray.GetPoint(rayDistance);
+
+            Vector3 lookDirection = point - transform.position;
+
+            lookDirection.y = 0f;
+
+            transform.forward = lookDirection;
+        }
     }
 
     private void FixedUpdate()

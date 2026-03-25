@@ -80,5 +80,17 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+
+        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.name == "DamageBlock")
+        {
+            Debug.Log("Player hit damage block");
+            gameObject.GetComponent<Health>().TakeDamage(20);
+        }
     }
 }

@@ -14,6 +14,8 @@ public class ZoneController : MonoBehaviour
     public float currentRadius = 50f;
     public float targetRadius = 10f;
     public float shrinkSpeed = 3f;
+    
+    
 
     void Update()
     {

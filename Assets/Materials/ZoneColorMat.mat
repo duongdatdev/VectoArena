@@ -98,12 +98,14 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _GlobalNextZoneRadius: 0
+    - _GlobalZoneRadius: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _MaxHeight: 0.55
     - _Metallic: 0
-    - _NextZoneRadius: 12.5
+    - _NextZoneRadius: 25
     - _OcclusionStrength: 1
     - _Opacity: 0.6
     - _Parallax: 0.005
@@ -118,17 +120,19 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - _ZoneRadius: 19.738123
+    - _ZoneRadius: 50
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CurrentBorderColor: {r: 0.99607843, g: 0.08235294, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FogColor: {r: 0.99607843, g: 0.07058824, b: 0, a: 1}
+    - _GlobalNextZoneCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _GlobalZoneCenter: {r: 0, g: 0, b: 0, a: 0}
     - _NextBorderColor: {r: 1, g: 1, b: 1, a: 1}
-    - _NextZoneCenter: {r: -13.115574, g: 0, b: -17.71057, a: 0}
+    - _NextZoneCenter: {r: 13.8163, g: 0, b: 11.536908, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _ZoneCenter: {r: -12.260412, g: 0, b: -18.630587, a: 0}
+    - _ZoneCenter: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &8426132334578737391

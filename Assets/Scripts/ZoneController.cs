@@ -41,11 +41,9 @@ public class ZoneController : MonoBehaviour
 
     void Start()
     {
-        // Initialize the first safe zone randomly inside the starting map
-        currentCenter = Vector3.zero; // Assuming map center is 0,0,0
+        currentCenter = Vector3.zero;
         currentDamagePerSecond = damagePerSecond;
-        
-        // Generate the first next zone
+
         GenerateNextZone();
         UpdateShader();
         
@@ -127,23 +125,31 @@ public class ZoneController : MonoBehaviour
     /// </summary>
     private void GenerateNextZone()
     {
-        // Calculate the new smaller radius
-        nextRadius = currentRadius * shrinkFactor;
-        
-        // Ensure minimum radius
-        if (nextRadius < 1f)
+        // Apply the offset to the current center
+        if (currentPhase != 0)
         {
-            nextRadius = 1f;
-        }
+            // Calculate the new smaller radius
+            nextRadius = currentRadius * shrinkFactor;
+        
+            // Ensure minimum radius
+            if (nextRadius < 1f)
+            {
+                nextRadius = 0f;
+            }
 
-        // Calculate the maximum distance the center can shift without spilling out of the current zone
-        float maxOffset = currentRadius - nextRadius;
+            // Calculate the maximum distance the center can shift without spilling out of the current zone
+            float maxOffset = currentRadius - nextRadius;
         
-        // Pick a random point within a 2D circle for the offset
-        Vector2 randomOffset = Random.insideUnitCircle * maxOffset;
-        
-        // Apply the offset to the current center (using X and Z axes)
-        nextCenter = currentCenter + new Vector3(randomOffset.x, 0f, randomOffset.y);
+            // Pick a random point within a 2D circle for the offset
+            Vector2 randomOffset = Random.insideUnitCircle * maxOffset;
+            
+            nextCenter = currentCenter + new Vector3(randomOffset.x, 0f, randomOffset.y);
+        }
+        else
+        {
+            nextRadius = 50;
+            nextCenter = Vector3.zero;
+        }
         
         Debug.Log($"Next zone generated. Center: {nextCenter}, Radius: {nextRadius}");
     }
@@ -223,6 +229,20 @@ public class ZoneController : MonoBehaviour
             return Mathf.Clamp01(timer / shrinkDuration);
         }
         return 0f;
+    }
+    
+    /// <summary>
+    /// Check is position outside next zone
+    /// </summary>
+    public bool IsPositionOutsideNextZone(Vector3 targetPosition)
+    {
+        if (currentState == ZoneState.MatchEnded) return false;
+        
+        Vector2 targetPosXZ = new Vector2(targetPosition.x, targetPosition.z);
+        Vector2 nextCenterXZ = new Vector2(nextCenter.x, nextCenter.z);
+        
+        float distance = Vector2.Distance(targetPosXZ, nextCenterXZ);
+        return distance > nextRadius;
     }
 
     // Optional: Gizmo visualization in the Editor

@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     private Vector2 mousePos;
     private bool isShooting;
 
+    private Animator anim;
+
     private void Awake()
     {
         gameControls = new GameControls();
@@ -47,6 +49,8 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        anim = GetComponent<Animator>();
         
         mainCam = Camera.main;
     }
@@ -74,6 +78,8 @@ public class PlayerController : MonoBehaviour
 
             nextFireTime = Time.time + fireRate;
         }
+        
+        UpdateAnimation();
     }
 
     private void FixedUpdate()
@@ -92,5 +98,13 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Player hit damage block");
             gameObject.GetComponent<Health>().TakeDamage(20);
         }
+    }
+
+    private void UpdateAnimation()
+    {
+        bool isWalking = moveInput.magnitude > 0.1f;
+        
+        anim.SetBool("isWalking", isWalking);
+        anim.SetBool("isHoldingRight", false);
     }
 }

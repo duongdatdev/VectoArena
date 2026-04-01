@@ -12,6 +12,10 @@ public class PlayerController : MonoBehaviour
     public Transform firePoint;
     public float fireRate;
 
+    [Header("Weapon Settings")]
+    public Transform weaponHolder;
+    private GameObject currentWeaponModel;
+
     private float nextFireTime = 0f;
     private Rigidbody rb;
     private Camera mainCam;
@@ -105,6 +109,48 @@ public class PlayerController : MonoBehaviour
         bool isWalking = moveInput.magnitude > 0.1f;
         
         anim.SetBool("isWalking", isWalking);
-        anim.SetBool("isHoldingRight", false);
+        anim.SetBool("isHoldingRight", isShooting);
+    }
+
+    public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate)
+    {
+        //remove older weapon 
+        if (weaponHolder != null)
+        {
+            foreach (Transform child in weaponHolder)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // update new weapon prefab
+            if (weaponModelPrefab != null)
+            {
+                currentWeaponModel = Instantiate(weaponModelPrefab, weaponHolder);
+                currentWeaponModel.transform.localPosition = Vector3.zero;
+                currentWeaponModel.transform.localRotation = Quaternion.identity;
+
+                // Cập nhật lại nòng súng (firePoint) mới
+                Transform newFirePoint = currentWeaponModel.transform.Find("FirePoint");
+                if (newFirePoint != null)
+                {
+                    firePoint = newFirePoint;
+                }
+                else
+                {
+                    Debug.LogWarning("Vũ khí mới không có object con tên là 'FirePoint'. Vui lòng tạo một cái để bắn đạn chuẩn xác.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Chưa thiết lập weaponHolder trong PlayerController!");
+        }
+
+        // Cập nhật đạn và tốc độ bắn
+        if (newBulletPrefab != null) 
+        {
+            bulletPrefab = newBulletPrefab;
+        }
+        fireRate = newFireRate;
     }
 }

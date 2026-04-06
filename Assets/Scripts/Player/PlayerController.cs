@@ -114,7 +114,7 @@ public class PlayerController : MonoBehaviour
 
     public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate)
     {
-        //remove older weapon 
+        // Remove older weapon 
         if (weaponHolder != null)
         {
             foreach (Transform child in weaponHolder)
@@ -122,14 +122,14 @@ public class PlayerController : MonoBehaviour
                 Destroy(child.gameObject);
             }
 
-            // update new weapon prefab
+            // instantiate new weapon prefab
             if (weaponModelPrefab != null)
             {
                 currentWeaponModel = Instantiate(weaponModelPrefab, weaponHolder);
                 currentWeaponModel.transform.localPosition = Vector3.zero;
                 currentWeaponModel.transform.localRotation = Quaternion.identity;
 
-                // Cập nhật lại nòng súng (firePoint) mới
+                // update new fire point from the new weapon model
                 Transform newFirePoint = currentWeaponModel.transform.Find("FirePoint");
                 if (newFirePoint != null)
                 {
@@ -137,16 +137,16 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("Vũ khí mới không có object con tên là 'FirePoint'. Vui lòng tạo một cái để bắn đạn chuẩn xác.");
+                    Debug.LogWarning("The new weapon does not have a child object named 'FirePoint'. Please create one for accurate shooting.");
                 }
             }
         }
         else
         {
-            Debug.LogWarning("Chưa thiết lập weaponHolder trong PlayerController!");
+            Debug.LogWarning("weaponHolder is not assigned in PlayerController!");
         }
 
-        // Cập nhật đạn và tốc độ bắn
+        // Update bullet prefab and fire rate
         if (newBulletPrefab != null) 
         {
             bulletPrefab = newBulletPrefab;

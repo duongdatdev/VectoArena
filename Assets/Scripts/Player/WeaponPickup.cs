@@ -1,21 +1,21 @@
 using UnityEngine;
-using UnityEngine.UI; // Để tương tác với UI (Image)
+using UnityEngine.UI; 
 using System.Collections;
 
 public class WeaponPickup : MonoBehaviour
 {
     [Header("Weapon Stats")]
-    [Tooltip("Mô hình súng sẽ xuất hiện trên tay nhân vật")]
+    [Tooltip("The weapon model that will appear on the player's hands")]
     public GameObject weaponModelPrefab;
-    [Tooltip("Viên đạn súng này sẽ bắn ra")]
+    [Tooltip("The bullet this weapon will shoot")]
     public GameObject bulletPrefab;
-    [Tooltip("Tốc độ bắn của súng này")]
+    [Tooltip("The fire rate of this weapon")]
     public float fireRate = 0.5f;
 
     [Header("Pickup Settings")]
-    [Tooltip("Thời gian chờ cần thiết để nhặt (giây)")]
+    [Tooltip("Required waiting time to pick up the item (in seconds)")]
     public float pickupTimeRequired = 2.0f;
-    [Tooltip("Thanh loading vòng tròn (UI Image có fill method Radial 360)")]
+    [Tooltip("The radial loading circle UI (Image with fill method Radial 360)")]
     public Image loadingCircleUI;
 
     private float currentPickupTime = 0f;
@@ -24,7 +24,6 @@ public class WeaponPickup : MonoBehaviour
 
     private void Start()
     {
-        // Khởi tạo vòng tròn bằng 0
         if (loadingCircleUI != null)
         {
             loadingCircleUI.fillAmount = 0f;
@@ -36,16 +35,14 @@ public class WeaponPickup : MonoBehaviour
     {
         if (isPlayerInZone && playerInZone != null)
         {
-            // Tăng thời gian theo DeltaTime khi người chơi đứng trong vòng
+            // increase the timer using DeltaTime while the player is inside the trigger zone
             currentPickupTime += Time.deltaTime;
 
-            // Cập nhật UI
             if (loadingCircleUI != null)
             {
                 loadingCircleUI.fillAmount = currentPickupTime / pickupTimeRequired;
             }
 
-            // Hoàn thành vòng tải
             if (currentPickupTime >= pickupTimeRequired)
             {
                 PickUpWeapon();
@@ -55,10 +52,8 @@ public class WeaponPickup : MonoBehaviour
 
     private void PickUpWeapon()
     {
-        // Yêu cầu PlayerController thay đổi súng
         playerInZone.EquipWeapon(weaponModelPrefab, bulletPrefab, fireRate);
 
-        // Huỷ bỏ vật phẩm trên cảnh
         Destroy(gameObject);
     }
 
@@ -72,7 +67,7 @@ public class WeaponPickup : MonoBehaviour
                 playerInZone = pc;
                 isPlayerInZone = true;
                 
-                // Hiển thị vòng tròn UI
+                //show circle
                 if (loadingCircleUI != null)
                 {
                     loadingCircleUI.gameObject.SetActive(true);
@@ -86,7 +81,6 @@ public class WeaponPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // Reset trạng thái nếu người chơi đi ra khỏi vòng tròn
             isPlayerInZone = false;
             playerInZone = null;
             currentPickupTime = 0f;
@@ -94,7 +88,7 @@ public class WeaponPickup : MonoBehaviour
             if (loadingCircleUI != null)
             {
                 loadingCircleUI.fillAmount = 0f;
-                loadingCircleUI.gameObject.SetActive(false); // Ẩn UI đi khi không dùng đến
+                loadingCircleUI.gameObject.SetActive(false);
             }
         }
     }

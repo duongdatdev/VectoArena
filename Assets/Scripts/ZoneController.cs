@@ -5,9 +5,9 @@ public class ZoneController : MonoBehaviour
     // Define the states of the zone
     public enum ZoneState 
     { 
-        Waiting,    // Players have time to loot/move
-        Shrinking,  // The orange border is moving towards the white border
-        MatchEnded  // The zone has fully closed
+        Waiting,    
+        Shrinking, 
+        MatchEnded
     }
 
     [Header("Zone State")]
@@ -21,10 +21,13 @@ public class ZoneController : MonoBehaviour
     public Vector3 nextCenter;
     public float nextRadius;
 
+    // seconds to wait before the zone starts shrinking
+    public float waitTime = 10f;       
     [Header("Timing Settings")]
-    public float waitTime = 10f;       // Seconds to wait before the zone starts shrinking
-    public float shrinkDuration = 15f; // Seconds it takes for the zone to fully shrink
-    public float shrinkFactor = 0.5f;  // How much smaller the next zone gets (0.5 = 50%)
+    // seconds it takes for the zone to fully shrink
+    public float shrinkDuration = 15f; 
+    // how much smaller the next zone gets (0.5 = 50%)
+    public float shrinkFactor = 0.5f;  
     
     [Header("Damage Settings")]
     [Tooltip("Damage per second when outside the zone")]
@@ -65,7 +68,8 @@ public class ZoneController : MonoBehaviour
                 {
                     // Transition to Shrinking state
                     currentState = ZoneState.Shrinking;
-                    timer = 0f; // Reset timer for the shrink phase
+                    // Reset timer for the shrink phase
+                    timer = 0f; 
                     
                     // Save the starting point for smooth interpolation
                     startShrinkCenter = currentCenter;

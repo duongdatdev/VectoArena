@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ZoneController : MonoBehaviour
 {
@@ -278,5 +280,15 @@ public class ZoneController : MonoBehaviour
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
         }
+    }
+
+    private void OnEnable()
+    {
+        Shader.SetGlobalFloat("_GlobalZoneIntensity", 1f);
+    }
+
+    private void OnDisable()
+    {
+        Shader.SetGlobalFloat("_GlobalZoneIntensity", 0f);
     }
 }

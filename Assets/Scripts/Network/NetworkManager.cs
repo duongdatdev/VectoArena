@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
+using VectoArena.Schema;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -17,8 +18,13 @@ public class NetworkManager : MonoBehaviour
     private const string ServerURL = "ws://localhost:2567";
     private const string HttpURL = "http://localhost:2567";
     
+    public GameObject waitingUI;
+    public PlayerController playerController;
+
     private Client client;
     private string authToken;
+
+    public event Action OnGameStart;
 
     // using a generic object here for now. 
     // remember to swap this out with actual schema later.
@@ -105,7 +111,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    private async Task ConnectAndJoinBattle()
+    public async Task ConnectAndJoinBattle()
     {
         try
         {
@@ -116,6 +122,19 @@ public class NetworkManager : MonoBehaviour
             room = await client.JoinOrCreate<GameState>("battle", options); 
             
             Debug.Log("Successfully connected! Session ID: " + room.SessionId);
+
+            if (waitingUI != null)
+                waitingUI.SetActive(true);
+
+            if (playerController != null)
+                playerController.enabled = false;
+
+            room.OnMessage<object>("GAME_START", (message) =>
+            {
+                Debug.Log("GAME_START message received");
+                
+                OnGameStart?.Invoke();
+            });
         }
         catch (Exception ex)
         {

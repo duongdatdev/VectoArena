@@ -10,24 +10,25 @@ using Colyseus.Schema;
 using UnityEngine.Scripting;
 #endif
 
-public partial class PlayerState : Schema {
+namespace VectoArena.Schema {
+	public partial class PlayerState : Colyseus.Schema.Schema {
 #if UNITY_5_3_OR_NEWER
 [Preserve]
 #endif
 public PlayerState() { }
-	[Type(0, "string")]
-	public string id = default(string);
+		[Type(0, "string")]
+		public string id = default(string);
 
-	[Type(1, "number")]
-	public float x = default(float);
+		[Type(1, "number")]
+		public float x = default(float);
 
-	[Type(2, "number")]
-	public float y = default(float);
+		[Type(2, "number")]
+		public float y = default(float);
 
-	[Type(3, "number")]
-	public float z = default(float);
+		[Type(3, "number")]
+		public float z = default(float);
 
-	[Type(4, "number")]
-	public float hp = default(float);
+		[Type(4, "number")]
+		public float hp = default(float);
+	}
 }
-

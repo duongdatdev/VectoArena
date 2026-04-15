@@ -1566,6 +1566,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da67d70f567be0b4a991bd01245f9b9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
+  waitingUI: {fileID: 0}
+  playerController: {fileID: 0}
 --- !u!1 &849518455
 GameObject:
   m_ObjectHideFlags: 0

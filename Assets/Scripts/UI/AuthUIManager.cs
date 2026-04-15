@@ -35,6 +35,7 @@ public class AuthUIManager : MonoBehaviour
         signupPanel.SetActive(false);
         SetLoginStatus("", Color.white);
         SetSignupStatus("", Color.white);
+        SetButtonsState(true);
     }
 
     public void ShowSignupPanel()
@@ -43,6 +44,7 @@ public class AuthUIManager : MonoBehaviour
         signupPanel.SetActive(true);
         SetLoginStatus("", Color.white);
         SetSignupStatus("", Color.white);
+        SetButtonsState(true);
     }
 
     public void OnLoginClick()
@@ -67,7 +69,7 @@ public class AuthUIManager : MonoBehaviour
         if (success)
         {
             SetLoginStatus("Login Successful!", Color.green);
-            Invoke("LoadGameScene", 1.0f);
+            Invoke("LoadMainScene", 1.0f);
         }
         else
         {
@@ -138,8 +140,8 @@ public class AuthUIManager : MonoBehaviour
         if (signupButton != null) signupButton.interactable = state;
     }
 
-    private void LoadGameScene()
+    private void LoadMainScene()
     {
-        SceneManager.LoadScene("GameplayScene");
+        SceneManager.LoadScene("MainScene");
     }
 }

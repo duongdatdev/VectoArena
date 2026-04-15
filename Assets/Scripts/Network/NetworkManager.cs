@@ -142,6 +142,16 @@ public class NetworkManager : MonoBehaviour
         }
     }
     
+    public void CancelMatchmaking()
+    {
+        if (room != null)
+        {
+            _ = room.Leave();
+            room = null;
+            Debug.Log("Cancelled matchmaking.");
+        }
+    }
+
     void OnDestroy()
     {
         if (room != null)

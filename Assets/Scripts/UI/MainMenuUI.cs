@@ -43,9 +43,17 @@ public class MainMenuUI : MonoBehaviour
         _ = NetworkManager.Instance.ConnectAndJoinBattle();
     }
 
-    public void OnClickCancleFindBattle()
+    public void OnClickCancelFindBattle()
     {
         HideWaitingPanel();
+        if (playBtn != null)
+        {
+            playBtn.SetActive(true);
+        }
+        if (NetworkManager.Instance != null)
+        {
+            NetworkManager.Instance.CancelMatchmaking();
+        }
     }
 
     private void OnDestroy()

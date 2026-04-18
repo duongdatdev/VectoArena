@@ -60,7 +60,7 @@ public class MainMenuUI : MonoBehaviour
     {
         if (NetworkManager.Instance != null)
         {
-            NetworkManager.Instance.OnGameStart -= ShowWaitingPanel;
+            NetworkManager.Instance.OnGameStart -= GoToGameplay;
         }
     }
 }

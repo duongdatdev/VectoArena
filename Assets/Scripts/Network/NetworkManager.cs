@@ -18,8 +18,7 @@ public class NetworkManager : MonoBehaviour
     private const string ServerURL = "ws://localhost:2567";
     private const string HttpURL = "http://localhost:2567";
     
-    public GameObject waitingUI;
-    public PlayerController playerController;
+
 
     private Client client;
     private string authToken;
@@ -119,27 +118,37 @@ public class NetworkManager : MonoBehaviour
             
             // Pass token to options if needed
             var options = new Dictionary<string, object> { { "accessToken", authToken } };
-            room = await client.JoinOrCreate<GameState>("battle", options); 
             
-            Debug.Log("Successfully connected! Session ID: " + room.SessionId);
+            room = await client.JoinOrCreate<GameState>("battle", options);
+            Debug.Log("Connected to room! Session ID: " + room.SessionId);
+            
 
-            if (waitingUI != null)
-                waitingUI.SetActive(true);
 
-            if (playerController != null)
-                playerController.enabled = false;
+            // Handle game start state gracefully (fixes race condition where player 2 misses the message)
+            room.OnStateChange += (state, isFirstState) =>
+            {
+                if (state.matchState == "PLAYING")
+                {
+                    HandleGameStart();
+                }
+            };
 
             room.OnMessage<object>("GAME_START", (message) =>
             {
                 Debug.Log("GAME_START message received");
-                
-                OnGameStart?.Invoke();
+                HandleGameStart();
             });
         }
         catch (Exception ex)
         {
             Debug.LogError("Connection failed: " + ex.Message);
         }
+    }
+
+    private void HandleGameStart()
+    {
+        Debug.Log("Game Started! Triggering events.");
+        OnGameStart?.Invoke();
     }
     
     public void CancelMatchmaking()

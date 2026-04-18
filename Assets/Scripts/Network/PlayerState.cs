@@ -19,16 +19,19 @@ public PlayerState() { }
 		[Type(0, "string")]
 		public string id = default(string);
 
-		[Type(1, "number")]
-		public float x = default(float);
+		[Type(1, "string")]
+		public string username = default(string);
 
 		[Type(2, "number")]
-		public float y = default(float);
+		public float x = default(float);
 
 		[Type(3, "number")]
-		public float z = default(float);
+		public float y = default(float);
 
 		[Type(4, "number")]
+		public float z = default(float);
+
+		[Type(5, "number")]
 		public float hp = default(float);
 	}
 }

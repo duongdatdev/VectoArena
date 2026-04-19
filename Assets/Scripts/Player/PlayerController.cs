@@ -42,12 +42,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-        gameControls.Gameplay.Enable();
+        gameControls?.Gameplay.Enable();
     }
 
     private void OnDisable()
     {
-        gameControls.Gameplay.Disable();
+        gameControls?.Gameplay.Disable();
     }
 
     private void Start()

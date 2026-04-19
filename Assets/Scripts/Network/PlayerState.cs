@@ -32,6 +32,9 @@ public PlayerState() { }
 		public float z = default(float);
 
 		[Type(5, "number")]
+		public float rotation = default(float);
+
+		[Type(6, "number")]
 		public float hp = default(float);
 	}
 }

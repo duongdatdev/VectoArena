@@ -43,6 +43,11 @@ public class ZoneController : MonoBehaviour
     private float startShrinkRadius;
     private int currentPhase = 0;
     private float currentDamagePerSecond;
+    private bool serverAuthoritative = false;
+
+    // Target values for smooth interpolation
+    private Vector3 targetCenter;
+    private float targetRadius;
 
     void Start()
     {
@@ -59,6 +64,19 @@ public class ZoneController : MonoBehaviour
     {
         // Stop calculating if the match is over
         if (currentState == ZoneState.MatchEnded) return;
+
+        if (serverAuthoritative)
+        {
+            // Smoothly interpolate current visual state to target state
+            currentRadius = Mathf.Lerp(currentRadius, targetRadius, Time.deltaTime * 5f);
+            currentCenter = Vector3.Lerp(currentCenter, targetCenter, Time.deltaTime * 5f);
+            
+            // Still increment timer locally for a smooth UI, server will periodically overwrite it
+            timer += Time.deltaTime;
+            
+            UpdateShader();
+            return;
+        }
 
         timer += Time.deltaTime;
 
@@ -290,5 +308,39 @@ public class ZoneController : MonoBehaviour
     private void OnDisable()
     {
         Shader.SetGlobalFloat("_GlobalZoneIntensity", 0f);
+    }
+
+    public void SetServerAuthoritative(bool enabled)
+    {
+        serverAuthoritative = enabled;
+        if (serverAuthoritative)
+        {
+            timer = 0f;
+        }
+    }
+
+    public void ApplyState(VectoArena.Schema.ZoneState zoneState)
+    {
+        currentState = zoneState.currentState == "SHRINKING" ? ZoneState.Shrinking : zoneState.currentState == "MATCHENDED" ? ZoneState.MatchEnded : ZoneState.Waiting;
+        
+        targetCenter = new Vector3(zoneState.currentCenterX, currentCenter.y, zoneState.currentCenterZ);
+        targetRadius = zoneState.currentRadius;
+        
+        nextCenter = new Vector3(zoneState.nextCenterX, nextCenter.y, zoneState.nextCenterZ);
+        nextRadius = zoneState.nextRadius;
+        
+        currentPhase = (int)zoneState.currentPhase;
+        currentDamagePerSecond = zoneState.currentDamagePerSecond;
+        timer = zoneState.timer;
+        waitTime = zoneState.waitTime;
+        shrinkDuration = zoneState.shrinkDuration;
+        shrinkFactor = zoneState.shrinkFactor;
+
+        // If we are extremely far from target, snap immediately to prevent huge visual jumps across the map
+        if (Mathf.Abs(currentRadius - targetRadius) > 50f || currentRadius == 0f || Vector3.Distance(currentCenter, targetCenter) > 20f)
+        {
+            currentRadius = targetRadius;
+            currentCenter = targetCenter;
+        }
     }
 }

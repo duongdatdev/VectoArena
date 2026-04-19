@@ -21,5 +21,8 @@ public GameState() { }
 
 		[Type(1, "map", typeof(MapSchema<PlayerState>))]
 		public MapSchema<PlayerState> players = null;
+
+		[Type(2, "ref", typeof(ZoneState))]
+		public ZoneState zone = null;
 	}
 }

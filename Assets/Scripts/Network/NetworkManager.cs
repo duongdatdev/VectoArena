@@ -61,6 +61,7 @@ public class NetworkManager : MonoBehaviour
         {
             Debug.Log($"GameplayScene loaded. room={(room != null ? "ready" : "null")}, players={(room != null ? room.State.players.Count.ToString() : "-")}");
             CheckAndSpawnInitialPlayers();
+            UpdateZoneState();
         }
     }
 
@@ -151,6 +152,7 @@ public class NetworkManager : MonoBehaviour
 
             room.OnStateChange += (state, isFirstState) =>
             {
+                UpdateZoneState();
                 if (state.matchState == "PLAYING")
                 {
                     HandleGameStart();
@@ -160,12 +162,14 @@ public class NetworkManager : MonoBehaviour
             room.OnMessage<object>("GAME_START", (message) =>
             {
                 Debug.Log("GAME_START message received");
+                UpdateZoneState();
                 HandleGameStart();
             });
 
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
             callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
             callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
+            callbacks.OnChange(room.State.zone, () => UpdateZoneState());
         }
         catch (Exception ex)
         {
@@ -216,6 +220,17 @@ public class NetworkManager : MonoBehaviour
                 SpawnPlayer(key, player);
             }
         });
+    }
+
+    private void UpdateZoneState()
+    {
+        if (room == null || room.State == null || room.State.zone == null) return;
+
+        var zoneController = FindObjectOfType<ZoneController>();
+        if (zoneController == null) return;
+
+        zoneController.SetServerAuthoritative(true);
+        zoneController.ApplyState(room.State.zone);
     }
 
     private void SpawnPlayer(string key, PlayerState playerState)

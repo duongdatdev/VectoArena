@@ -13,6 +13,14 @@ public class NetworkPlayerSync : MonoBehaviour
     [SerializeField] private float positionLerpSpeed = 10f;
     [SerializeField] private float rotationLerpSpeed = 10f;
 
+    private Animator animator;
+    private Vector3 lastRemotePosition;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
     public void Initialize(PlayerState playerState, string sid, Room<GameState> roomInstance)
     {
         this.state = playerState;
@@ -25,7 +33,8 @@ public class NetworkPlayerSync : MonoBehaviour
             // initial position and rotation for remote player
             transform.position = new Vector3(state.x, state.y, state.z);
             transform.rotation = Quaternion.Euler(0, state.rotation, 0);
-            
+            lastRemotePosition = transform.position;
+
             // script that should only run for the local player
             if (TryGetComponent<PlayerController>(out var controller))
             {
@@ -68,5 +77,22 @@ public class NetworkPlayerSync : MonoBehaviour
 
         transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * positionLerpSpeed);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationLerpSpeed);
+
+        UpdateRemoteAnimation(targetPosition);
+    }
+
+    private void UpdateRemoteAnimation(Vector3 targetPosition)
+    {
+        if (animator == null) return;
+
+        // remote player animation can be derived from movement.
+        float distance = Vector3.Distance(transform.position, targetPosition);
+        bool isWalking = distance > 0.01f;
+        animator.SetBool("isWalking", isWalking);
+
+        // if you want to sync shooting or other actions, add flags to the PlayerState schema
+        // and set them here like animator.SetBool("isHoldingRight", state.isShooting);
+
+        lastRemotePosition = transform.position;
     }
 }

@@ -166,6 +166,20 @@ public class NetworkManager : MonoBehaviour
                 HandleGameStart();
             });
 
+            room.OnMessage<ShootMessage>("shoot", (message) =>
+            {
+                if (playerObjects.TryGetValue(message.clientId, out GameObject playerObj))
+                {
+                    var pc = playerObj.GetComponent<PlayerController>();
+                    if (pc != null && pc.bulletPrefab != null)
+                    {
+                        Vector3 pos = new Vector3(message.x, message.y, message.z);
+                        Quaternion rot = Quaternion.Euler(message.rx, message.ry, message.rz);
+                        Instantiate(pc.bulletPrefab, pos, rot);
+                    }
+                }
+            });
+
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
             callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
             callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
@@ -315,5 +329,17 @@ public class NetworkManager : MonoBehaviour
     public class LoginResponse
     {
         public string token;
+    }
+
+    [Serializable]
+    public class ShootMessage
+    {
+        public string clientId;
+        public float x;
+        public float y;
+        public float z;
+        public float rx;
+        public float ry;
+        public float rz;
     }
 }

@@ -69,6 +69,20 @@ public class NetworkPlayerSync : MonoBehaviour
         });
     }
 
+    public void SendShoot(Vector3 position, Quaternion rotation)
+    {
+        if (!isLocalPlayer || room == null) return;
+
+        room.Send("shoot", new {
+            x = position.x,
+            y = position.y,
+            z = position.z,
+            rx = rotation.eulerAngles.x,
+            ry = rotation.eulerAngles.y,
+            rz = rotation.eulerAngles.z
+        });
+    }
+
     private void SyncRemoteMovementToClient()
     {
         // smoothly interpolate to the target position and rotation from the server

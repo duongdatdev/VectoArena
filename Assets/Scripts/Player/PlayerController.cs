@@ -80,6 +80,12 @@ public class PlayerController : MonoBehaviour
         {
             Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
 
+            var sync = GetComponent<NetworkPlayerSync>();
+            if (sync != null)
+            {
+                sync.SendShoot(firePoint.position, firePoint.rotation);
+            }
+
             nextFireTime = Time.time + fireRate;
         }
         

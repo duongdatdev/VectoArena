@@ -10,6 +10,17 @@ public class ZoneUIManager : MonoBehaviour
 
     void Update()
     {
+        if (zoneController == null)
+            zoneController = FindObjectOfType<ZoneController>();
+
+        if (playerTransform == null)
+        {
+            if (Camera.main != null && Camera.main.GetComponent<CameraFollow>() != null)
+            {
+                playerTransform = Camera.main.GetComponent<CameraFollow>().target;
+            }
+        }
+
         if (zoneController == null || playerTransform == null || timerText == null) return;
 
         float timeRemaining = zoneController.GetTimeRemaining();

@@ -53,6 +53,10 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
 
         anim = GetComponent<Animator>();
         

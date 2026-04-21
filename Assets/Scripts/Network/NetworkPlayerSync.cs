@@ -42,6 +42,11 @@ public class NetworkPlayerSync : MonoBehaviour
             {
                 controller.enabled = false;
             }
+
+            if (TryGetComponent<Rigidbody>(out var rb))
+            {
+                rb.isKinematic = true;
+            }
         }
     }
 

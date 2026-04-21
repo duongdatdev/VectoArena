@@ -10,26 +10,33 @@ public class Bullet : MonoBehaviour
 
     private void Start()
     {
-        GetComponent<Rigidbody>().linearVelocity = transform.forward * moveSpeed;
-        
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = transform.forward * moveSpeed;
+        }
+
         Destroy(gameObject, lifeTime);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        HandleHit(other.gameObject);
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        if (owner != null && other.gameObject == owner.gameObject) return;
+        HandleHit(other.gameObject);
+    }
 
-        NetworkPlayerSync targetSync = other.gameObject.GetComponent<NetworkPlayerSync>();
+    private void HandleHit(GameObject targetObj)
+    {
+        if (owner != null && targetObj == owner.gameObject) return;
+
+        NetworkPlayerSync targetSync = targetObj.GetComponent<NetworkPlayerSync>();
         if (targetSync != null && owner != null && owner.isLocalPlayer)
         {
             owner.SendHit(targetSync.GetSessionId());
-        }
-
-        Health targetHealth = other.gameObject.GetComponent<Health>();
-        if (targetHealth != null)
-        {
-            // Health deduction is now handled by the server
-            // targetHealth.TakeDamage(10);
         }
         
         Destroy(gameObject);

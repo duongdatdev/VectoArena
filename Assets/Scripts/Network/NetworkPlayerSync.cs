@@ -1,13 +1,15 @@
 using UnityEngine;
 using VectoArena.Schema;
 using Colyseus;
+using System;
+using System.Collections.Generic;
 
 public class NetworkPlayerSync : MonoBehaviour
 {
     private PlayerState state;
     private string sessionId;
     private Room<GameState> room;
-    private bool isLocalPlayer;
+    public bool isLocalPlayer { get; private set; }
 
     [Header("Interpolation Settings")]
     [SerializeField] private float positionLerpSpeed = 10f;
@@ -46,6 +48,13 @@ public class NetworkPlayerSync : MonoBehaviour
     private void Update()
     {
         if (state == null) return;
+
+        // Automatically sync health every frame to ensure it matches Server state
+        var healthComponent = GetComponentInChildren<Health>();
+        if (healthComponent != null)
+        {
+            healthComponent.SetHealth(state.hp);
+        }
 
         if (isLocalPlayer)
         {
@@ -108,5 +117,20 @@ public class NetworkPlayerSync : MonoBehaviour
         // and set them here like animator.SetBool("isHoldingRight", state.isShooting);
 
         lastRemotePosition = transform.position;
+    }
+
+    public string GetSessionId()
+    {
+        return sessionId;
+    }
+
+    public void SendHit(string targetId)
+    {
+        if (!isLocalPlayer || room == null) return;
+        
+        room.Send("hit", new
+        {
+            targetId = targetId
+        });
     }
 }

@@ -37,7 +37,7 @@ public class ZoneController : MonoBehaviour
     [Tooltip("Damage increases each phase")]
     public float damageMultiplierPerPhase = 1.5f;
     
-    // Internal timers and references for smooth animation
+    // internal timers and references for smooth animation
     private float timer = 0f;
     private Vector3 startShrinkCenter;
     private float startShrinkRadius;
@@ -45,7 +45,7 @@ public class ZoneController : MonoBehaviour
     private float currentDamagePerSecond;
     private bool serverAuthoritative = false;
 
-    // Target values for smooth interpolation
+    // target values for smooth interpolation
     private Vector3 targetCenter;
     private float targetRadius;
 
@@ -62,16 +62,16 @@ public class ZoneController : MonoBehaviour
 
     void Update()
     {
-        // Stop calculating if the match is over
+        // stop calculating if the match is over
         if (currentState == ZoneState.MatchEnded) return;
 
         if (serverAuthoritative)
         {
-            // Smoothly interpolate current visual state to target state
+            // smoothly interpolate current visual state to target state
             currentRadius = Mathf.Lerp(currentRadius, targetRadius, Time.deltaTime * 5f);
             currentCenter = Vector3.Lerp(currentCenter, targetCenter, Time.deltaTime * 5f);
             
-            // Still increment timer locally for a smooth UI, server will periodically overwrite it
+            // still increment timer locally for a smooth UI, server will periodically overwrite it
             timer += Time.deltaTime;
             
             UpdateShader();
@@ -83,15 +83,14 @@ public class ZoneController : MonoBehaviour
         switch (currentState)
         {
             case ZoneState.Waiting:
-                // Check if the waiting period is over
+                // check if the waiting period is over
                 if (timer >= waitTime)
                 {
-                    // Transition to Shrinking state
                     currentState = ZoneState.Shrinking;
-                    // Reset timer for the shrink phase
+                    //reset timer for the shrink phase
                     timer = 0f; 
                     
-                    // Save the starting point for smooth interpolation
+                    //save the starting point for smooth interpolation
                     startShrinkCenter = currentCenter;
                     startShrinkRadius = currentRadius;
                     
@@ -100,24 +99,24 @@ public class ZoneController : MonoBehaviour
                 break;
 
             case ZoneState.Shrinking:
-                // Calculate percentage of completion (from 0.0 to 1.0)
+                //calculate percentage of completion (from 0.0 to 1.0)
                 float progress = Mathf.Clamp01(timer / shrinkDuration);
                 
-                // Smoothly interpolate the radius and the center
+                //smoothly interpolate the radius and the center
                 currentRadius = Mathf.Lerp(startShrinkRadius, nextRadius, progress);
                 currentCenter = Vector3.Lerp(startShrinkCenter, nextCenter, progress);
 
-                // Check if the shrink phase is complete
+                //check if the shrink phase is complete
                 if (progress >= 1f)
                 {
-                    // Snap to exact values to avoid float precision issues
+                    //snap to exact values to avoid float precision issues
                     currentRadius = nextRadius;
                     currentCenter = nextCenter;
                     
-                    // Increase phase counter
+                    //increase phase counter
                     currentPhase++;
                     
-                    // If the zone is incredibly small, end the match
+                    //if the zone is incredibly small, end the match
                     if (currentRadius <= 1f) 
                     {
                         currentState = ZoneState.MatchEnded;
@@ -125,10 +124,10 @@ public class ZoneController : MonoBehaviour
                     }
                     else
                     {
-                        // Increase damage for the next phase
+                        //increase damage for the next phase
                         currentDamagePerSecond *= damageMultiplierPerPhase;
                         
-                        // Setup the next phase
+                        //setup the next phase
                         GenerateNextZone();
                         currentState = ZoneState.Waiting;
                         timer = 0f;

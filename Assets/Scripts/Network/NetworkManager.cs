@@ -183,7 +183,6 @@ public class NetworkManager : MonoBehaviour
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
             callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
             callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
-            callbacks.OnChange(room.State.zone, () => UpdateZoneState());
         }
         catch (Exception ex)
         {
@@ -240,7 +239,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (room == null || room.State == null || room.State.zone == null) return;
 
-        var zoneController = FindObjectOfType<ZoneController>();
+        var zoneController = FindFirstObjectByType<ZoneController>();
         if (zoneController == null) return;
 
         zoneController.SetServerAuthoritative(true);

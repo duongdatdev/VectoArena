@@ -6,6 +6,7 @@ public class Bullet : MonoBehaviour
     [Header("Bullet properties")]
     public float moveSpeed = 20f;
     public float lifeTime = 2f;
+    public NetworkPlayerSync owner;
 
     private void Start()
     {
@@ -16,11 +17,19 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        Health targetHealth = other.gameObject.GetComponent<Health>();
+        if (owner != null && other.gameObject == owner.gameObject) return;
 
+        NetworkPlayerSync targetSync = other.gameObject.GetComponent<NetworkPlayerSync>();
+        if (targetSync != null && owner != null && owner.isLocalPlayer)
+        {
+            owner.SendHit(targetSync.GetSessionId());
+        }
+
+        Health targetHealth = other.gameObject.GetComponent<Health>();
         if (targetHealth != null)
         {
-            targetHealth.TakeDamage(10);
+            // Health deduction is now handled by the server
+            // targetHealth.TakeDamage(10);
         }
         
         Destroy(gameObject);

@@ -78,11 +78,13 @@ public class PlayerController : MonoBehaviour
 
         if (isShooting && Time.time >= nextFireTime)
         {
-            Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            Bullet bullet = bulletObj.GetComponent<Bullet>();
 
             var sync = GetComponent<NetworkPlayerSync>();
             if (sync != null)
             {
+                if (bullet != null) bullet.owner = sync;
                 sync.SendShoot(firePoint.position, firePoint.rotation);
             }
 

@@ -19,32 +19,56 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
+        // Now handled by Server via Colyseus instead
+        // currentHealth -= damage;
+        // UpdateHealthBar();
+        Debug.Log(gameObject.name + " wants to take damage, should send to server");
+    }
 
-        if (currentHealth < 0)
+    public void SetHealth(float health)
+    {
+        if (Mathf.Abs(currentHealth - health) > 0.1f)
         {
-            currentHealth = 0;
+            Debug.Log($"[Health] {gameObject.name} HP synced from server: {health}");
         }
 
+        currentHealth = health;
+        if (currentHealth < 0) currentHealth = 0;
+        
         UpdateHealthBar();
-
-        Debug.Log(gameObject.name + " take damage");
-
+        
         if (currentHealth == 0)
         {
-            Die();
+            // Die();
         }
     }
 
     void Die()
     {
         Debug.Log(gameObject.name + " dead");
-
         Destroy(gameObject);
     }
 
     void UpdateHealthBar()
     {
+        // Try to find the local player's health bar by tag or name if it's null
+        if (healthBarFill == null && GetComponent<NetworkPlayerSync>() != null)
+        {
+            // Usually, we only show screen UI for the LOCAL player
+            if (GetComponent<NetworkPlayerSync>().isLocalPlayer)
+            {
+                var hpImageObj = GameObject.Find("HealthFill");
+                if (hpImageObj != null)
+                {
+                    healthBarFill = hpImageObj.GetComponent<Image>();
+                }
+                else
+                {
+                    Debug.LogWarning("can't find gameobject name HealthFill");
+                }
+            }
+        }
+
         if (healthBarFill != null)
         {
             healthBarFill.fillAmount = currentHealth / maxHealth;

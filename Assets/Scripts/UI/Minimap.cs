@@ -12,7 +12,15 @@ public class Minimap : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (player == null) return;
+        if (player == null)
+        {
+            // Auto-find the player target from the Main Camera's follow script
+            if (Camera.main != null && Camera.main.GetComponent<CameraFollow>() != null)
+            {
+                player = Camera.main.GetComponent<CameraFollow>().target;
+            }
+            if (player == null) return;
+        }
 
         // Update the Minimap Camera's position to follow the player
         // Keep the camera's original altitude (Y axis) constant

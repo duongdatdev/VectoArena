@@ -1569,6 +1569,8 @@ MonoBehaviour:
   localPlayerPrefab: {fileID: 6698446288716041068, guid: da0ab6eb67e416b45a66baceb8ebd77f, type: 3}
   remotePlayerPrefab: {fileID: 2055017814915724743, guid: 7b261fdfecc5e4248b2aa797e7c47ff4, type: 3}
   playerPrefab: {fileID: 2055017814915724743, guid: 7b261fdfecc5e4248b2aa797e7c47ff4, type: 3}
+  itemRiflePrefab: {fileID: 7321050499597880137, guid: b4ceb197b30b6524885f31be8fd7975c, type: 3}
+  itemShotgunPrefab: {fileID: 8435290186210913304, guid: 25a4563e8df76f348909831280b489f3, type: 3}
 --- !u!1 &849518455
 GameObject:
   m_ObjectHideFlags: 0

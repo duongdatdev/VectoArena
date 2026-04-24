@@ -29,7 +29,12 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private GameObject remotePlayerPrefab;
     [SerializeField] private GameObject playerPrefab; // fallback if separate prefabs are not assigned
 
+    [Header("Item Prefabs")]
+    public GameObject itemRiflePrefab;
+    public GameObject itemShotgunPrefab;
+
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
     private bool isSceneLoaded = false;
 
     public event Action OnGameStart;
@@ -61,6 +66,7 @@ public class NetworkManager : MonoBehaviour
         {
             Debug.Log($"GameplayScene loaded. room={(room != null ? "ready" : "null")}, players={(room != null ? room.State.players.Count.ToString() : "-")}");
             CheckAndSpawnInitialPlayers();
+            CheckAndSpawnInitialItems();
             UpdateZoneState();
         }
     }
@@ -183,6 +189,9 @@ public class NetworkManager : MonoBehaviour
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
             callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
             callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
+            
+            callbacks.OnAdd(state => state.items, (key, item) => OnItemAdd(key, item));
+            callbacks.OnRemove(state => state.items, (key, item) => OnItemRemove(key, item));
         }
         catch (Exception ex)
         {
@@ -213,6 +222,43 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    private void OnItemAdd(string key, ItemState item)
+    {
+        if (!isSceneLoaded)
+        {
+            Debug.Log($"Item add arrived before GameplayScene loaded. key={key}, type={item.type}");
+            return;
+        }
+
+        if (itemObjects.ContainsKey(key)) return;
+
+        GameObject prefabToSpawn = null;
+        if (item.type == "Rifle") prefabToSpawn = itemRiflePrefab;
+        else if (item.type == "Shotgun") prefabToSpawn = itemShotgunPrefab;
+
+        if (prefabToSpawn == null)
+        {
+            Debug.LogWarning($"Item prefab for type {item.type} is not assigned in NetworkManager!");
+            return;
+        }
+
+        Vector3 spawnPos = new Vector3(item.x, item.y, item.z);
+        GameObject spawnedItem = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+        spawnedItem.name = $"Item_{item.type}_{key}";
+        itemObjects.Add(key, spawnedItem);
+        Debug.Log($"Spawned item {item.type} at {spawnPos}");
+    }
+
+    private void OnItemRemove(string key, ItemState item)
+    {
+        if (itemObjects.ContainsKey(key))
+        {
+            Destroy(itemObjects[key]);
+            itemObjects.Remove(key);
+            Debug.Log($"Item removed and destroyed: {key}");
+        }
+    }
+
     private void CheckAndSpawnInitialPlayers()
     {
         if (room == null)
@@ -231,6 +277,28 @@ public class NetworkManager : MonoBehaviour
                     playerObjects.Remove(key);
                 }
                 SpawnPlayer(key, player);
+            }
+        });
+    }
+
+    private void CheckAndSpawnInitialItems()
+    {
+        if (room == null)
+        {
+            Debug.LogWarning("CheckAndSpawnInitialItems called but room is null.");
+            return;
+        }
+
+        Debug.Log($"CheckAndSpawnInitialItems: room ready, items={room.State.items.Count}, existingObjects={itemObjects.Count}");
+        room.State.items.ForEach((key, item) =>
+        {
+            if (!itemObjects.ContainsKey(key) || itemObjects[key] == null)
+            {
+                if (itemObjects.ContainsKey(key))
+                {
+                    itemObjects.Remove(key);
+                }
+                OnItemAdd(key, item);
             }
         });
     }

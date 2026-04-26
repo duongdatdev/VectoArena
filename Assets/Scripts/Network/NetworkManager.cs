@@ -32,6 +32,7 @@ public class NetworkManager : MonoBehaviour
     [Header("Item Prefabs")]
     public GameObject itemRiflePrefab;
     public GameObject itemShotgunPrefab;
+    public GameObject itemMedicalKitPrefab;
 
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
@@ -243,6 +244,7 @@ public class NetworkManager : MonoBehaviour
         GameObject prefabToSpawn = null;
         if (item.type == "Rifle") prefabToSpawn = itemRiflePrefab;
         else if (item.type == "Shotgun") prefabToSpawn = itemShotgunPrefab;
+        else if (item.type == "MedicalKit") prefabToSpawn = itemMedicalKitPrefab;
 
         if (prefabToSpawn == null)
         {
@@ -306,6 +308,15 @@ public class NetworkManager : MonoBehaviour
         PlayerController playerController = playerObj.GetComponent<PlayerController>();
         if (playerController == null)
         {
+            return;
+        }
+
+        if (message.itemType == "MedicalKit")
+        {
+            if (!string.IsNullOrEmpty(message.itemId))
+            {
+                itemWeaponConfigs.Remove(message.itemId);
+            }
             return;
         }
 

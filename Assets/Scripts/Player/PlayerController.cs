@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform firePoint;
     public float fireRate;
+    public int defaultMaxAmmo = -1;
 
     [Header("Weapon Settings")]
     public Transform weaponHolder;
@@ -24,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private Vector2 mousePos;
     private bool isShooting;
+    private int maxAmmo = -1;
+    private int currentAmmo = -1;
 
     private Animator anim;
 
@@ -61,6 +64,8 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         
         mainCam = Camera.main;
+        maxAmmo = defaultMaxAmmo;
+        currentAmmo = defaultMaxAmmo;
     }
 
     private void Update()
@@ -80,7 +85,7 @@ public class PlayerController : MonoBehaviour
             transform.forward = lookDirection;
         }
 
-        if (isShooting && Time.time >= nextFireTime)
+        if (isShooting && Time.time >= nextFireTime && CanShoot())
         {
             GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
             Bullet bullet = bulletObj.GetComponent<Bullet>();
@@ -91,6 +96,8 @@ public class PlayerController : MonoBehaviour
                 if (bullet != null) bullet.owner = sync;
                 sync.SendShoot(firePoint.position, firePoint.rotation);
             }
+
+            ConsumeAmmo();
 
             nextFireTime = Time.time + fireRate;
         }
@@ -119,12 +126,13 @@ public class PlayerController : MonoBehaviour
     private void UpdateAnimation()
     {
         bool isWalking = moveInput.magnitude > 0.1f;
+        bool isHoldingRight = isShooting && CanShoot();
         
         anim.SetBool("isWalking", isWalking);
-        anim.SetBool("isHoldingRight", isShooting);
+        anim.SetBool("isHoldingRight", isHoldingRight);
     }
 
-    public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate)
+    public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate, int newMaxAmmo)
     {
         // Remove older weapon 
         if (weaponHolder != null)
@@ -164,5 +172,27 @@ public class PlayerController : MonoBehaviour
             bulletPrefab = newBulletPrefab;
         }
         fireRate = newFireRate;
+        maxAmmo = newMaxAmmo;
+        currentAmmo = newMaxAmmo < 0 ? -1 : newMaxAmmo;
+    }
+
+    private bool CanShoot()
+    {
+        if (bulletPrefab == null || firePoint == null)
+        {
+            return false;
+        }
+
+        return maxAmmo < 0 || currentAmmo > 0;
+    }
+
+    private void ConsumeAmmo()
+    {
+        if (maxAmmo < 0)
+        {
+            return;
+        }
+
+        currentAmmo = Mathf.Max(0, currentAmmo - 1);
     }
 }

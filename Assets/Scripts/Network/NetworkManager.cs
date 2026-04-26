@@ -264,7 +264,8 @@ public class NetworkManager : MonoBehaviour
             {
                 weaponModelPrefab = pickup.weaponModelPrefab,
                 bulletPrefab = pickup.bulletPrefab,
-                fireRate = pickup.fireRate
+                fireRate = pickup.fireRate,
+                maxAmmo = pickup.maxAmmo
             };
 
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
@@ -326,7 +327,7 @@ public class NetworkManager : MonoBehaviour
             return;
         }
 
-        playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate);
+        playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate, config.maxAmmo);
         if (!string.IsNullOrEmpty(message.itemId))
         {
             itemWeaponConfigs.Remove(message.itemId);
@@ -359,7 +360,8 @@ public class NetworkManager : MonoBehaviour
                 {
                     weaponModelPrefab = pickup.weaponModelPrefab,
                     bulletPrefab = pickup.bulletPrefab,
-                    fireRate = pickup.fireRate
+                    fireRate = pickup.fireRate,
+                    maxAmmo = pickup.maxAmmo
                 };
 
                 return true;
@@ -556,5 +558,6 @@ public class NetworkManager : MonoBehaviour
         public GameObject weaponModelPrefab;
         public GameObject bulletPrefab;
         public float fireRate;
+        public int maxAmmo;
     }
 }

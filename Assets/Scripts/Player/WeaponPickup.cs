@@ -10,6 +10,8 @@ public class WeaponPickup : MonoBehaviour
     public GameObject bulletPrefab;
     [Tooltip("The fire rate of this weapon")]
     public float fireRate = 0.5f;
+    [Tooltip("Maximum ammo for this weapon (-1 = unlimited)")]
+    public int maxAmmo = -1;
 
     [Header("Pickup Settings")]
     [Tooltip("Required waiting time to pick up the item (in seconds)")]

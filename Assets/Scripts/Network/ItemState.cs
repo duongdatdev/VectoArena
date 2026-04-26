@@ -30,5 +30,11 @@ public ItemState() { }
 
 		[Type(4, "number")]
 		public float z = default(float);
+
+		[Type(5, "string")]
+		public string pickupBy = default(string);
+
+		[Type(6, "number")]
+		public float pickupProgress = default(float);
 	}
 }

@@ -35,6 +35,7 @@ public class NetworkManager : MonoBehaviour
 
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
+    private Dictionary<string, ItemWeaponConfig> itemWeaponConfigs = new Dictionary<string, ItemWeaponConfig>();
     private bool isSceneLoaded = false;
 
     public event Action OnGameStart;
@@ -147,6 +148,8 @@ public class NetworkManager : MonoBehaviour
             //reset before connecting
             hasGameStarted = false;
             playerObjects.Clear();
+            itemObjects.Clear();
+            itemWeaponConfigs.Clear();
             
             // Pass token to options if needed
             var options = new Dictionary<string, object> { { "accessToken", authToken } };
@@ -184,6 +187,11 @@ public class NetworkManager : MonoBehaviour
                         Instantiate(pc.bulletPrefab, pos, rot);
                     }
                 }
+            });
+
+            room.OnMessage<ItemPickedMessage>("item_picked", (message) =>
+            {
+                OnItemPicked(message);
             });
 
             var callbacks = Colyseus.Schema.Callbacks.Get(room);
@@ -245,7 +253,31 @@ public class NetworkManager : MonoBehaviour
         Vector3 spawnPos = new Vector3(item.x, item.y, item.z);
         GameObject spawnedItem = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
         spawnedItem.name = $"Item_{item.type}_{key}";
+
+        WeaponPickup pickup = spawnedItem.GetComponent<WeaponPickup>();
+        if (pickup != null)
+        {
+            pickup.Initialize(key);
+            itemWeaponConfigs[key] = new ItemWeaponConfig
+            {
+                weaponModelPrefab = pickup.weaponModelPrefab,
+                bulletPrefab = pickup.bulletPrefab,
+                fireRate = pickup.fireRate
+            };
+
+            var callbacks = Colyseus.Schema.Callbacks.Get(room);
+            callbacks.Listen(item, current => current.pickupBy, (_, __) =>
+            {
+                UpdateItemPickupProgressVisual(key, item);
+            });
+            callbacks.Listen(item, current => current.pickupProgress, (_, __) =>
+            {
+                UpdateItemPickupProgressVisual(key, item);
+            });
+        }
+
         itemObjects.Add(key, spawnedItem);
+        UpdateItemPickupProgressVisual(key, item);
         Debug.Log($"Spawned item {item.type} at {spawnPos}");
     }
 
@@ -257,6 +289,96 @@ public class NetworkManager : MonoBehaviour
             itemObjects.Remove(key);
             Debug.Log($"Item removed and destroyed: {key}");
         }
+    }
+
+    private void OnItemPicked(ItemPickedMessage message)
+    {
+        if (message == null || string.IsNullOrEmpty(message.playerId))
+        {
+            return;
+        }
+
+        if (!playerObjects.TryGetValue(message.playerId, out GameObject playerObj) || playerObj == null)
+        {
+            return;
+        }
+
+        PlayerController playerController = playerObj.GetComponent<PlayerController>();
+        if (playerController == null)
+        {
+            return;
+        }
+
+        if (!TryGetItemWeaponConfig(message.itemId, message.itemType, out ItemWeaponConfig config))
+        {
+            Debug.LogWarning($"Missing weapon config for picked item {message.itemId} ({message.itemType}).");
+            return;
+        }
+
+        playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate);
+        if (!string.IsNullOrEmpty(message.itemId))
+        {
+            itemWeaponConfigs.Remove(message.itemId);
+        }
+    }
+
+    private bool TryGetItemWeaponConfig(string itemId, string itemType, out ItemWeaponConfig config)
+    {
+        if (!string.IsNullOrEmpty(itemId) && itemWeaponConfigs.TryGetValue(itemId, out config))
+        {
+            return true;
+        }
+
+        GameObject sourcePrefab = null;
+        if (itemType == "Rifle")
+        {
+            sourcePrefab = itemRiflePrefab;
+        }
+        else if (itemType == "Shotgun")
+        {
+            sourcePrefab = itemShotgunPrefab;
+        }
+
+        if (sourcePrefab != null)
+        {
+            WeaponPickup pickup = sourcePrefab.GetComponent<WeaponPickup>();
+            if (pickup != null)
+            {
+                config = new ItemWeaponConfig
+                {
+                    weaponModelPrefab = pickup.weaponModelPrefab,
+                    bulletPrefab = pickup.bulletPrefab,
+                    fireRate = pickup.fireRate
+                };
+
+                return true;
+            }
+        }
+
+        config = null;
+        return false;
+    }
+
+    private void UpdateItemPickupProgressVisual(string itemId, ItemState itemState)
+    {
+        if (itemState == null)
+        {
+            return;
+        }
+
+        if (!itemObjects.TryGetValue(itemId, out GameObject itemObject) || itemObject == null)
+        {
+            return;
+        }
+
+        WeaponPickup pickup = itemObject.GetComponent<WeaponPickup>();
+        if (pickup == null)
+        {
+            return;
+        }
+
+        bool isActive = !string.IsNullOrEmpty(itemState.pickupBy) && itemState.pickupProgress > 0f;
+        pickup.SetSyncedPickupProgress(itemState.pickupProgress, isActive);
     }
 
     private void CheckAndSpawnInitialPlayers()
@@ -408,5 +530,20 @@ public class NetworkManager : MonoBehaviour
         public float rx;
         public float ry;
         public float rz;
+    }
+
+    [Serializable]
+    public class ItemPickedMessage
+    {
+        public string playerId;
+        public string itemId;
+        public string itemType;
+    }
+
+    private class ItemWeaponConfig
+    {
+        public GameObject weaponModelPrefab;
+        public GameObject bulletPrefab;
+        public float fireRate;
     }
 }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI; 
-using System.Collections;
 
 public class WeaponPickup : MonoBehaviour
 {
@@ -21,6 +20,16 @@ public class WeaponPickup : MonoBehaviour
     private float currentPickupTime = 0f;
     private bool isPlayerInZone = false;
     private PlayerController playerInZone;
+    private NetworkPlayerSync playerSync;
+    private string syncedItemId;
+    private bool pickupRequested = false;
+    private float lastProgressSent = -1f;
+
+    public void Initialize(string itemId)
+    {
+        syncedItemId = itemId;
+        SetSyncedPickupProgress(0f, false);
+    }
 
     private void Start()
     {
@@ -43,28 +52,67 @@ public class WeaponPickup : MonoBehaviour
                 loadingCircleUI.fillAmount = currentPickupTime / pickupTimeRequired;
             }
 
+            if (playerSync != null && !string.IsNullOrEmpty(syncedItemId))
+            {
+                float normalizedProgress = Mathf.Clamp01(currentPickupTime / pickupTimeRequired);
+                if (pickupRequested || Mathf.Abs(normalizedProgress - lastProgressSent) >= 0.02f)
+                {
+                    playerSync.SendPickupProgress(syncedItemId, normalizedProgress);
+                    lastProgressSent = normalizedProgress;
+                }
+            }
+
             if (currentPickupTime >= pickupTimeRequired)
             {
-                PickUpWeapon();
+                RequestPickup();
             }
         }
     }
 
-    private void PickUpWeapon()
+    private void RequestPickup()
     {
-        playerInZone.EquipWeapon(weaponModelPrefab, bulletPrefab, fireRate);
+        if (pickupRequested || playerSync == null || string.IsNullOrEmpty(syncedItemId))
+        {
+            return;
+        }
 
-        Destroy(gameObject);
+        pickupRequested = true;
+        playerSync.SendPickupItem(syncedItemId);
+    }
+
+    public void SetSyncedPickupProgress(float progress, bool isActive)
+    {
+        if (loadingCircleUI == null)
+        {
+            return;
+        }
+
+        if (isActive)
+        {
+            loadingCircleUI.gameObject.SetActive(true);
+            loadingCircleUI.fillAmount = Mathf.Clamp01(progress);
+            return;
+        }
+
+        loadingCircleUI.fillAmount = 0f;
+        loadingCircleUI.gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
+            NetworkPlayerSync sync = other.GetComponent<NetworkPlayerSync>();
+            if (sync == null || !sync.isLocalPlayer)
+            {
+                return;
+            }
+
             PlayerController pc = other.GetComponent<PlayerController>();
             if (pc != null)
             {
                 playerInZone = pc;
+                playerSync = sync;
                 isPlayerInZone = true;
                 
                 //show circle
@@ -72,6 +120,12 @@ public class WeaponPickup : MonoBehaviour
                 {
                     loadingCircleUI.gameObject.SetActive(true);
                     loadingCircleUI.fillAmount = 0f;
+                }
+
+                if (!string.IsNullOrEmpty(syncedItemId))
+                {
+                    playerSync.SendPickupProgress(syncedItemId, 0f);
+                    lastProgressSent = 0f;
                 }
             }
         }
@@ -81,9 +135,23 @@ public class WeaponPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
+            NetworkPlayerSync sync = other.GetComponent<NetworkPlayerSync>();
+            if (sync == null || !sync.isLocalPlayer)
+            {
+                return;
+            }
+
             isPlayerInZone = false;
             playerInZone = null;
+            playerSync = null;
             currentPickupTime = 0f;
+            pickupRequested = false;
+            lastProgressSent = -1f;
+
+            if (!string.IsNullOrEmpty(syncedItemId) && sync != null)
+            {
+                sync.SendPickupProgress(syncedItemId, 0f);
+            }
 
             if (loadingCircleUI != null)
             {

@@ -138,4 +138,25 @@ public class NetworkPlayerSync : MonoBehaviour
             targetId = targetId
         });
     }
+
+    public void SendPickupItem(string itemId)
+    {
+        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(itemId)) return;
+
+        room.Send("pickup_item", new
+        {
+            itemId = itemId
+        });
+    }
+
+    public void SendPickupProgress(string itemId, float progress)
+    {
+        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(itemId)) return;
+
+        room.Send("pickup_progress", new
+        {
+            itemId = itemId,
+            progress = Mathf.Clamp01(progress)
+        });
+    }
 }

@@ -36,5 +36,17 @@ public PlayerState() { }
 
 		[Type(6, "number")]
 		public float hp = default(float);
+
+		[Type(7, "string")]
+		public string currentWeapon = default(string);
+
+		[Type(8, "number")]
+		public float ammo = default(float);
+
+		[Type(9, "string")]
+		public string meleeWeapon = default(string);
+
+		[Type(10, "string")]
+		public string rangedWeapon = default(string);
 	}
 }

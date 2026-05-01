@@ -186,6 +186,7 @@ public class NetworkManager : MonoBehaviour
                         Vector3 pos = new Vector3(message.x, message.y, message.z);
                         Quaternion rot = Quaternion.Euler(message.rx, message.ry, message.rz);
                         Instantiate(pc.bulletPrefab, pos, rot);
+                        pc.TriggerAttackAnimation();
                     }
                 }
             });
@@ -327,7 +328,14 @@ public class NetworkManager : MonoBehaviour
             return;
         }
 
-        playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate, config.maxAmmo);
+        if (message.fireRate > 0f && message.maxAmmo > 0)
+        {
+            playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, message.fireRate, message.maxAmmo);
+        }
+        else
+        {
+            playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate, config.maxAmmo);
+        }
         if (!string.IsNullOrEmpty(message.itemId))
         {
             itemWeaponConfigs.Remove(message.itemId);
@@ -551,6 +559,8 @@ public class NetworkManager : MonoBehaviour
         public string playerId;
         public string itemId;
         public string itemType;
+        public float fireRate;
+        public int maxAmmo;
     }
 
     private class ItemWeaponConfig

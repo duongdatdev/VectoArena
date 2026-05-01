@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VectoArena.Schema;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,6 +17,9 @@ public class PlayerController : MonoBehaviour
 
     [Header("Weapon Settings")]
     public Transform weaponHolder;
+    public float meleeAttackRange = 2.5f;
+    public float meleeAttackRadius = 1.15f;
+    public float meleeAttackCooldown = 0.7f;
     private GameObject currentWeaponModel;
 
     private float nextFireTime = 0f;
@@ -27,8 +32,21 @@ public class PlayerController : MonoBehaviour
     private bool isShooting;
     private int maxAmmo = -1;
     private int currentAmmo = -1;
+    private bool rangedWeaponEquipped;
+    private string lastSyncedWeapon;
 
     private Animator anim;
+    private readonly HashSet<int> animatorParameterHashes = new HashSet<int>();
+
+    private static readonly int PIsWalking = Animator.StringToHash("isWalking");
+    private static readonly int PIsHoldingRight = Animator.StringToHash("isHoldingRight");
+    private static readonly int PMoving = Animator.StringToHash("moving");
+    private static readonly int PAiming = Animator.StringToHash("aiming");
+    private static readonly int PAttack = Animator.StringToHash("attack");
+    private static readonly int PEquipMelee = Animator.StringToHash("equip_melee");
+    private static readonly int PEquipGun = Animator.StringToHash("equip_gun");
+    private static readonly int PWeaponType = Animator.StringToHash("weapon_type");
+    private static readonly int PWeaponTypeFloat = Animator.StringToHash("weapon_type_float");
 
     private void Awake()
     {
@@ -62,6 +80,7 @@ public class PlayerController : MonoBehaviour
         }
 
         anim = GetComponent<Animator>();
+        CacheAnimatorParameters();
         
         mainCam = Camera.main;
         maxAmmo = defaultMaxAmmo;
@@ -85,21 +104,32 @@ public class PlayerController : MonoBehaviour
             transform.forward = lookDirection;
         }
 
-        if (isShooting && Time.time >= nextFireTime && CanShoot())
+        HandleWeaponSwitchInput();
+        SyncWeaponStateFromServer();
+
+        if (isShooting && Time.time >= nextFireTime)
         {
-            GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-            Bullet bullet = bulletObj.GetComponent<Bullet>();
-
             var sync = GetComponent<NetworkPlayerSync>();
-            if (sync != null)
+
+            if (IsUsingMeleeWeapon())
             {
-                if (bullet != null) bullet.owner = sync;
-                sync.SendShoot(firePoint.position, firePoint.rotation);
+                TryMeleeAttack(sync);
             }
+            else if (CanShoot())
+            {
+                GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+                Bullet bullet = bulletObj.GetComponent<Bullet>();
 
-            ConsumeAmmo();
+                if (sync != null)
+                {
+                    if (bullet != null) bullet.owner = sync;
+                    sync.SendShoot(firePoint.position, firePoint.rotation);
+                }
 
-            nextFireTime = Time.time + fireRate;
+                TriggerAttackAnimation();
+                ConsumeAmmo();
+                nextFireTime = Time.time + fireRate;
+            }
         }
         
         UpdateAnimation();
@@ -126,10 +156,21 @@ public class PlayerController : MonoBehaviour
     private void UpdateAnimation()
     {
         bool isWalking = moveInput.magnitude > 0.1f;
-        bool isHoldingRight = isShooting && CanShoot();
-        
-        anim.SetBool("isWalking", isWalking);
-        anim.SetBool("isHoldingRight", isHoldingRight);
+        bool isUsingMeleeWeapon = IsUsingMeleeWeapon();
+        bool canShoot = CanShoot();
+        bool isHoldingRight = isShooting && (isUsingMeleeWeapon || canShoot);
+        bool isAiming = isShooting && !isUsingMeleeWeapon && canShoot;
+
+        SetAnimatorBoolIfPresent(PIsWalking, isWalking);
+        SetAnimatorBoolIfPresent(PIsHoldingRight, isHoldingRight);
+
+        SetAnimatorBoolIfPresent(PMoving, isWalking);
+        SetAnimatorBoolIfPresent(PAiming, isAiming);
+    }
+
+    public void TriggerAttackAnimation()
+    {
+        SetAnimatorTriggerIfPresent(PAttack);
     }
 
     public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate, int newMaxAmmo)
@@ -174,6 +215,200 @@ public class PlayerController : MonoBehaviour
         fireRate = newFireRate;
         maxAmmo = newMaxAmmo;
         currentAmmo = newMaxAmmo < 0 ? -1 : newMaxAmmo;
+        rangedWeaponEquipped = weaponModelPrefab != null;
+        if (currentWeaponModel != null)
+        {
+            currentWeaponModel.SetActive(true);
+        }
+    }
+
+    private void HandleWeaponSwitchInput()
+    {
+        if (Keyboard.current == null)
+        {
+            return;
+        }
+
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        if (sync == null || !sync.isLocalPlayer)
+        {
+            return;
+        }
+
+        if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            sync.SendWeaponSwitch("melee");
+        }
+
+        if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            sync.SendWeaponSwitch("ranged");
+        }
+    }
+
+    private void SyncWeaponStateFromServer()
+    {
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        if (sync == null)
+        {
+            return;
+        }
+
+        PlayerState state = sync.GetState();
+        if (state == null)
+        {
+            return;
+        }
+
+        if (currentWeaponModel != null)
+        {
+            bool shouldShowRangedModel = state.currentWeapon == state.rangedWeapon && rangedWeaponEquipped;
+            if (currentWeaponModel.activeSelf != shouldShowRangedModel)
+            {
+                currentWeaponModel.SetActive(shouldShowRangedModel);
+            }
+        }
+
+        bool isMeleeEquipped = !string.IsNullOrEmpty(state.currentWeapon) && state.currentWeapon == state.meleeWeapon;
+        SetWeaponTypeAnimation(isMeleeEquipped);
+
+        if (state.currentWeapon != lastSyncedWeapon && !string.IsNullOrEmpty(state.currentWeapon))
+        {
+            TriggerEquipAnimation(isMeleeEquipped);
+            lastSyncedWeapon = state.currentWeapon;
+        }
+
+        currentAmmo = Mathf.Max(0, Mathf.RoundToInt(state.ammo));
+    }
+
+    private bool IsUsingMeleeWeapon()
+    {
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        if (sync == null)
+        {
+            return false;
+        }
+
+        PlayerState state = sync.GetState();
+        if (state == null)
+        {
+            return false;
+        }
+
+        return !string.IsNullOrEmpty(state.currentWeapon) &&
+               state.currentWeapon == state.meleeWeapon;
+    }
+
+    private void TryMeleeAttack(NetworkPlayerSync sync)
+    {
+        if (sync == null)
+        {
+            return;
+        }
+
+        Vector3 center = transform.position + transform.forward * (meleeAttackRange * 0.5f);
+        Collider[] hits = Physics.OverlapSphere(center, meleeAttackRadius);
+
+        NetworkPlayerSync bestTarget = null;
+        float bestDistance = float.MaxValue;
+
+        foreach (Collider hit in hits)
+        {
+            NetworkPlayerSync targetSync = hit.GetComponentInParent<NetworkPlayerSync>();
+            if (targetSync == null || targetSync == sync)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(transform.position, targetSync.transform.position);
+            if (distance > meleeAttackRange || distance >= bestDistance)
+            {
+                continue;
+            }
+
+            bestDistance = distance;
+            bestTarget = targetSync;
+        }
+
+        if (bestTarget == null)
+        {
+            return;
+        }
+
+        sync.SendMeleeAttack(bestTarget.GetSessionId());
+        TriggerAttackAnimation();
+        nextFireTime = Time.time + meleeAttackCooldown;
+    }
+
+    private void TriggerEquipAnimation(bool isMeleeEquipped)
+    {
+        if (isMeleeEquipped)
+        {
+            SetAnimatorTriggerIfPresent(PEquipMelee);
+        }
+        else
+        {
+            SetAnimatorTriggerIfPresent(PEquipGun);
+        }
+    }
+
+    private void SetWeaponTypeAnimation(bool isMeleeEquipped)
+    {
+        int weaponType = isMeleeEquipped ? 0 : 1;
+        SetAnimatorIntIfPresent(PWeaponType, weaponType);
+        SetAnimatorFloatIfPresent(PWeaponTypeFloat, weaponType);
+    }
+
+    private void CacheAnimatorParameters()
+    {
+        animatorParameterHashes.Clear();
+
+        if (anim == null)
+        {
+            return;
+        }
+
+        foreach (AnimatorControllerParameter parameter in anim.parameters)
+        {
+            animatorParameterHashes.Add(parameter.nameHash);
+        }
+    }
+
+    private bool HasAnimatorParameter(int parameterHash)
+    {
+        return anim != null && animatorParameterHashes.Contains(parameterHash);
+    }
+
+    private void SetAnimatorBoolIfPresent(int parameterHash, bool value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            anim.SetBool(parameterHash, value);
+        }
+    }
+
+    private void SetAnimatorTriggerIfPresent(int parameterHash)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            anim.SetTrigger(parameterHash);
+        }
+    }
+
+    private void SetAnimatorIntIfPresent(int parameterHash, int value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            anim.SetInteger(parameterHash, value);
+        }
+    }
+
+    private void SetAnimatorFloatIfPresent(int parameterHash, float value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            anim.SetFloat(parameterHash, value);
+        }
     }
 
     private bool CanShoot()

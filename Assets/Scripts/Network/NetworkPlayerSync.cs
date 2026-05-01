@@ -17,10 +17,19 @@ public class NetworkPlayerSync : MonoBehaviour
 
     private Animator animator;
     private Vector3 lastRemotePosition;
+    private readonly HashSet<int> animatorParameterHashes = new HashSet<int>();
+
+    private static readonly int PIsWalking = Animator.StringToHash("isWalking");
+    private static readonly int PIsHoldingRight = Animator.StringToHash("isHoldingRight");
+    private static readonly int PMoving = Animator.StringToHash("moving");
+    private static readonly int PAiming = Animator.StringToHash("aiming");
+    private static readonly int PWeaponType = Animator.StringToHash("weapon_type");
+    private static readonly int PWeaponTypeFloat = Animator.StringToHash("weapon_type_float");
 
     private void Start()
     {
         animator = GetComponent<Animator>();
+        CacheAnimatorParameters();
     }
 
     public void Initialize(PlayerState playerState, string sid, Room<GameState> roomInstance)
@@ -113,20 +122,75 @@ public class NetworkPlayerSync : MonoBehaviour
     {
         if (animator == null) return;
 
-        // remote player animation can be derived from movement.
         float distance = Vector3.Distance(transform.position, targetPosition);
         bool isWalking = distance > 0.01f;
-        animator.SetBool("isWalking", isWalking);
+        bool isUsingMeleeWeapon = !string.IsNullOrEmpty(state.currentWeapon) && state.currentWeapon == state.meleeWeapon;
+        bool isHoldingRight = !isUsingMeleeWeapon;
 
-        // if you want to sync shooting or other actions, add flags to the PlayerState schema
-        // and set them here like animator.SetBool("isHoldingRight", state.isShooting);
+        SetAnimatorBoolIfPresent(PIsWalking, isWalking);
+        SetAnimatorBoolIfPresent(PMoving, isWalking);
+        SetAnimatorBoolIfPresent(PIsHoldingRight, isHoldingRight);
+        SetAnimatorBoolIfPresent(PAiming, isHoldingRight);
+
+        int weaponType = isUsingMeleeWeapon ? 0 : 1;
+        SetAnimatorIntIfPresent(PWeaponType, weaponType);
+        SetAnimatorFloatIfPresent(PWeaponTypeFloat, weaponType);
 
         lastRemotePosition = transform.position;
+    }
+
+    private void CacheAnimatorParameters()
+    {
+        animatorParameterHashes.Clear();
+
+        if (animator == null)
+        {
+            return;
+        }
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            animatorParameterHashes.Add(parameter.nameHash);
+        }
+    }
+
+    private bool HasAnimatorParameter(int parameterHash)
+    {
+        return animator != null && animatorParameterHashes.Contains(parameterHash);
+    }
+
+    private void SetAnimatorBoolIfPresent(int parameterHash, bool value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            animator.SetBool(parameterHash, value);
+        }
+    }
+
+    private void SetAnimatorIntIfPresent(int parameterHash, int value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            animator.SetInteger(parameterHash, value);
+        }
+    }
+
+    private void SetAnimatorFloatIfPresent(int parameterHash, float value)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            animator.SetFloat(parameterHash, value);
+        }
     }
 
     public string GetSessionId()
     {
         return sessionId;
+    }
+
+    public PlayerState GetState()
+    {
+        return state;
     }
 
     public void SendHit(string targetId)
@@ -136,6 +200,26 @@ public class NetworkPlayerSync : MonoBehaviour
         room.Send("hit", new
         {
             targetId = targetId
+        });
+    }
+
+    public void SendMeleeAttack(string targetId)
+    {
+        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(targetId)) return;
+
+        room.Send("melee_attack", new
+        {
+            targetId = targetId
+        });
+    }
+
+    public void SendWeaponSwitch(string slot)
+    {
+        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(slot)) return;
+
+        room.Send("switch_weapon", new
+        {
+            slot = slot
         });
     }
 

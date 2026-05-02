@@ -6,21 +6,31 @@ using VectoArena.Schema;
 
 public class PlayerController : MonoBehaviour
 {
+    private const string BlastWeaponAnchorName = "weapon";
+    private const string BlastWeaponMeleeAnchorName = "weapon_melee";
+    private const string BlastWeaponXLMeleeAnchorName = "weapon_xlmelee";
+    private const string LegacyWeaponHolderName = "WeaponHolder";
+
     [Header("Movement Settings")]
     public float moveSpeed = 5;
     
     [Header("Shooting  Settings")]
     public GameObject bulletPrefab;
     public Transform firePoint;
+    public bool useProjectileSpawnOffsetFallback = true;
+    public Vector3 projectileSpawnOffset = new Vector3(0f, 1f, 0.5f);
     public float fireRate;
     public int defaultMaxAmmo = -1;
 
     [Header("Weapon Settings")]
     public Transform weaponHolder;
+    public Transform weaponMeleeHolder;
+    public Transform weaponXLMeleeHolder;
     public float meleeAttackRange = 2.5f;
     public float meleeAttackRadius = 1.15f;
     public float meleeAttackCooldown = 0.7f;
     private GameObject currentWeaponModel;
+    private Transform defaultFirePoint;
 
     private float nextFireTime = 0f;
     private Rigidbody rb;
@@ -79,10 +89,12 @@ public class PlayerController : MonoBehaviour
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
 
-        anim = GetComponent<Animator>();
+        anim = ResolveAnimator();
         CacheAnimatorParameters();
         
         mainCam = Camera.main;
+        ResolveWeaponAnchorsIfNeeded();
+        defaultFirePoint = firePoint;
         maxAmmo = defaultMaxAmmo;
         currentAmmo = defaultMaxAmmo;
     }
@@ -117,13 +129,18 @@ public class PlayerController : MonoBehaviour
             }
             else if (CanShoot())
             {
-                GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+                if (!TryGetShootPose(out Vector3 shootPosition, out Quaternion shootRotation))
+                {
+                    return;
+                }
+
+                GameObject bulletObj = Instantiate(bulletPrefab, shootPosition, shootRotation);
                 Bullet bullet = bulletObj.GetComponent<Bullet>();
 
                 if (sync != null)
                 {
                     if (bullet != null) bullet.owner = sync;
-                    sync.SendShoot(firePoint.position, firePoint.rotation);
+                    sync.SendShoot(shootPosition, shootRotation);
                 }
 
                 TriggerAttackAnimation();
@@ -175,36 +192,39 @@ public class PlayerController : MonoBehaviour
 
     public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate, int newMaxAmmo)
     {
-        // Remove older weapon 
-        if (weaponHolder != null)
+        if (currentWeaponModel != null)
         {
-            foreach (Transform child in weaponHolder)
-            {
-                Destroy(child.gameObject);
-            }
+            Destroy(currentWeaponModel);
+            currentWeaponModel = null;
+        }
 
-            // instantiate new weapon prefab
+        bool isMeleeModel = newBulletPrefab == null;
+        Transform targetAnchor = ResolveWeaponAnchor(weaponModelPrefab, isMeleeModel);
+
+        if (targetAnchor != null)
+        {
             if (weaponModelPrefab != null)
             {
-                currentWeaponModel = Instantiate(weaponModelPrefab, weaponHolder);
+                currentWeaponModel = Instantiate(weaponModelPrefab, targetAnchor);
                 currentWeaponModel.transform.localPosition = Vector3.zero;
                 currentWeaponModel.transform.localRotation = Quaternion.identity;
+                currentWeaponModel.transform.localScale = Vector3.one;
 
-                // update new fire point from the new weapon model
-                Transform newFirePoint = currentWeaponModel.transform.Find("FirePoint");
+                Transform newFirePoint = FindChildTransformByName(currentWeaponModel.transform, "FirePoint");
                 if (newFirePoint != null)
                 {
                     firePoint = newFirePoint;
                 }
                 else
                 {
-                    Debug.LogWarning("The new weapon does not have a child object named 'FirePoint'. Please create one for accurate shooting.");
+                    firePoint = null;
+                    Debug.LogWarning("The new weapon does not have a child object named 'FirePoint'. Using projectileSpawnOffset fallback for shooting.");
                 }
             }
         }
         else
         {
-            Debug.LogWarning("weaponHolder is not assigned in PlayerController!");
+            Debug.LogWarning("No weapon anchor is assigned in PlayerController!");
         }
 
         // Update bullet prefab and fire rate
@@ -270,7 +290,8 @@ public class PlayerController : MonoBehaviour
         }
 
         bool isMeleeEquipped = !string.IsNullOrEmpty(state.currentWeapon) && state.currentWeapon == state.meleeWeapon;
-        SetWeaponTypeAnimation(isMeleeEquipped);
+        string activeWeaponName = isMeleeEquipped ? state.meleeWeapon : state.rangedWeapon;
+        SetWeaponTypeAnimation(activeWeaponName, isMeleeEquipped);
 
         if (state.currentWeapon != lastSyncedWeapon && !string.IsNullOrEmpty(state.currentWeapon))
         {
@@ -352,11 +373,37 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void SetWeaponTypeAnimation(bool isMeleeEquipped)
+    private void SetWeaponTypeAnimation(string weaponName, bool isMeleeEquipped)
     {
-        int weaponType = isMeleeEquipped ? 0 : 1;
+        int weaponType = GetWeaponTypeValue(weaponName, isMeleeEquipped);
         SetAnimatorIntIfPresent(PWeaponType, weaponType);
         SetAnimatorFloatIfPresent(PWeaponTypeFloat, weaponType);
+    }
+
+    private int GetWeaponTypeValue(string weaponName, bool isMeleeEquipped)
+    {
+        if (string.IsNullOrEmpty(weaponName))
+        {
+            return 0;
+        }
+
+        if (isMeleeEquipped)
+        {
+            return 1;
+        }
+
+        switch (weaponName)
+        {
+            case "Rifle":      return 2;
+            case "Shotgun":    return 9;
+            case "SniperGun":  return 4;
+            case "Launcher":   return 5;
+            case "XLGun":      return 3;
+            case "Handgun":    return 8;
+            case "Knife":      return 7;
+            case "XLMelee":    return 6;
+            default:            return 2;
+        }
     }
 
     private void CacheAnimatorParameters()
@@ -411,14 +458,149 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private Animator ResolveAnimator()
+    {
+        Transform characterRoot = FindChildTransformByName("Char_Female01");
+        if (characterRoot != null && characterRoot.TryGetComponent(out Animator characterAnimator))
+        {
+            EnsureAnimationEventReceiver(characterAnimator);
+            return characterAnimator;
+        }
+
+        Animator childAnimator = GetComponentInChildren<Animator>(true);
+        if (childAnimator != null)
+        {
+            EnsureAnimationEventReceiver(childAnimator);
+            return childAnimator;
+        }
+
+        Animator rootAnimator = GetComponent<Animator>();
+        EnsureAnimationEventReceiver(rootAnimator);
+        return rootAnimator;
+    }
+
+    private void EnsureAnimationEventReceiver(Animator targetAnimator)
+    {
+        if (targetAnimator == null)
+        {
+            return;
+        }
+
+        if (!targetAnimator.TryGetComponent<CharacterAnimationEventReceiver>(out _))
+        {
+            targetAnimator.gameObject.AddComponent<CharacterAnimationEventReceiver>();
+        }
+    }
+
+    private void ResolveWeaponAnchorsIfNeeded()
+    {
+        if (weaponHolder == null)
+        {
+            weaponHolder = FindChildTransformByName(BlastWeaponAnchorName) ?? FindChildTransformByName(LegacyWeaponHolderName);
+        }
+
+        if (weaponMeleeHolder == null)
+        {
+            weaponMeleeHolder = FindChildTransformByName(BlastWeaponMeleeAnchorName) ?? weaponHolder;
+        }
+
+        if (weaponXLMeleeHolder == null)
+        {
+            weaponXLMeleeHolder = FindChildTransformByName(BlastWeaponXLMeleeAnchorName) ?? weaponMeleeHolder;
+        }
+    }
+
+    private Transform FindChildTransformByName(string targetName)
+    {
+        Transform[] transforms = GetComponentsInChildren<Transform>(true);
+        foreach (Transform t in transforms)
+        {
+            if (string.Equals(t.name, targetName, StringComparison.OrdinalIgnoreCase))
+            {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindChildTransformByName(Transform root, string targetName)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
+        foreach (Transform t in transforms)
+        {
+            if (string.Equals(t.name, targetName, StringComparison.OrdinalIgnoreCase))
+            {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform ResolveWeaponAnchor(GameObject weaponModelPrefab, bool isMeleeModel)
+    {
+        ResolveWeaponAnchorsIfNeeded();
+
+        if (!isMeleeModel)
+        {
+            return weaponHolder;
+        }
+
+        if (weaponXLMeleeHolder != null && weaponModelPrefab != null &&
+            weaponModelPrefab.name.IndexOf("xl", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return weaponXLMeleeHolder;
+        }
+
+        if (weaponMeleeHolder != null)
+        {
+            return weaponMeleeHolder;
+        }
+
+        return weaponHolder;
+    }
+
     private bool CanShoot()
     {
-        if (bulletPrefab == null || firePoint == null)
+        if (bulletPrefab == null)
+        {
+            return false;
+        }
+
+        bool hasShootOrigin = firePoint != null || useProjectileSpawnOffsetFallback;
+        if (!hasShootOrigin)
         {
             return false;
         }
 
         return maxAmmo < 0 || currentAmmo > 0;
+    }
+
+    private bool TryGetShootPose(out Vector3 shootPosition, out Quaternion shootRotation)
+    {
+        if (firePoint != null)
+        {
+            shootPosition = firePoint.position;
+            shootRotation = firePoint.rotation;
+            return true;
+        }
+
+        if (useProjectileSpawnOffsetFallback)
+        {
+            shootPosition = transform.TransformPoint(projectileSpawnOffset);
+            shootRotation = transform.rotation;
+            return true;
+        }
+
+        shootPosition = Vector3.zero;
+        shootRotation = Quaternion.identity;
+        return false;
     }
 
     private void ConsumeAmmo()

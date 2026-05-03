@@ -180,12 +180,11 @@ public class NetworkManager : MonoBehaviour
                 if (playerObjects.TryGetValue(message.clientId, out GameObject playerObj))
                 {
                     var pc = playerObj.GetComponent<PlayerController>();
-                    if (pc != null && pc.bulletPrefab != null)
+                    if (pc != null)
                     {
                         Vector3 pos = new Vector3(message.x, message.y, message.z);
                         Quaternion rot = Quaternion.Euler(message.rx, message.ry, message.rz);
-                        Instantiate(pc.bulletPrefab, pos, rot);
-                        pc.TriggerAttackAnimation();
+                        pc.PerformShoot(pos, rot);
                     }
                 }
             });

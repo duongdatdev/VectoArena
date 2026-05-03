@@ -44,6 +44,7 @@ public class PlayerController : MonoBehaviour
     private int currentAmmo = -1;
     private bool rangedWeaponEquipped;
     private string lastSyncedWeapon;
+    private ParticleSystem currentMuzzleFlash;
 
     private Animator anim;
     private readonly HashSet<int> animatorParameterHashes = new HashSet<int>();
@@ -134,16 +135,13 @@ public class PlayerController : MonoBehaviour
                     return;
                 }
 
-                GameObject bulletObj = Instantiate(bulletPrefab, shootPosition, shootRotation);
-                Bullet bullet = bulletObj.GetComponent<Bullet>();
+                PerformShoot(shootPosition, shootRotation);
 
                 if (sync != null)
                 {
-                    if (bullet != null) bullet.owner = sync;
                     sync.SendShoot(shootPosition, shootRotation);
                 }
 
-                TriggerAttackAnimation();
                 ConsumeAmmo();
                 nextFireTime = Time.time + fireRate;
             }
@@ -190,6 +188,27 @@ public class PlayerController : MonoBehaviour
         SetAnimatorTriggerIfPresent(PAttack);
     }
 
+    public void PerformShoot(Vector3 position, Quaternion rotation)
+    {
+        if (bulletPrefab != null)
+        {
+            GameObject bulletObj = Instantiate(bulletPrefab, position, rotation);
+            Bullet bullet = bulletObj.GetComponent<Bullet>();
+            if (bullet != null)
+            {
+                bullet.owner = GetComponent<NetworkPlayerSync>();
+            }
+        }
+
+        TriggerAttackAnimation();
+
+        if (currentMuzzleFlash != null)
+        {
+            currentMuzzleFlash.Stop();
+            currentMuzzleFlash.Play();
+        }
+    }
+
     public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate, int newMaxAmmo)
     {
         if (currentWeaponModel != null)
@@ -209,6 +228,8 @@ public class PlayerController : MonoBehaviour
                 currentWeaponModel.transform.localPosition = Vector3.zero;
                 currentWeaponModel.transform.localRotation = Quaternion.identity;
                 currentWeaponModel.transform.localScale = Vector3.one;
+
+                currentMuzzleFlash = currentWeaponModel.GetComponentInChildren<ParticleSystem>();
 
                 Transform newFirePoint = FindChildTransformByName(currentWeaponModel.transform, "FirePoint");
                 if (newFirePoint != null)
@@ -593,22 +614,27 @@ public class PlayerController : MonoBehaviour
 
     private bool TryGetShootPose(out Vector3 shootPosition, out Quaternion shootRotation)
     {
+        // In Blast Royale, the projectile direction is always the player's aim direction,
+        // NOT the firePoint bone's rotation. The firePoint only determines the spawn position.
+        // This prevents bullets from flying at weird angles when the weapon model bone is tilted.
+        Vector3 aimDirection = transform.forward;
+        aimDirection.y = 0f;
+        aimDirection.Normalize();
+        shootRotation = Quaternion.LookRotation(aimDirection, Vector3.up);
+
         if (firePoint != null)
         {
             shootPosition = firePoint.position;
-            shootRotation = firePoint.rotation;
             return true;
         }
 
         if (useProjectileSpawnOffsetFallback)
         {
             shootPosition = transform.TransformPoint(projectileSpawnOffset);
-            shootRotation = transform.rotation;
             return true;
         }
 
         shootPosition = Vector3.zero;
-        shootRotation = Quaternion.identity;
         return false;
     }
 

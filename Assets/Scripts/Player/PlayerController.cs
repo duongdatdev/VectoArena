@@ -12,7 +12,8 @@ public class PlayerController : MonoBehaviour
     private const string LegacyWeaponHolderName = "WeaponHolder";
 
     [Header("Movement Settings")]
-    public float moveSpeed = 5;
+    [Tooltip("Base speed from Blast Royale: 2.8f (BattleRoyale mode) or 3.75f (Deathmatch mode)")]
+    public float moveSpeed = 2.8f;
     
     [Header("Shooting  Settings")]
     public GameObject bulletPrefab;

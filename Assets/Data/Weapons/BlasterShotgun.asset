@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a132522cf3ac514abb9830a8260e086, type: 3}
+  m_Name: BlasterShotgun
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponType: BlasterShotgun
+  animWeaponTypeId: 9
+  weaponModelPrefab: {fileID: 4516585669790791156, guid: 2069927a2aae8604d9d20546b577ec94, type: 3}
+  floatingItemPrefab: {fileID: 3536748621969066983, guid: 5194d53f89c8935409d9c080d197bf49, type: 3}
+  bulletPrefab: {fileID: 5891818647442247478, guid: 397cdfcc1fe1bae488501cb1adc25daf, type: 3}
+  fireRate: 0.83
+  maxAmmo: 6
+  isMelee: 0

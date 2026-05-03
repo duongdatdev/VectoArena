@@ -29,9 +29,8 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private GameObject remotePlayerPrefab;
     [SerializeField] private GameObject playerPrefab; // fallback if separate prefabs are not assigned
 
-    [Header("Item Prefabs")]
-    public GameObject itemRiflePrefab;
-    public GameObject itemShotgunPrefab;
+    [Header("Item / Weapon Config")]
+    public WeaponDatabase weaponDatabase;
     public GameObject itemMedicalKitPrefab;
 
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
@@ -243,13 +242,18 @@ public class NetworkManager : MonoBehaviour
         if (itemObjects.ContainsKey(key)) return;
 
         GameObject prefabToSpawn = null;
-        if (item.type == "Rifle") prefabToSpawn = itemRiflePrefab;
-        else if (item.type == "Shotgun") prefabToSpawn = itemShotgunPrefab;
-        else if (item.type == "MedicalKit") prefabToSpawn = itemMedicalKitPrefab;
+        if (item.type == "MedicalKit")
+        {
+            prefabToSpawn = itemMedicalKitPrefab;
+        }
+        else if (weaponDatabase != null)
+        {
+            prefabToSpawn = weaponDatabase.GetFloatingItemPrefab(item.type);
+        }
 
         if (prefabToSpawn == null)
         {
-            Debug.LogWarning($"Item prefab for type {item.type} is not assigned in NetworkManager!");
+            Debug.LogWarning($"Item prefab for type {item.type} is not assigned in WeaponDatabase or NetworkManager!");
             return;
         }
 
@@ -349,16 +353,23 @@ public class NetworkManager : MonoBehaviour
             return true;
         }
 
-        GameObject sourcePrefab = null;
-        if (itemType == "Rifle")
+        if (weaponDatabase != null)
         {
-            sourcePrefab = itemRiflePrefab;
-        }
-        else if (itemType == "Shotgun")
-        {
-            sourcePrefab = itemShotgunPrefab;
+            WeaponData data = weaponDatabase.GetWeaponData(itemType);
+            if (data != null)
+            {
+                config = new ItemWeaponConfig
+                {
+                    weaponModelPrefab = data.weaponModelPrefab,
+                    bulletPrefab = data.bulletPrefab,
+                    fireRate = data.fireRate,
+                    maxAmmo = data.maxAmmo
+                };
+                return true;
+            }
         }
 
+        GameObject sourcePrefab = weaponDatabase != null ? weaponDatabase.GetFloatingItemPrefab(itemType) : null;
         if (sourcePrefab != null)
         {
             WeaponPickup pickup = sourcePrefab.GetComponent<WeaponPickup>();
@@ -371,7 +382,6 @@ public class NetworkManager : MonoBehaviour
                     fireRate = pickup.fireRate,
                     maxAmmo = pickup.maxAmmo
                 };
-
                 return true;
             }
         }

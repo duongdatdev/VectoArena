@@ -394,15 +394,24 @@ public class PlayerController : MonoBehaviour
 
         switch (weaponName)
         {
-            case "Rifle":      return 2;
-            case "Shotgun":    return 9;
-            case "SniperGun":  return 4;
-            case "Launcher":   return 5;
-            case "XLGun":      return 3;
-            case "Handgun":    return 8;
-            case "Knife":      return 7;
-            case "XLMelee":    return 6;
-            default:            return 2;
+            case "Rifle":           return 2;  // Gun
+            case "BurstRifle":      return 2;  // Gun
+            case "RebelRifle":      return 2;  // Gun
+            case "MachineGun":      return 2;  // Gun
+            case "Shotgun":         return 9;  // Shotgun
+            case "BlasterShotgun":  return 9;  // Shotgun
+            case "Sniper":          return 4;  // SniperGun
+            case "HunterSniper":    return 4;  // SniperGun
+            case "Launcher":        return 5;  // Launcher
+            case "Minigun":         return 3;  // XLGun
+            case "Pistol":          return 8;  // Handgun
+            case "Knife":           return 7;  // KnifeMelee
+            case "XLMelee":         return 6;  // XLMelee
+
+            case "SniperGun":       return 4;
+            case "XLGun":           return 3;
+            case "Handgun":         return 8;
+            default:                return 2;
         }
     }
 

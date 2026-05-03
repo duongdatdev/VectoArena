@@ -48,5 +48,11 @@ public PlayerState() { }
 
 		[Type(10, "string")]
 		public string rangedWeapon = default(string);
+
+		[Type(11, "number")]
+		public float kills = default(float);
+
+		[Type(12, "boolean")]
+		public bool isDead = default(bool);
 	}
 }

@@ -1,0 +1,45 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss" />
+    <Style src="project://database/Assets/Art/UI/Styles/AuthScreenStyle.uss" />
+    
+    <ui:VisualElement name="root" class="fill-parent">
+        <!-- Background -->
+        <ui:VisualElement name="Background" class="auth-background fill-parent">
+            
+            <!-- Logo -->
+            <ui:VisualElement name="LogoContainer" class="logo-container">
+                <ui:VisualElement class="game-logo"/>
+            </ui:VisualElement>
+            
+            <!-- Login Panel -->
+            <ui:VisualElement name="LoginPanel" class="auth-panel">
+                <ui:Label text="WELCOME BACK" class="panel-title"/>
+                <ui:TextField name="LoginUsername" label="Username"/>
+                <ui:TextField name="LoginPassword" label="Password" password="true"/>
+                <ui:VisualElement style="align-items: center; margin-top: 20px;">
+                    <ui:Button name="LoginButton" text="LOG IN" class="button-long button-long--yellow"/>
+                </ui:VisualElement>
+                <ui:Button name="SwitchToRegister" text="Don't have an account? Register" class="link-button"/>
+                <ui:Label name="LoginStatus" text="" class="status-text"/>
+            </ui:VisualElement>
+            
+            <!-- Register Panel (Hidden) -->
+            <ui:VisualElement name="RegisterPanel" class="auth-panel hidden">
+                <ui:Label text="CREATE ACCOUNT" class="panel-title"/>
+                <ui:TextField name="RegUsername" label="Username"/>
+                <ui:TextField name="RegPassword" label="Password" password="true"/>
+                <ui:VisualElement style="align-items: center; margin-top: 20px;">
+                    <ui:Button name="RegisterButton" text="REGISTER" class="button-long button-long--green"/>
+                </ui:VisualElement>
+                <ui:Button name="SwitchToLogin" text="Already have an account? Log In" class="link-button"/>
+                <ui:Label name="RegisterStatus" text="" class="status-text"/>
+            </ui:VisualElement>
+            
+        </ui:VisualElement>
+
+        <!-- Loading Overlay (Hidden) -->
+        <ui:VisualElement name="LoadingOverlay" class="loading-overlay fill-parent hidden">
+            <ui:VisualElement name="Spinner" class="loading-spinner"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

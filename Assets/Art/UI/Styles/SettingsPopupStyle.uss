@@ -1,0 +1,96 @@
+.settings-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-popup {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-popup-equipment.png");
+    width: 1400px;
+    height: 800px;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.settings-header {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/header-popup-equipment.png");
+    height: 80px;
+    justify-content: center;
+    align-items: center;
+    margin-top: -10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.settings-title {
+    font-size: 38px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+    text-shadow: 2px 2px 0 black;
+}
+
+.settings-close {
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-popup-equipment-close.png");
+    width: 104px;
+    height: 90px;
+    background-color: transparent;
+    border-width: 0;
+}
+
+.settings-close:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-popup-equipment-close-pressed.png");
+}
+
+.settings-tabs {
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 20px;
+    height: 80px;
+}
+
+.settings-tab-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-settingstab.png");
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(149, 139, 196);
+    font-size: 32px;
+    -unity-font-definition: var(--font-bold);
+}
+
+.settings-tab-button--active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-settingstab-chosen.png");
+    color: white;
+}
+
+.settings-content {
+    flex-grow: 1;
+    padding: 40px;
+    align-items: center;
+}
+
+.settings-panel {
+    width: 100%;
+    height: 100%;
+}
+
+.settings-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: rgba(30, 20, 50, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.settings-label {
+    font-size: 32px;
+    color: white;
+}

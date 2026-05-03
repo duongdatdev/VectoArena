@@ -1,0 +1,37 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss" />
+    <Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss" />
+    
+    <ui:VisualElement name="root" class="fill-parent">
+        <!-- Player Header -->
+        <ui:VisualElement name="Header" class="player-header">
+            <ui:Button name="ProfileButton" class="profile-button"/>
+            <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-name"/>
+        </ui:VisualElement>
+        
+        <!-- Top Right -->
+        <ui:VisualElement name="TopButtons" class="top-buttons">
+            <ui:Button name="SettingsButton" class="settings-button"/>
+        </ui:VisualElement>
+        
+        <!-- Left Side -->
+        <ui:VisualElement name="LeftButtons" class="left-buttons">
+            <ui:Button name="ShopButton" text="SHOP" class="button-with-icon"/>
+            <!-- Can add more buttons here like Collection, Friends -->
+        </ui:VisualElement>
+        
+        <!-- Right Side -->
+        <ui:VisualElement name="RightButtons" class="right-buttons">
+            <ui:Button name="PlayButton" text="PLAY" class="play-button"/>
+        </ui:VisualElement>
+        
+        <!-- Matchmaking Overlay (Hidden) -->
+        <ui:VisualElement name="Matchmaking" class="fill-parent matchmaking-container hidden">
+            <ui:VisualElement name="MatchmakingStatus" class="matchmaking-status">
+                <ui:Label name="MatchTimer" text="00:00" class="match-timer"/>
+                <ui:Label text="MATCHMAKING..." class="match-subtitle"/>
+            </ui:VisualElement>
+            <ui:Button name="CancelMatchmaking" class="button-close" style="position: absolute; right: 50px; top: 50px;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,101 @@
+:root {
+    --color-primary: rgb(240, 209, 94);
+    --color-accent: rgb(196, 84, 122);
+    --font-bold: url("project://database/Assets/Art/UI/Fonts/Stawix-Bold-Static.asset");
+    --font-regular: url("project://database/Assets/Art/UI/Fonts/Stawix-Bold-Static.asset");
+    -unity-font-definition: var(--font-regular);
+}
+
+.fill-parent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.button-long {
+    width: 340px;
+    height: 90px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    font-size: 38px;
+    color: rgb(255, 255, 255);
+    -unity-text-outline-width: 4px;
+    -unity-text-align: middle-center;
+    padding-bottom: 5px;
+    -unity-font-style: bold;
+    -unity-font-definition: var(--font-bold);
+}
+
+.button-long--yellow {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/button-long-yellow.png");
+    -unity-text-outline-color: rgb(157, 35, 11);
+    text-shadow: 3px 3px 0 rgb(157, 35, 10);
+}
+
+.button-long--yellow:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/button-long-yellow-pressed.png");
+    padding-top: 5px;
+    padding-bottom: 0;
+}
+
+.button-long--green {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/button-long-green.png");
+    -unity-text-outline-color: rgb(48, 86, 21);
+    text-shadow: 3px 3px 0 rgb(48, 86, 21);
+}
+
+.button-long--green:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/button-long-green-pressed.png");
+    padding-top: 5px;
+    padding-bottom: 0;
+}
+
+.unity-text-field {
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.unity-text-field__label {
+    color: rgb(157, 131, 216);
+    font-size: 30px;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+    margin-bottom: 5px;
+    -unity-font-definition: var(--font-bold);
+}
+
+.unity-text-field__input {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/background-inputfield.png");
+    background-color: transparent;
+    border-width: 0;
+    height: 80px;
+    color: white;
+    font-size: 32px;
+    padding-left: 20px;
+    -unity-text-align: middle-left;
+}
+
+.loading-spinner {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/icon-spinner-thick.png");
+    width: 100px;
+    height: 100px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.button-close {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-close.png");
+    width: 80px;
+    height: 80px;
+    background-color: transparent;
+    border-width: 0;
+}
+
+.button-close:active {
+    -unity-background-image-tint-color: rgb(150, 150, 150);
+}

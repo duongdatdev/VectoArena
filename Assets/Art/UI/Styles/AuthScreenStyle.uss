@@ -1,0 +1,67 @@
+.auth-background {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/loading_background.png");
+    -unity-background-scale-mode: scale-and-crop;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-container {
+    position: absolute;
+    top: 15%;
+    align-items: center;
+}
+
+.game-logo {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Auth/logo-br.png");
+    width: 400px;
+    height: 340px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.auth-panel {
+    background-color: rgba(30, 19, 51, 0.85);
+    width: 600px;
+    border-radius: 20px;
+    padding: 50px;
+    align-items: stretch;
+    border-color: rgb(90, 60, 140);
+    border-width: 2px;
+    margin-top: 100px;
+}
+
+.panel-title {
+    font-size: 48px;
+    color: white;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+    margin-bottom: 40px;
+}
+
+.link-button {
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(73, 212, 212);
+    font-size: 28px;
+    margin-top: 20px;
+}
+
+.link-button:active {
+    color: rgb(40, 130, 130);
+}
+
+.status-text {
+    font-size: 26px;
+    -unity-text-align: middle-center;
+    margin-top: 20px;
+    color: rgb(255, 68, 68);
+    white-space: normal;
+}
+
+.loading-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}

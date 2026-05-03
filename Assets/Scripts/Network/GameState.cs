@@ -19,13 +19,16 @@ public GameState() { }
 		[Type(0, "string")]
 		public string matchState = default(string);
 
-		[Type(1, "map", typeof(MapSchema<PlayerState>))]
+		[Type(1, "number")]
+		public float aliveCount = default(float);
+
+		[Type(2, "map", typeof(MapSchema<PlayerState>))]
 		public MapSchema<PlayerState> players = null;
 
-		[Type(2, "ref", typeof(ZoneState))]
+		[Type(3, "ref", typeof(ZoneState))]
 		public ZoneState zone = null;
 
-		[Type(3, "map", typeof(MapSchema<ItemState>))]
+		[Type(4, "map", typeof(MapSchema<ItemState>))]
 		public MapSchema<ItemState> items = null;
 	}
 }

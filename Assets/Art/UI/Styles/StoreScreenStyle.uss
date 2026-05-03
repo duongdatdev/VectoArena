@@ -1,0 +1,111 @@
+.store-background {
+    background-color: rgb(15, 10, 30);
+}
+
+.store-header {
+    height: 100px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(30, 20, 50, 0.8);
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.store-title {
+    font-size: 48px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+    margin-left: 20px;
+    flex-grow: 1;
+}
+
+.currency-display {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    padding: 10px 20px;
+}
+
+.currency-label {
+    font-size: 36px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+}
+
+.categories-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+    background-color: rgba(50, 41, 90, 0.8);
+    flex-direction: row;
+    justify-content: center;
+}
+
+.category-button {
+    font-size: 44px;
+    background-color: transparent;
+    border-width: 0;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: black;
+    text-shadow: 5px 5px 0 black;
+    margin-left: 20px;
+    margin-right: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.category-button:active {
+    color: rgb(240, 209, 94);
+}
+
+.product-scroll {
+    flex-grow: 1;
+    margin-bottom: 100px; /* space for categories */
+    padding: 40px;
+}
+
+.product-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.product-card {
+    width: 300px;
+    height: 400px;
+    background-color: rgba(60, 40, 90, 0.6);
+    border-radius: 15px;
+    margin: 20px;
+    align-items: center;
+    padding: 20px;
+    border-width: 2px;
+    border-color: rgb(100, 70, 150);
+}
+
+.product-icon {
+    width: 200px;
+    height: 200px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.product-name {
+    font-size: 32px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-bottom: auto;
+}
+
+.product-price-btn {
+    width: 200px;
+    height: 60px;
+    font-size: 28px;
+}

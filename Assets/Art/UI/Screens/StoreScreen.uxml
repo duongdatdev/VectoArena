@@ -1,0 +1,49 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss" />
+    <Style src="project://database/Assets/Art/UI/Styles/StoreScreenStyle.uss" />
+    
+    <ui:VisualElement name="root" class="fill-parent store-background">
+        <!-- Header -->
+        <ui:VisualElement class="store-header">
+            <ui:Button name="BackButton" class="button-close" style="position: relative; right: 0; top: 0;"/>
+            <ui:Label text="SHOP" class="store-title"/>
+            
+            <ui:VisualElement class="currency-display">
+                <ui:Label name="CoinsAmount" text="1,500 COINS" class="currency-label"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Products -->
+        <ui:ScrollView name="ProductScroll" class="product-scroll">
+            <ui:VisualElement name="ProductList" class="product-list">
+                <!-- Dummy Product 1 -->
+                <ui:VisualElement class="product-card">
+                    <ui:VisualElement class="product-icon"/>
+                    <ui:Label text="Assault Rifle" class="product-name"/>
+                    <ui:Button text="500 COINS" class="button-long button-long--yellow product-price-btn"/>
+                </ui:VisualElement>
+                
+                <!-- Dummy Product 2 -->
+                <ui:VisualElement class="product-card">
+                    <ui:VisualElement class="product-icon"/>
+                    <ui:Label text="Shotgun" class="product-name"/>
+                    <ui:Button text="300 COINS" class="button-long button-long--yellow product-price-btn"/>
+                </ui:VisualElement>
+                
+                <!-- Dummy Product 3 -->
+                <ui:VisualElement class="product-card">
+                    <ui:VisualElement class="product-icon"/>
+                    <ui:Label text="Sniper" class="product-name"/>
+                    <ui:Button text="800 COINS" class="button-long button-long--yellow product-price-btn"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:ScrollView>
+        
+        <!-- Categories -->
+        <ui:VisualElement class="categories-bar">
+            <ui:Button name="TabWeapons" text="WEAPONS" class="category-button"/>
+            <ui:Button name="TabSkins" text="SKINS" class="category-button"/>
+            <ui:Button name="TabItems" text="ITEMS" class="category-button"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

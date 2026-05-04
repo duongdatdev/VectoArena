@@ -103,6 +103,16 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        var sync = GetComponent<NetworkPlayerSync>();
+        if (sync != null && sync.GetState() != null && sync.GetState().isDead)
+        {
+            // Reset inputs if dead
+            moveInput = Vector2.zero;
+            isShooting = false;
+            UpdateAnimation();
+            return;
+        }
+
         Ray ray = mainCam.ScreenPointToRay(mousePos);
 
         Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
@@ -123,7 +133,6 @@ public class PlayerController : MonoBehaviour
 
         if (isShooting && Time.time >= nextFireTime)
         {
-            var sync = GetComponent<NetworkPlayerSync>();
 
             if (IsUsingMeleeWeapon())
             {
@@ -153,6 +162,13 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        var sync = GetComponent<NetworkPlayerSync>();
+        if (sync != null && sync.GetState() != null && sync.GetState().isDead)
+        {
+            rb.linearVelocity = Vector3.zero;
+            return;
+        }
+
         Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
 

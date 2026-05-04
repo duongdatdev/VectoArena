@@ -25,6 +25,9 @@ public class NetworkPlayerSync : MonoBehaviour
     private static readonly int PAiming = Animator.StringToHash("aiming");
     private static readonly int PWeaponType = Animator.StringToHash("weapon_type");
     private static readonly int PWeaponTypeFloat = Animator.StringToHash("weapon_type_float");
+    private static readonly int PDeath = Animator.StringToHash("death");
+
+    private bool isDeadHandled = false;
 
     private void Start()
     {
@@ -68,6 +71,29 @@ public class NetworkPlayerSync : MonoBehaviour
         if (healthComponent != null)
         {
             healthComponent.SetHealth(state.hp);
+        }
+
+        if (state.isDead)
+        {
+            if (!isDeadHandled)
+            {
+                isDeadHandled = true;
+                if (TryGetComponent<Collider>(out var collider))
+                {
+                    collider.enabled = false;
+                }
+                SetAnimatorTriggerIfPresent(PDeath);
+                if (HasAnimatorParameter(PDeath)) 
+                {
+                    animator.SetBool(PDeath, true);
+                }
+                else
+                {
+                    // Fallback to playing the state directly if the parameter doesn't exist
+                    animator.Play("death");
+                }
+            }
+            return; // Skip syncing movement if dead
         }
 
         if (isLocalPlayer)
@@ -164,6 +190,14 @@ public class NetworkPlayerSync : MonoBehaviour
         if (HasAnimatorParameter(parameterHash))
         {
             animator.SetBool(parameterHash, value);
+        }
+    }
+
+    private void SetAnimatorTriggerIfPresent(int parameterHash)
+    {
+        if (HasAnimatorParameter(parameterHash))
+        {
+            animator.SetTrigger(parameterHash);
         }
     }
 

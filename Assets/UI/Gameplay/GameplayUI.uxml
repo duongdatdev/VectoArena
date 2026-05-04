@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="GameplayUI.uss" />
+    
+    <!-- Vùng chứa Kill Feed ở góc trên bên phải -->
+    <ui:VisualElement name="KillFeedContainer" class="kill-feed-container" />
+    
+    <!-- Màn hình Death Screen hiển thị tràn màn hình (ẩn đi mặc định) -->
+    <ui:VisualElement name="DeathScreenContainer" class="death-screen-wrapper">
+        <ui:Template src="../DeathScreen/DeathScreen.uxml" name="DeathScreen" />
+        <ui:Instance template="DeathScreen" name="DeathScreen" />
+    </ui:VisualElement>
+    
+</ui:UXML>

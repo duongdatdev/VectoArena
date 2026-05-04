@@ -29,6 +29,8 @@ public class AuthScreenController : MonoBehaviour
     private bool isLoading = false;
     private IVisualElementScheduledItem spinnerSchedule;
 
+    private float spinnerAngle = 0f;
+
     private void OnEnable()
     {
         document = GetComponent<UIDocument>();
@@ -66,7 +68,8 @@ public class AuthScreenController : MonoBehaviour
         // Setup Spinner
         spinnerSchedule = spinner.schedule.Execute(() =>
         {
-            spinner.transform.rotation = Quaternion.Euler(0, 0, spinner.transform.rotation.eulerAngles.z - 5f);
+            spinnerAngle -= 5f;
+            spinner.style.rotate = new StyleRotate(new Rotate(new Angle(spinnerAngle, AngleUnit.Degree)));
         }).Every(16);
         spinnerSchedule.Pause();
 

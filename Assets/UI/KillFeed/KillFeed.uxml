@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="KillFeed.uss" />
+    <ui:VisualElement name="KillFeedItem" class="kill-feed-item">
+        <ui:Label name="KillerName" text="KillerName" class="kill-feed-text killer-name" />
+        <ui:VisualElement name="WeaponIcon" class="kill-feed-icon" />
+        <ui:Label name="WeaponName" text="Rifle" class="kill-feed-text weapon-name" />
+        <ui:Label name="VictimName" text="VictimName" class="kill-feed-text victim-name" />
+    </ui:VisualElement>
+</ui:UXML>

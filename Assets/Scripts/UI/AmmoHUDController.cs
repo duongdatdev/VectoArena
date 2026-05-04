@@ -138,7 +138,7 @@ public class AmmoHUDController : MonoBehaviour
 
     private NetworkPlayerSync FindLocalPlayerSync()
     {
-        NetworkPlayerSync[] players = FindObjectsByType<NetworkPlayerSync>(FindObjectsSortMode.None);
+        NetworkPlayerSync[] players = FindObjectsByType<NetworkPlayerSync>(FindObjectsInactive.Exclude);
         foreach (NetworkPlayerSync player in players)
         {
             if (player != null && player.isLocalPlayer)

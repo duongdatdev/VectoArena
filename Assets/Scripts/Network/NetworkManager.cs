@@ -39,6 +39,8 @@ public class NetworkManager : MonoBehaviour
     private bool isSceneLoaded = false;
 
     public event Action OnGameStart;
+    public event Action<KillFeedMessage> OnKillFeedReceived;
+    public event Action OnGameOver;
 
     // using a generic object here for now. 
     // remember to swap this out with actual schema later.
@@ -173,6 +175,17 @@ public class NetworkManager : MonoBehaviour
                 Debug.Log("GAME_START message received");
                 UpdateZoneState();
                 HandleGameStart();
+            });
+
+            room.OnMessage<object>("GAME_OVER", (message) =>
+            {
+                Debug.Log("GAME_OVER message received");
+                OnGameOver?.Invoke();
+            });
+
+            room.OnMessage<KillFeedMessage>("kill_feed", (message) =>
+            {
+                OnKillFeedReceived?.Invoke(message);
             });
 
             room.OnMessage<ShootMessage>("shoot", (message) =>
@@ -459,7 +472,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (room == null || room.State == null || room.State.zone == null) return;
 
-        var zoneController = FindFirstObjectByType<ZoneController>();
+        var zoneController = FindAnyObjectByType<ZoneController>();
         if (zoneController == null) return;
 
         zoneController.SetServerAuthoritative(true);
@@ -570,6 +583,14 @@ public class NetworkManager : MonoBehaviour
         public string itemType;
         public float fireRate;
         public int maxAmmo;
+    }
+
+    [Serializable]
+    public class KillFeedMessage
+    {
+        public string killerName;
+        public string victimName;
+        public string weapon;
     }
 
     private class ItemWeaponConfig

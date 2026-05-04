@@ -11,7 +11,7 @@ public class ZoneUIManager : MonoBehaviour
     void Update()
     {
         if (zoneController == null)
-            zoneController = FindFirstObjectByType<ZoneController>();
+            zoneController = FindAnyObjectByType<ZoneController>();
 
         if (playerTransform == null)
         {

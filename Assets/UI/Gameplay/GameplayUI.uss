@@ -1,0 +1,15 @@
+.kill-feed-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    align-items: flex-end;
+}
+
+.death-screen-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}

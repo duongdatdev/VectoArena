@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class PlayerSkinApplier
@@ -18,6 +19,7 @@ public static class PlayerSkinApplier
         SkinCatalogItem item = SkinCatalog.GetById(skinId);
         if (string.IsNullOrEmpty(item.PrefabResourcePath))
         {
+            RemoveDuplicateSkinRoots(playerRoot.transform, item.Id);
             return ResolveSkinAnimator(playerRoot);
         }
 
@@ -29,11 +31,7 @@ public static class PlayerSkinApplier
         }
 
         RuntimeAnimatorController animatorController = ResolveSkinAnimator(playerRoot)?.runtimeAnimatorController;
-        Transform previousSkin = FindCurrentSkinRoot(playerRoot.transform);
-        if (previousSkin != null)
-        {
-            UnityEngine.Object.Destroy(previousSkin.gameObject);
-        }
+        RemoveAllSkinRoots(playerRoot.transform);
 
         GameObject skinInstance = UnityEngine.Object.Instantiate(skinPrefab, playerRoot.transform);
         skinInstance.name = skinPrefab.name;
@@ -49,12 +47,57 @@ public static class PlayerSkinApplier
             animator.runtimeAnimatorController = animatorController;
         }
 
-        if (animator != null && !animator.TryGetComponent<CharacterAnimationEventReceiver>(out _))
-        {
-            animator.gameObject.AddComponent<CharacterAnimationEventReceiver>();
-        }
+        EnsureAnimationEventReceiver(animator);
 
         return animator;
+    }
+
+    private static void RemoveAllSkinRoots(Transform playerRoot)
+    {
+        List<Transform> skinRoots = new List<Transform>();
+        foreach (Transform child in playerRoot)
+        {
+            if (child.name.StartsWith("Char_", StringComparison.OrdinalIgnoreCase))
+            {
+                skinRoots.Add(child);
+            }
+        }
+
+        foreach (Transform skinRoot in skinRoots)
+        {
+            skinRoot.gameObject.SetActive(false);
+            skinRoot.SetParent(null);
+            UnityEngine.Object.Destroy(skinRoot.gameObject);
+        }
+    }
+
+    private static void RemoveDuplicateSkinRoots(Transform playerRoot, string skinIdToKeep)
+    {
+        Transform keep = null;
+        List<Transform> skinRootsToRemove = new List<Transform>();
+
+        foreach (Transform child in playerRoot)
+        {
+            if (!child.name.StartsWith("Char_", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (keep == null && string.Equals(child.name, $"Char_{skinIdToKeep}", StringComparison.OrdinalIgnoreCase))
+            {
+                keep = child;
+                continue;
+            }
+
+            skinRootsToRemove.Add(child);
+        }
+
+        foreach (Transform skinRoot in skinRootsToRemove)
+        {
+            skinRoot.gameObject.SetActive(false);
+            skinRoot.SetParent(null);
+            UnityEngine.Object.Destroy(skinRoot.gameObject);
+        }
     }
 
     private static Transform FindCurrentSkinRoot(Transform playerRoot)
@@ -83,11 +126,22 @@ public static class PlayerSkinApplier
             Animator skinAnimator = skinRoot.GetComponentInChildren<Animator>(true);
             if (skinAnimator != null)
             {
+                EnsureAnimationEventReceiver(skinAnimator);
                 return skinAnimator;
             }
         }
 
-        return playerRoot.GetComponentInChildren<Animator>(true);
+        Animator animator = playerRoot.GetComponentInChildren<Animator>(true);
+        EnsureAnimationEventReceiver(animator);
+        return animator;
+    }
+
+    private static void EnsureAnimationEventReceiver(Animator animator)
+    {
+        if (animator != null && !animator.TryGetComponent<CharacterAnimationEventReceiver>(out _))
+        {
+            animator.gameObject.AddComponent<CharacterAnimationEventReceiver>();
+        }
     }
 
     private static void SetLayerRecursively(Transform root, int layer)

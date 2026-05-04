@@ -54,5 +54,8 @@ public PlayerState() { }
 
 		[Type(12, "boolean")]
 		public bool isDead = default(bool);
+
+		[Type(13, "string")]
+		public string skinId = default(string);
 	}
 }

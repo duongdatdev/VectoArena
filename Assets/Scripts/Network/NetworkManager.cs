@@ -5,6 +5,7 @@ using System;
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using VectoArena.Schema;
@@ -45,6 +46,9 @@ public class NetworkManager : MonoBehaviour
     // using a generic object here for now. 
     // remember to swap this out with actual schema later.
     private Room<GameState> room;
+    private bool isConnectingToBattle = false;
+    private Task leaveRoomTask;
+    private bool cancelMatchmakingRequested = false;
 
     private void Awake()
     {
@@ -95,6 +99,7 @@ public class NetworkManager : MonoBehaviour
                     var responseString = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<LoginResponse>(responseString);
                     authToken = result.token;
+                    await PlayerInventory.LoadFromServer();
                     Debug.Log("Login successful! Token: " + authToken);
                     return true;
                 }
@@ -142,10 +147,74 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    public async Task<PlayerProfileResponse> LoadPlayerProfile()
+    {
+        return await SendPlayerRequest(HttpMethod.Get, "/player/profile", null);
+    }
+
+    public async Task<PlayerProfileResponse> BuyPlayerSkin(string skinId)
+    {
+        return await SendPlayerRequest(HttpMethod.Post, "/player/buy-skin", new SkinRequest { skinId = skinId });
+    }
+
+    public async Task<PlayerProfileResponse> EquipPlayerSkin(string skinId)
+    {
+        return await SendPlayerRequest(HttpMethod.Post, "/player/equip-skin", new SkinRequest { skinId = skinId });
+    }
+
+    private async Task<PlayerProfileResponse> SendPlayerRequest(HttpMethod method, string path, object body)
+    {
+        if (string.IsNullOrEmpty(authToken))
+        {
+            throw new InvalidOperationException("Player is not authenticated.");
+        }
+
+        using (var httpClient = new HttpClient())
+        using (var request = new HttpRequestMessage(method, $"{HttpURL}{path}"))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+
+            if (body != null)
+            {
+                string json = JsonConvert.SerializeObject(body);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            }
+
+            var response = await httpClient.SendAsync(request);
+            string responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
+                throw new InvalidOperationException(error?.error ?? response.ReasonPhrase);
+            }
+
+            return JsonConvert.DeserializeObject<PlayerProfileResponse>(responseString);
+        }
+    }
+
     public async Task ConnectAndJoinBattle()
     {
+        while (isConnectingToBattle)
+        {
+            await Task.Delay(50);
+        }
+
         try
         {
+            isConnectingToBattle = true;
+            cancelMatchmakingRequested = false;
+            if (leaveRoomTask != null)
+            {
+                await leaveRoomTask;
+                leaveRoomTask = null;
+            }
+
+            if (room != null)
+            {
+                await LeaveCurrentRoom();
+            }
+
             Debug.Log("Attempting to connect to the server...");
             //reset before connecting
             hasGameStarted = false;
@@ -154,10 +223,21 @@ public class NetworkManager : MonoBehaviour
             itemWeaponConfigs.Clear();
             
             // Pass token to options if needed
-            var options = new Dictionary<string, object> { { "accessToken", authToken } };
+            var options = new Dictionary<string, object>
+            {
+                { "accessToken", authToken }
+            };
             
-            room = await client.JoinOrCreate<GameState>("battle", options);
-            Debug.Log("Connected to room! Session ID: " + room.SessionId);
+            var joinedRoom = await client.JoinOrCreate<GameState>("battle", options);
+            if (cancelMatchmakingRequested)
+            {
+                await joinedRoom.Leave();
+                Debug.Log("Matchmaking was cancelled before join completed.");
+                return;
+            }
+
+            room = joinedRoom;
+            Debug.Log("Connected to room! Session ID: " + joinedRoom.SessionId);
             
 
 
@@ -207,7 +287,7 @@ public class NetworkManager : MonoBehaviour
                 OnItemPicked(message);
             });
 
-            var callbacks = Colyseus.Schema.Callbacks.Get(room);
+            var callbacks = Colyseus.Schema.Callbacks.Get(joinedRoom);
             callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
             callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
             
@@ -217,6 +297,10 @@ public class NetworkManager : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError("Connection failed: " + ex.Message);
+        }
+        finally
+        {
+            isConnectingToBattle = false;
         }
     }
 
@@ -507,6 +591,8 @@ public class NetworkManager : MonoBehaviour
         Vector3 spawnPos = new Vector3(playerState.x, playerState.y, playerState.z);
         GameObject playerObj = Instantiate(pPrefab, spawnPos, Quaternion.Euler(0, playerState.rotation, 0));
         playerObj.name = "Player_" + playerState.username;
+        string skinId = string.IsNullOrEmpty(playerState.skinId) ? PlayerInventory.DefaultSkinId : playerState.skinId;
+        Animator skinAnimator = PlayerSkinApplier.ApplySkin(playerObj, skinId);
         Debug.Log($"Instantiated playerObj {playerObj.name} from {prefabName}, active={playerObj.activeSelf}, scene={playerObj.scene.name}");
         playerObjects.Add(key, playerObj);
         
@@ -515,6 +601,7 @@ public class NetworkManager : MonoBehaviour
         // track and Sync
         var sync = playerObj.GetComponent<NetworkPlayerSync>();
         sync.Initialize(playerState, key, room);
+        sync.RefreshAnimator(skinAnimator);
 
         // setup Camera if it's the local player
         if (isLocalPlayer)
@@ -538,14 +625,38 @@ public class NetworkManager : MonoBehaviour
         OnGameStart?.Invoke();
     }
     
-    public void CancelMatchmaking()
+    public Task CancelMatchmaking()
     {
-        if (room != null)
+        cancelMatchmakingRequested = true;
+        if (leaveRoomTask == null)
         {
-            _ = room.Leave();
+            leaveRoomTask = LeaveCurrentRoom();
+        }
+
+        return leaveRoomTask;
+    }
+
+    private async Task LeaveCurrentRoom()
+    {
+        var currentRoom = room;
+        if (currentRoom != null)
+        {
             room = null;
             hasGameStarted = false;
-            Debug.Log("Cancelled matchmaking.");
+            try
+            {
+                await currentRoom.Leave();
+                Debug.Log("Cancelled matchmaking.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Failed to leave matchmaking room: " + ex.Message);
+            }
+        }
+
+        if (leaveRoomTask != null && leaveRoomTask.IsCompleted)
+        {
+            leaveRoomTask = null;
         }
     }
 
@@ -561,6 +672,38 @@ public class NetworkManager : MonoBehaviour
     public class LoginResponse
     {
         public string token;
+    }
+
+    [Serializable]
+    private class SkinRequest
+    {
+        public string skinId;
+    }
+
+    [Serializable]
+    private class PlayerApiError
+    {
+        public string error;
+    }
+
+    [Serializable]
+    public class PlayerProfileResponse
+    {
+        public string username;
+        public int coinBalance;
+        public string equippedPlayerSkin;
+        public string[] ownedSkins;
+        public ShopSkinResponse[] shopSkins;
+    }
+
+    [Serializable]
+    public class ShopSkinResponse
+    {
+        public string id;
+        public string displayName;
+        public int price;
+        public bool owned;
+        public bool equipped;
     }
 
     [Serializable]

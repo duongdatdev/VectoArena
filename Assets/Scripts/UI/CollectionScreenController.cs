@@ -29,6 +29,7 @@ public class CollectionScreenController
 
     public void Show()
     {
+        _ = PlayerInventory.LoadFromServer();
         Refresh();
         root?.RemoveFromClassList("hidden");
     }
@@ -92,12 +93,13 @@ public class CollectionScreenController
         action.AddToClassList("collection-card-button");
         action.text = owned ? equipped ? "SELECTED" : "EQUIP" : "BUY IN SHOP";
         action.SetEnabled(owned && !equipped);
-        action.clicked += () =>
+        action.clicked += async () =>
         {
-            PlayerInventory.EquipSkin(item.Id);
+            action.SetEnabled(false);
+            bool success = await PlayerInventory.EquipSkinAsync(item.Id);
             if (statusLabel != null)
             {
-                statusLabel.text = $"EQUIPPED {item.DisplayName.ToUpper()}";
+                statusLabel.text = success ? $"EQUIPPED {item.DisplayName.ToUpper()}" : "UNABLE TO EQUIP SKIN";
             }
             Refresh();
         };

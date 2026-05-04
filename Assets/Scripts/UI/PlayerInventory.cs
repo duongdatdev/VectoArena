@@ -1,94 +1,116 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public static class PlayerInventory
 {
     public const string DefaultSkinId = "Female01";
-    private const string CoinsKey = "vecto_coins";
-    private const string EquippedSkinKey = "vecto_equipped_skin";
-    private const string OwnedSkinPrefix = "vecto_owned_skin_";
-    private const int StartingCoins = 1500;
+    private static readonly HashSet<string> ownedSkins = new HashSet<string> { DefaultSkinId };
+    private static int coins;
+    private static string equippedSkinId = DefaultSkinId;
+    private static bool loadedFromServer;
 
     public static event Action Changed;
 
-    public static int Coins
-    {
-        get
-        {
-            EnsureInitialized();
-            return PlayerPrefs.GetInt(CoinsKey, StartingCoins);
-        }
-    }
+    public static int Coins => coins;
 
-    public static string EquippedSkinId
-    {
-        get
-        {
-            EnsureInitialized();
-            return PlayerPrefs.GetString(EquippedSkinKey, DefaultSkinId);
-        }
-    }
+    public static string EquippedSkinId => string.IsNullOrEmpty(equippedSkinId) ? DefaultSkinId : equippedSkinId;
 
     public static void EnsureInitialized()
     {
-        if (!PlayerPrefs.HasKey(CoinsKey))
-        {
-            PlayerPrefs.SetInt(CoinsKey, StartingCoins);
-        }
-
-        if (!PlayerPrefs.HasKey(OwnedSkinPrefix + DefaultSkinId))
-        {
-            PlayerPrefs.SetInt(OwnedSkinPrefix + DefaultSkinId, 1);
-        }
-
-        if (!PlayerPrefs.HasKey(EquippedSkinKey))
-        {
-            PlayerPrefs.SetString(EquippedSkinKey, DefaultSkinId);
-        }
-
-        PlayerPrefs.Save();
+        ownedSkins.Add(DefaultSkinId);
     }
 
     public static bool IsSkinOwned(string skinId)
     {
         EnsureInitialized();
-        return PlayerPrefs.GetInt(OwnedSkinPrefix + skinId, 0) == 1;
+        return ownedSkins.Contains(skinId);
     }
 
-    public static bool TryBuySkin(SkinCatalogItem item)
+    public static async Task LoadFromServer()
     {
-        EnsureInitialized();
-
-        if (IsSkinOwned(item.Id))
-        {
-            EquipSkin(item.Id);
-            return true;
-        }
-
-        if (Coins < item.Price)
-        {
-            return false;
-        }
-
-        PlayerPrefs.SetInt(CoinsKey, Coins - item.Price);
-        PlayerPrefs.SetInt(OwnedSkinPrefix + item.Id, 1);
-        PlayerPrefs.SetString(EquippedSkinKey, item.Id);
-        PlayerPrefs.Save();
-        Changed?.Invoke();
-        return true;
-    }
-
-    public static void EquipSkin(string skinId)
-    {
-        EnsureInitialized();
-
-        if (!IsSkinOwned(skinId))
+        if (NetworkManager.Instance == null)
         {
             return;
         }
 
-        PlayerPrefs.SetString(EquippedSkinKey, skinId);
-        PlayerPrefs.Save();
+        try
+        {
+            ApplyProfile(await NetworkManager.Instance.LoadPlayerProfile());
+            loadedFromServer = true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Failed to load player inventory: " + ex.Message);
+            EnsureInitialized();
+            Changed?.Invoke();
+        }
+    }
+
+    public static async Task<bool> TryBuySkinAsync(SkinCatalogItem item)
+    {
+        if (!loadedFromServer)
+        {
+            await LoadFromServer();
+        }
+
+        try
+        {
+            ApplyProfile(await NetworkManager.Instance.BuyPlayerSkin(item.Id));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Failed to buy skin: " + ex.Message);
+            Changed?.Invoke();
+            return false;
+        }
+    }
+
+    public static async Task<bool> EquipSkinAsync(string skinId)
+    {
+        if (!loadedFromServer)
+        {
+            await LoadFromServer();
+        }
+
+        try
+        {
+            ApplyProfile(await NetworkManager.Instance.EquipPlayerSkin(skinId));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Failed to equip skin: " + ex.Message);
+            Changed?.Invoke();
+            return false;
+        }
+    }
+
+    private static void ApplyProfile(NetworkManager.PlayerProfileResponse profile)
+    {
+        if (profile == null)
+        {
+            return;
+        }
+
+        coins = profile.coinBalance;
+        equippedSkinId = string.IsNullOrEmpty(profile.equippedPlayerSkin) ? DefaultSkinId : profile.equippedPlayerSkin;
+        ownedSkins.Clear();
+        ownedSkins.Add(DefaultSkinId);
+
+        if (profile.ownedSkins != null)
+        {
+            foreach (string skinId in profile.ownedSkins)
+            {
+                if (!string.IsNullOrEmpty(skinId))
+                {
+                    ownedSkins.Add(skinId);
+                }
+            }
+        }
+
         Changed?.Invoke();
     }
 }

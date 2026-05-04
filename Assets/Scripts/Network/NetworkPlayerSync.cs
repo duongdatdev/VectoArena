@@ -40,6 +40,12 @@ public class NetworkPlayerSync : MonoBehaviour
         CacheAnimatorParameters();
     }
 
+    public void RefreshAnimator(Animator resolvedAnimator)
+    {
+        animator = resolvedAnimator != null ? resolvedAnimator : PlayerSkinApplier.ResolveSkinAnimator(gameObject);
+        CacheAnimatorParameters();
+    }
+
     public void Initialize(PlayerState playerState, string sid, Room<GameState> roomInstance)
     {
         this.state = playerState;
@@ -163,7 +169,7 @@ public class NetworkPlayerSync : MonoBehaviour
         SetAnimatorBoolIfPresent(PIsHoldingRight, isHoldingRight);
         SetAnimatorBoolIfPresent(PAiming, isHoldingRight);
 
-        int weaponType = isUsingMeleeWeapon ? 0 : 1;
+        int weaponType = GetWeaponTypeValue(state.currentWeapon, isUsingMeleeWeapon);
         SetAnimatorIntIfPresent(PWeaponType, weaponType);
         SetAnimatorFloatIfPresent(PWeaponTypeFloat, weaponType);
 
@@ -188,6 +194,40 @@ public class NetworkPlayerSync : MonoBehaviour
     private bool HasAnimatorParameter(int parameterHash)
     {
         return animator != null && animatorParameterHashes.Contains(parameterHash);
+    }
+
+    private int GetWeaponTypeValue(string weaponName, bool isMeleeEquipped)
+    {
+        if (string.IsNullOrEmpty(weaponName))
+        {
+            return 0;
+        }
+
+        if (isMeleeEquipped)
+        {
+            return 1;
+        }
+
+        switch (weaponName)
+        {
+            case "Rifle": return 2;
+            case "BurstRifle": return 2;
+            case "RebelRifle": return 2;
+            case "MachineGun": return 2;
+            case "Shotgun": return 9;
+            case "BlasterShotgun": return 9;
+            case "Sniper": return 4;
+            case "HunterSniper": return 4;
+            case "Launcher": return 5;
+            case "Minigun": return 3;
+            case "Pistol": return 8;
+            case "Knife": return 7;
+            case "XLMelee": return 6;
+            case "SniperGun": return 4;
+            case "XLGun": return 3;
+            case "Handgun": return 8;
+            default: return 2;
+        }
     }
 
     private void SetAnimatorBoolIfPresent(int parameterHash, bool value)

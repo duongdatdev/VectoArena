@@ -37,6 +37,7 @@ public class StoreScreenController : MonoBehaviour
 
     public void Show()
     {
+        _ = PlayerInventory.LoadFromServer();
         RefreshProducts();
         root.RemoveFromClassList("hidden");
     }
@@ -90,9 +91,10 @@ public class StoreScreenController : MonoBehaviour
         buyButton.AddToClassList("button-long--yellow");
         buyButton.AddToClassList("product-price-btn");
         buyButton.text = owned ? equipped ? "EQUIPPED" : "EQUIP" : $"{item.Price:N0} COINS";
-        buyButton.clicked += () =>
+        buyButton.clicked += async () =>
         {
-            bool success = PlayerInventory.TryBuySkin(item);
+            buyButton.SetEnabled(false);
+            bool success = await PlayerInventory.TryBuySkinAsync(item);
             if (storeStatus != null)
             {
                 storeStatus.text = success ? $"{item.DisplayName.ToUpper()} READY" : "NOT ENOUGH COINS";

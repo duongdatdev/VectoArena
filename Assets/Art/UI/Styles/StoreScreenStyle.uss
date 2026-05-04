@@ -35,6 +35,14 @@
     -unity-font-definition: var(--font-bold);
 }
 
+.store-status {
+    font-size: 30px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-top: 18px;
+}
+
 .categories-bar {
     position: absolute;
     bottom: 0;
@@ -94,6 +102,7 @@
     background-color: rgba(0,0,0,0.5);
     border-radius: 10px;
     margin-bottom: 20px;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .product-name {

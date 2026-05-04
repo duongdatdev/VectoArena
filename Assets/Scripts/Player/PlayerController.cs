@@ -91,7 +91,15 @@ public class PlayerController : MonoBehaviour
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
 
-        anim = ResolveAnimator();
+        anim = PlayerSkinApplier.ApplyEquippedSkin(gameObject);
+        if (anim == null)
+        {
+            anim = ResolveAnimator();
+        }
+        if (TryGetComponent(out NetworkPlayerSync sync))
+        {
+            sync.RefreshAnimator();
+        }
         CacheAnimatorParameters();
         
         mainCam = Camera.main;

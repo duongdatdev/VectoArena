@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78899c1c991ef584f913fd70556c16b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 8
+  moveSpeed: 3.5
   bulletPrefab: {fileID: 5891818647442247478, guid: 397cdfcc1fe1bae488501cb1adc25daf, type: 3}
   firePoint: {fileID: 0}
   useProjectileSpawnOffsetFallback: 1

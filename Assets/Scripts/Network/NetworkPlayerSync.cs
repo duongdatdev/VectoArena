@@ -31,7 +31,12 @@ public class NetworkPlayerSync : MonoBehaviour
 
     private void Start()
     {
-        animator = GetComponent<Animator>();
+        RefreshAnimator();
+    }
+
+    public void RefreshAnimator()
+    {
+        animator = PlayerSkinApplier.ResolveSkinAnimator(gameObject);
         CacheAnimatorParameters();
     }
 

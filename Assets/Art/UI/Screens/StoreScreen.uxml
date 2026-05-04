@@ -12,6 +12,7 @@
                 <ui:Label name="CoinsAmount" text="1,500 COINS" class="currency-label"/>
             </ui:VisualElement>
         </ui:VisualElement>
+        <ui:Label name="StoreStatus" text="BUY SKINS AND EQUIP THEM IN COLLECTION" class="store-status"/>
         
         <!-- Products -->
         <ui:ScrollView name="ProductScroll" class="product-scroll">

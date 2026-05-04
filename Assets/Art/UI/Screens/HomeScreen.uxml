@@ -16,8 +16,12 @@
         
         <!-- Left Side -->
         <ui:VisualElement name="LeftButtons" class="left-buttons">
-            <ui:Button name="ShopButton" text="SHOP" class="button-with-icon"/>
-            <!-- Can add more buttons here like Collection, Friends -->
+            <ui:Button name="CollectionButton" text="COLLECTION" class="button-with-icon collection-button">
+                <ui:VisualElement name="CollectionIcon" class="button-icon collection-icon"/>
+            </ui:Button>
+            <ui:Button name="ShopButton" text="SHOP" class="button-with-icon shop-button">
+                <ui:VisualElement name="ShopIcon" class="button-icon shop-icon"/>
+            </ui:Button>
         </ui:VisualElement>
         
         <!-- Right Side -->
@@ -32,6 +36,19 @@
                 <ui:Label text="MATCHMAKING..." class="match-subtitle"/>
             </ui:VisualElement>
             <ui:Button name="CancelMatchmaking" class="button-close" style="position: absolute; right: 50px; top: 50px;"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="CollectionScreen" class="fill-parent collection-screen hidden">
+            <ui:VisualElement class="collection-header">
+                <ui:Button name="CollectionBackButton" class="button-close" style="position: relative; right: 0; top: 0;"/>
+                <ui:Label text="COLLECTION" class="collection-title"/>
+                <ui:VisualElement class="currency-display">
+                    <ui:Label name="CollectionCoinsAmount" text="1,500 COINS" class="currency-label"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="CollectionStatus" text="SELECT OWNED SKINS TO EQUIP" class="collection-status"/>
+            <ui:ScrollView name="CollectionScroll" class="collection-scroll">
+                <ui:VisualElement name="CollectionSkinList" class="collection-list"/>
+            </ui:ScrollView>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

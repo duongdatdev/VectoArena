@@ -11,10 +11,12 @@ public class HomeScreenController : MonoBehaviour
     private Button playButton;
     private Button settingsButton;
     private Button shopButton;
+    private Button collectionButton;
 
     // Popups
     public SettingsPopupController settingsController;
     public StoreScreenController storeController;
+    private CollectionScreenController collectionController;
 
     // Matchmaking
     private VisualElement matchmakingContainer;
@@ -31,11 +33,13 @@ public class HomeScreenController : MonoBehaviour
         if (document == null) return;
 
         root = document.rootVisualElement;
+        collectionController = new CollectionScreenController(root);
 
         playerNameText = root.Q<Label>("PlayerName");
         playButton = root.Q<Button>("PlayButton");
         settingsButton = root.Q<Button>("SettingsButton");
         shopButton = root.Q<Button>("ShopButton");
+        collectionButton = root.Q<Button>("CollectionButton");
 
         matchmakingContainer = root.Q<VisualElement>("Matchmaking");
         matchTimer = root.Q<Label>("MatchTimer");
@@ -54,6 +58,9 @@ public class HomeScreenController : MonoBehaviour
         shopButton.clicked += () => {
             if (storeController != null) storeController.Show();
         };
+        collectionButton.clicked += () => {
+            collectionController.Show();
+        };
 
         if (NetworkManager.Instance != null)
         {
@@ -71,6 +78,8 @@ public class HomeScreenController : MonoBehaviour
         {
             NetworkManager.Instance.OnGameStart -= GoToGameplay;
         }
+
+        collectionController?.Dispose();
     }
 
     private void OnClickPlay()

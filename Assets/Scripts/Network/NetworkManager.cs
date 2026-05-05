@@ -282,6 +282,21 @@ public class NetworkManager : MonoBehaviour
                 }
             });
 
+            room.OnMessage<MeleeAttackMessage>("melee_attack", (message) =>
+            {
+                if (message == null || string.IsNullOrEmpty(message.attackerId)) return;
+                if (message.attackerId == room.SessionId) return;
+
+                if (playerObjects.TryGetValue(message.attackerId, out GameObject playerObj))
+                {
+                    var pc = playerObj.GetComponent<PlayerController>();
+                    if (pc != null)
+                    {
+                        pc.TriggerAttackAnimation();
+                    }
+                }
+            });
+
             room.OnMessage<ItemPickedMessage>("item_picked", (message) =>
             {
                 OnItemPicked(message);
@@ -726,6 +741,13 @@ public class NetworkManager : MonoBehaviour
         public string itemType;
         public float fireRate;
         public int maxAmmo;
+    }
+
+    [Serializable]
+    public class MeleeAttackMessage
+    {
+        public string attackerId;
+        public string targetId;
     }
 
     [Serializable]

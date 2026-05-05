@@ -27,10 +27,14 @@ public class PlayerController : MonoBehaviour
     public Transform weaponHolder;
     public Transform weaponMeleeHolder;
     public Transform weaponXLMeleeHolder;
+    public GameObject defaultMeleeWeaponPrefab;
     public float meleeAttackRange = 2.5f;
     public float meleeAttackRadius = 1.15f;
+    public float meleeAttackAngle = 85f;
     public float meleeAttackCooldown = 0.7f;
     private GameObject currentWeaponModel;
+    private GameObject currentMeleeWeaponModel;
+    private GameObject currentRangedWeaponModel;
     private Transform defaultFirePoint;
 
     private float nextFireTime = 0f;
@@ -107,6 +111,7 @@ public class PlayerController : MonoBehaviour
         defaultFirePoint = firePoint;
         maxAmmo = defaultMaxAmmo;
         currentAmmo = defaultMaxAmmo;
+        EquipDefaultMeleeWeapon();
     }
 
     private void Update()
@@ -236,13 +241,18 @@ public class PlayerController : MonoBehaviour
 
     public void EquipWeapon(GameObject weaponModelPrefab, GameObject newBulletPrefab, float newFireRate, int newMaxAmmo)
     {
-        if (currentWeaponModel != null)
+        bool isMeleeModel = newBulletPrefab == null;
+        if (isMeleeModel && currentMeleeWeaponModel != null)
         {
-            Destroy(currentWeaponModel);
-            currentWeaponModel = null;
+            Destroy(currentMeleeWeaponModel);
+            currentMeleeWeaponModel = null;
+        }
+        else if (!isMeleeModel && currentRangedWeaponModel != null)
+        {
+            Destroy(currentRangedWeaponModel);
+            currentRangedWeaponModel = null;
         }
 
-        bool isMeleeModel = newBulletPrefab == null;
         Transform targetAnchor = ResolveWeaponAnchor(weaponModelPrefab, isMeleeModel);
 
         if (targetAnchor != null)
@@ -253,6 +263,14 @@ public class PlayerController : MonoBehaviour
                 currentWeaponModel.transform.localPosition = Vector3.zero;
                 currentWeaponModel.transform.localRotation = Quaternion.identity;
                 currentWeaponModel.transform.localScale = Vector3.one;
+                if (isMeleeModel)
+                {
+                    currentMeleeWeaponModel = currentWeaponModel;
+                }
+                else
+                {
+                    currentRangedWeaponModel = currentWeaponModel;
+                }
 
                 currentMuzzleFlash = currentWeaponModel.GetComponentInChildren<ParticleSystem>();
 
@@ -281,10 +299,22 @@ public class PlayerController : MonoBehaviour
         fireRate = newFireRate;
         maxAmmo = newMaxAmmo;
         currentAmmo = newMaxAmmo < 0 ? -1 : newMaxAmmo;
-        rangedWeaponEquipped = weaponModelPrefab != null;
-        if (currentWeaponModel != null)
+        rangedWeaponEquipped = weaponModelPrefab != null && !isMeleeModel;
+        if (currentMeleeWeaponModel != null)
         {
-            currentWeaponModel.SetActive(true);
+            currentMeleeWeaponModel.SetActive(true);
+        }
+        if (currentRangedWeaponModel != null)
+        {
+            currentRangedWeaponModel.SetActive(!isMeleeModel);
+        }
+    }
+
+    private void EquipDefaultMeleeWeapon()
+    {
+        if (defaultMeleeWeaponPrefab != null)
+        {
+            EquipWeapon(defaultMeleeWeaponPrefab, null, meleeAttackCooldown, -1);
         }
     }
 
@@ -326,12 +356,20 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (currentWeaponModel != null)
+        if (currentMeleeWeaponModel != null)
+        {
+            bool shouldShowMeleeModel = state.currentWeapon == state.meleeWeapon;
+            if (currentMeleeWeaponModel.activeSelf != shouldShowMeleeModel)
+            {
+                currentMeleeWeaponModel.SetActive(shouldShowMeleeModel);
+            }
+        }
+        if (currentRangedWeaponModel != null)
         {
             bool shouldShowRangedModel = state.currentWeapon == state.rangedWeapon && rangedWeaponEquipped;
-            if (currentWeaponModel.activeSelf != shouldShowRangedModel)
+            if (currentRangedWeaponModel.activeSelf != shouldShowRangedModel)
             {
-                currentWeaponModel.SetActive(shouldShowRangedModel);
+                currentRangedWeaponModel.SetActive(shouldShowRangedModel);
             }
         }
 
@@ -359,7 +397,7 @@ public class PlayerController : MonoBehaviour
         PlayerState state = sync.GetState();
         if (state == null)
         {
-            return false;
+            return currentMeleeWeaponModel != null && currentMeleeWeaponModel.activeSelf;
         }
 
         return !string.IsNullOrEmpty(state.currentWeapon) &&
@@ -372,6 +410,9 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
+
+        TriggerAttackAnimation();
+        nextFireTime = Time.time + meleeAttackCooldown;
 
         Vector3 center = transform.position + transform.forward * (meleeAttackRange * 0.5f);
         Collider[] hits = Physics.OverlapSphere(center, meleeAttackRadius);
@@ -393,18 +434,24 @@ public class PlayerController : MonoBehaviour
                 continue;
             }
 
+            Vector3 directionToTarget = targetSync.transform.position - transform.position;
+            directionToTarget.y = 0f;
+            if (directionToTarget.sqrMagnitude <= 0.001f)
+            {
+                continue;
+            }
+
+            float angle = Vector3.Angle(transform.forward, directionToTarget.normalized);
+            if (angle > meleeAttackAngle * 0.5f)
+            {
+                continue;
+            }
+
             bestDistance = distance;
             bestTarget = targetSync;
         }
 
-        if (bestTarget == null)
-        {
-            return;
-        }
-
-        sync.SendMeleeAttack(bestTarget.GetSessionId());
-        TriggerAttackAnimation();
-        nextFireTime = Time.time + meleeAttackCooldown;
+        sync.SendMeleeAttack(bestTarget != null ? bestTarget.GetSessionId() : string.Empty);
     }
 
     private void TriggerEquipAnimation(bool isMeleeEquipped)

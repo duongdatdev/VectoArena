@@ -88,8 +88,10 @@ MonoBehaviour:
   weaponHolder: {fileID: 0}
   weaponMeleeHolder: {fileID: 0}
   weaponXLMeleeHolder: {fileID: 0}
+  defaultMeleeWeaponPrefab: {fileID: 4388908900000725491, guid: c72bcca65288b42c58d2d7f0abdbc5c1, type: 3}
   meleeAttackRange: 2.5
   meleeAttackRadius: 1.15
+  meleeAttackAngle: 85
   meleeAttackCooldown: 0.7
 --- !u!114 &530005466346001238
 MonoBehaviour:

@@ -6,6 +6,7 @@ public static class WeaponDatabaseSetup
 {
     private static readonly string DataFolder = "Assets/Data/Weapons";
     private static readonly string BlastPrefabFolder = "Assets/AddressableResources/Weapons/Prefabs";
+    private static readonly string MeleePrefabFolder = "Assets/AddressableResources/Weapons/Melee/Hammer";
     private static readonly string FloatingPrefabFolder = "Assets/Prefabs/Floating";
     private static readonly string BulletPrefabPath = "Assets/Prefabs/Bullet.prefab";
 
@@ -20,6 +21,7 @@ public static class WeaponDatabaseSetup
 
     private static readonly WeaponDef[] Weapons = new[]
     {
+        new WeaponDef { type = "Sword",           blastPrefabName = "Melee_Hammer",           animId = 1, fireRate = 0.70f, maxAmmo = -1 },
         new WeaponDef { type = "Rifle",           blastPrefabName = "Weapon_Rifle",           animId = 2, fireRate = 0.10f, maxAmmo = 30 },
         new WeaponDef { type = "Shotgun",         blastPrefabName = "Weapon_Shotgun",         animId = 9, fireRate = 0.67f, maxAmmo = 8 },
         new WeaponDef { type = "Pistol",          blastPrefabName = "Weapon_Pistol",          animId = 8, fireRate = 0.20f, maxAmmo = 12 },
@@ -67,10 +69,12 @@ public static class WeaponDatabaseSetup
             data.animWeaponTypeId = def.animId;
             data.fireRate = def.fireRate;
             data.maxAmmo = def.maxAmmo;
-            data.isMelee = false;
-            data.bulletPrefab = bulletPrefab;
+            bool isMelee = def.type == "Sword";
+            data.isMelee = isMelee;
+            data.bulletPrefab = isMelee ? null : bulletPrefab;
 
-            string blastPath = $"{BlastPrefabFolder}/{def.blastPrefabName}.prefab";
+            string prefabFolder = isMelee ? MeleePrefabFolder : BlastPrefabFolder;
+            string blastPath = $"{prefabFolder}/{def.blastPrefabName}.prefab";
             GameObject blastPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(blastPath);
             if (blastPrefab != null)
             {

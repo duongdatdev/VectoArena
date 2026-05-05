@@ -284,12 +284,8 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendMeleeAttack(string targetId)
     {
-        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(targetId)) return;
-
-        room.Send("melee_attack", new
-        {
-            targetId = targetId
-        });
+        if (!isLocalPlayer || room == null) return;
+        room.Send("melee_attack", new { targetId = targetId ?? string.Empty });
     }
 
     public void SendWeaponSwitch(string slot)

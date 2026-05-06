@@ -289,6 +289,7 @@ public class NetworkManager : MonoBehaviour
 
                 if (playerObjects.TryGetValue(message.attackerId, out GameObject playerObj))
                 {
+                    VectoAudioManager.PlayMelee(playerObj.transform.position, false);
                     var pc = playerObj.GetComponent<PlayerController>();
                     if (pc != null)
                     {
@@ -430,6 +431,7 @@ public class NetworkManager : MonoBehaviour
 
         if (message.itemType == "MedicalKit")
         {
+            VectoAudioManager.PlayPickup(message.itemType, playerObj.transform.position, message.playerId == room?.SessionId);
             if (!string.IsNullOrEmpty(message.itemId))
             {
                 itemWeaponConfigs.Remove(message.itemId);
@@ -451,6 +453,7 @@ public class NetworkManager : MonoBehaviour
         {
             playerController.EquipWeapon(config.weaponModelPrefab, config.bulletPrefab, config.fireRate, config.maxAmmo);
         }
+        VectoAudioManager.PlayPickup(message.itemType, playerObj.transform.position, message.playerId == room?.SessionId);
         if (!string.IsNullOrEmpty(message.itemId))
         {
             itemWeaponConfigs.Remove(message.itemId);
@@ -626,6 +629,8 @@ public class NetworkManager : MonoBehaviour
             {
                 cam.target = playerObj.transform;
             }
+
+            VectoAudioManager.FollowLocalPlayer(playerObj.transform);
         }
     }
 

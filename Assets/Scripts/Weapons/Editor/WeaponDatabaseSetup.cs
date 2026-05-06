@@ -5,8 +5,8 @@ using System.IO;
 public static class WeaponDatabaseSetup
 {
     private static readonly string DataFolder = "Assets/Data/Weapons";
-    private static readonly string BlastPrefabFolder = "Assets/AddressableResources/Weapons/Prefabs";
-    private static readonly string MeleePrefabFolder = "Assets/AddressableResources/Weapons/Melee/Hammer";
+    private static readonly string BlastPrefabFolder = "Assets/Prefabs/Weapons/Models";
+    private static readonly string MeleePrefabFolder = "Assets/Prefabs/Weapons/Melee/Hammer";
     private static readonly string FloatingPrefabFolder = "Assets/Prefabs/Floating";
     private static readonly string BulletPrefabPath = "Assets/Prefabs/Bullet.prefab";
 
@@ -161,7 +161,8 @@ public static class WeaponDatabaseSetup
                 instance.name = $"FloatingItem_{def.type}";
             }
 
-            string blastPath = $"{BlastPrefabFolder}/{def.blastPrefabName}.prefab";
+            string prefabFolder = def.type == "Sword" ? MeleePrefabFolder : BlastPrefabFolder;
+            string blastPath = $"{prefabFolder}/{def.blastPrefabName}.prefab";
             GameObject blastPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(blastPath);
 
             Transform itemHolder = FindChildByName(instance.transform, "Item");

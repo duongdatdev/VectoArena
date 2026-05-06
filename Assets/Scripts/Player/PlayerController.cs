@@ -220,13 +220,16 @@ public class PlayerController : MonoBehaviour
 
     public void PerformShoot(Vector3 position, Quaternion rotation)
     {
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        VectoAudioManager.PlayWeaponShot(GetCurrentWeaponName(), position, sync != null && sync.isLocalPlayer);
+
         if (bulletPrefab != null)
         {
             GameObject bulletObj = Instantiate(bulletPrefab, position, rotation);
             Bullet bullet = bulletObj.GetComponent<Bullet>();
             if (bullet != null)
             {
-                bullet.owner = GetComponent<NetworkPlayerSync>();
+                bullet.owner = sync;
             }
         }
 
@@ -411,6 +414,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        VectoAudioManager.PlayMelee(transform.position, sync.isLocalPlayer);
         TriggerAttackAnimation();
         nextFireTime = Time.time + meleeAttackCooldown;
 
@@ -452,6 +456,18 @@ public class PlayerController : MonoBehaviour
         }
 
         sync.SendMeleeAttack(bestTarget != null ? bestTarget.GetSessionId() : string.Empty);
+    }
+
+    private string GetCurrentWeaponName()
+    {
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        PlayerState state = sync != null ? sync.GetState() : null;
+        if (state != null && !string.IsNullOrEmpty(state.currentWeapon))
+        {
+            return state.currentWeapon;
+        }
+
+        return rangedWeaponEquipped ? lastSyncedWeapon : string.Empty;
     }
 
     private void TriggerEquipAnimation(bool isMeleeEquipped)

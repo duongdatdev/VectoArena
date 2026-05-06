@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class SkinAnimatorControllerSetup
 {
-    private const string ControllerPath = "Assets/AddressableResources/Collections/CharacterSkins/Shared/character_animator.controller";
+    private const string ControllerPath = "Assets/Animations/Characters/character_animator.controller";
     private static readonly string[] SkinPrefabPaths =
     {
         "Assets/Resources/CharacterSkins/Female02/Char_Female02.prefab",

@@ -34,6 +34,7 @@ public class HomeScreenController : MonoBehaviour
 
         root = document.rootVisualElement;
         collectionController = new CollectionScreenController(root);
+        VectoAudioManager.PlayMainMenuMusic();
 
         playerNameText = root.Q<Label>("PlayerName");
         playButton = root.Q<Button>("PlayButton");
@@ -84,6 +85,7 @@ public class HomeScreenController : MonoBehaviour
 
     private void OnClickPlay()
     {
+        VectoAudioManager.Play2D(VectoAudioId.EnterGame);
         matchmakingContainer.RemoveFromClassList("hidden");
         isMatchmaking = true;
         matchmakingStartTime = Time.time;
@@ -94,6 +96,7 @@ public class HomeScreenController : MonoBehaviour
 
     private void OnClickCancel()
     {
+        VectoAudioManager.Play2D(VectoAudioId.ButtonClickBackward);
         matchmakingContainer.AddToClassList("hidden");
         isMatchmaking = false;
         timerSchedule.Pause();
@@ -119,6 +122,7 @@ public class HomeScreenController : MonoBehaviour
         isMatchmaking = false;
         timerSchedule.Pause();
         matchmakingContainer.AddToClassList("hidden");
+        VectoAudioManager.PlayBattleMusic();
         SceneManager.LoadScene("GameplayScene");
     }
 }

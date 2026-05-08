@@ -8,6 +8,15 @@ public class ZoneUIManager : MonoBehaviour
     public Transform playerTransform;
     public TextMeshProUGUI timerText;
 
+    void Start()
+    {
+        // Clear placeholder text on init
+        if (timerText != null)
+        {
+            timerText.text = "";
+        }
+    }
+
     void Update()
     {
         if (zoneController == null)

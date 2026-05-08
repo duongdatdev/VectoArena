@@ -6,46 +6,74 @@
     bottom: 0;
     justify-content: center;
     align-items: center;
-    background-color: rgba(20, 0, 0, 0.85); /* Dark red tint */
+    background-color: rgba(20, 0, 0, 0.85);
+    display: none;
+    flex-direction: column;
 }
 
 .death-screen-overlay {
-    width: 600px;
+    min-width: 600px;
     align-items: center;
-    padding: 40px;
-    background-color: rgba(0, 0, 0, 0.6);
-    border-radius: 16px;
-    border-width: 2px;
-    border-color: rgba(255, 50, 50, 0.3);
+    justify-content: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 60px;
+    padding-right: 60px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(255, 50, 50, 0.4);
+    border-right-color: rgba(255, 50, 50, 0.4);
+    border-top-color: rgba(255, 50, 50, 0.4);
+    border-bottom-color: rgba(255, 50, 50, 0.4);
+    display: flex;
+    flex-direction: column;
 }
 
 .death-title {
     font-size: 72px;
     -unity-font-style: bold;
-    color: #FF3B30;
+    color: rgb(255, 59, 48);
+    margin-top: 10px;
     margin-bottom: 20px;
-    text-shadow: 0px 4px 10px rgba(255, 0, 0, 0.5);
-    letter-spacing: 5px;
+    -unity-text-align: middle-center;
 }
 
 .death-stats {
-    font-size: 24px;
-    color: #E0E0E0;
+    font-size: 32px;
+    color: rgb(224, 224, 224);
     -unity-text-align: middle-center;
-    margin-bottom: 40px;
+    white-space: normal;
+    margin-bottom: 50px;
 }
 
 .death-buttons-container {
     flex-direction: row;
     justify-content: center;
+    margin-top: 20px;
 }
 
 .death-btn {
     font-size: 20px;
     -unity-font-style: bold;
-    padding: 15px 30px;
-    border-radius: 8px;
-    border-width: 0;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
     color: white;
     transition-property: scale, background-color;
     transition-duration: 0.15s;
@@ -60,11 +88,11 @@
 }
 
 .primary-btn {
-    background-color: #FF9500;
+    background-color: rgb(255, 149, 0);
     border-bottom-width: 4px;
-    border-bottom-color: #CC7700;
+    border-bottom-color: rgb(204, 119, 0);
 }
 
 .primary-btn:hover {
-    background-color: #FFAA33;
+    background-color: rgb(255, 170, 51);
 }

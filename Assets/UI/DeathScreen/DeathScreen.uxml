@@ -2,8 +2,8 @@
     <Style src="DeathScreen.uss" />
     <ui:VisualElement name="DeathScreenContainer" class="death-screen-container">
         <ui:VisualElement class="death-screen-overlay">
-            <ui:Label name="DeathTitle" text="YOU DIED" class="death-title" />
-            <ui:Label name="DeathStats" text="Killed by: Player1\nWeapon: Rifle" class="death-stats" />
+            <ui:Label name="DeathTitle" text="ELIMINATED" class="death-title" />
+            <ui:Label name="DeathStats" text="KILLED BY&#10;Player1 - Rifle" class="death-stats" />
             
             <ui:VisualElement class="death-buttons-container">
                 <ui:Button name="ReturnToLobbyBtn" text="RETURN TO LOBBY" class="death-btn primary-btn" />

@@ -73,7 +73,7 @@ public class DeathScreenManager : MonoBehaviour
             if (localPlayerSync.GetState().isDead)
             {
                 isDead = true;
-                ShowDeathScreen("YOU DIED", $"Placement: TBD");
+                ShowDeathScreen("ELIMINATED", "Better luck next match");
             }
         }
     }
@@ -88,7 +88,7 @@ public class DeathScreenManager : MonoBehaviour
             {
                 // We got killed by someone
                 isDead = true;
-                ShowDeathScreen("YOU DIED", $"Killed by: {msg.killerName}\nWeapon: {msg.weapon}");
+                ShowDeathScreen("ELIMINATED", $"KILLED BY\n{msg.killerName} - {msg.weapon}");
             }
         }
     }
@@ -114,6 +114,7 @@ public class DeathScreenManager : MonoBehaviour
         if (statsLabel != null) statsLabel.text = stats;
 
         deathScreenContainer.style.display = DisplayStyle.Flex;
+        deathScreenContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
         
         // Hide HUD
         var zoneUIManager = FindAnyObjectByType<ZoneUIManager>();

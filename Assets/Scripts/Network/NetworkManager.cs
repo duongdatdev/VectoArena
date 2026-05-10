@@ -16,9 +16,9 @@ public class NetworkManager : MonoBehaviour
     //singleton instance
     public static NetworkManager Instance;
     
-    //local Node.js server endpoint. Change this before pushing to production.
-    private const string ServerURL = "ws://localhost:2567";
-    private const string HttpURL = "http://localhost:2567";
+    // Server endpoints loaded from config
+    private string ServerURL => ConfigManager.Config.serverUrl;
+    private string HttpURL => ConfigManager.Config.httpUrl;
     
 
 
@@ -160,6 +160,70 @@ public class NetworkManager : MonoBehaviour
     public async Task<PlayerProfileResponse> EquipPlayerSkin(string skinId)
     {
         return await SendPlayerRequest(HttpMethod.Post, "/player/equip-skin", new SkinRequest { skinId = skinId });
+    }
+
+    public async Task<bool> LinkWallet(string walletAddress)
+    {
+        try
+        {
+            var response = await SendPlayerRequestRaw(HttpMethod.Post, "/web3/link-wallet", new { walletAddress });
+            return response != null;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Link Wallet failed: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> VerifyDeposit(string txHash)
+    {
+        try
+        {
+            var response = await SendPlayerRequestRaw(HttpMethod.Post, "/web3/deposit", new { txHash });
+            if (response != null)
+            {
+                await PlayerInventory.LoadFromServer();
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Verify Deposit failed: " + ex.Message);
+            return false;
+        }
+    }
+
+    private async Task<string> SendPlayerRequestRaw(HttpMethod method, string path, object body)
+    {
+        if (string.IsNullOrEmpty(authToken))
+        {
+            throw new InvalidOperationException("Player is not authenticated.");
+        }
+
+        using (var httpClient = new HttpClient())
+        using (var request = new HttpRequestMessage(method, $"{HttpURL}{path}"))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+
+            if (body != null)
+            {
+                string json = JsonConvert.SerializeObject(body);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            }
+
+            var response = await httpClient.SendAsync(request);
+            string responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
+                throw new InvalidOperationException(error?.error ?? response.ReasonPhrase);
+            }
+
+            return responseString;
+        }
     }
 
     private async Task<PlayerProfileResponse> SendPlayerRequest(HttpMethod method, string path, object body)
@@ -710,6 +774,7 @@ public class NetworkManager : MonoBehaviour
     public class PlayerProfileResponse
     {
         public string username;
+        public int vecBalance;
         public int coinBalance;
         public string equippedPlayerSkin;
         public string[] ownedSkins;

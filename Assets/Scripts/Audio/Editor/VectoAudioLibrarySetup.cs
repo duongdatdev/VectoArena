@@ -32,7 +32,7 @@ public static class VectoAudioLibrarySetup
     {
         SetupAudioLibrary();
 
-        VectoAudioManager manager = UnityEngine.Object.FindFirstObjectByType<VectoAudioManager>();
+        VectoAudioManager manager = UnityEngine.Object.FindAnyObjectByType<VectoAudioManager>();
         if (manager == null)
         {
             GameObject managerObject = new GameObject("VectoAudioManager");

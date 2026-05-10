@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class VectoAudioManager : MonoBehaviour
 {
@@ -31,6 +32,41 @@ public class VectoAudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         CreateSources();
         CreateAudioListener();
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void GlobalEnsureAudioListener()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        CheckForListener();
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CheckForListener();
+    }
+
+    private static void CheckForListener()
+    {
+        AudioListener listener = Object.FindAnyObjectByType<AudioListener>();
+        if (listener == null)
+        {
+            // Try to find MainCamera first
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                mainCam.gameObject.AddComponent<AudioListener>();
+                Debug.Log($"[VectoAudioManager] Added AudioListener to MainCamera in scene: {SceneManager.GetActiveScene().name}");
+            }
+            else
+            {
+                // Fallback: create a global listener object
+                GameObject listenerGO = new GameObject("GlobalAudioListener");
+                listenerGO.AddComponent<AudioListener>();
+                Object.DontDestroyOnLoad(listenerGO);
+                Debug.Log($"[VectoAudioManager] Created GlobalAudioListener in scene: {SceneManager.GetActiveScene().name}");
+            }
+        }
     }
 
     public static void Play2D(VectoAudioId id)
@@ -210,7 +246,7 @@ public class VectoAudioManager : MonoBehaviour
 
     private void CreateAudioListener()
     {
-        AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+        AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Exclude);
         if (listeners.Length > 0)
         {
             audioListener = listeners[0];

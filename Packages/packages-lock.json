@@ -1,11 +1,130 @@
 {
   "dependencies": {
+    "com.nethereum.unity": {
+      "version": "6.1.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
+    },
     "com.nobi.roundedcorners": {
       "version": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "33135342e868201eb0d4cef821ecab90caca373e"
+    },
+    "com.reown.appkit.unity": {
+      "version": "file:com.reown.appkit.unity",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.reown.core": "1.6.0",
+        "com.reown.sign.nethereum.unity": "1.6.0",
+        "com.reown.sign.unity": "1.6.0",
+        "com.reown.unity.dependencies": "1.6.0",
+        "com.unity.vectorgraphics": "2.0.0-preview.24"
+      }
+    },
+    "com.reown.core": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.core.common": "1.6.0",
+        "com.reown.core.crypto": "1.6.0",
+        "com.reown.core.network": "1.6.0",
+        "com.reown.core.storage": "1.6.0",
+        "com.reown.unity.dependencies": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.core.common": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.core.crypto": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.core.common": "1.6.0",
+        "com.reown.core.network": "1.6.0",
+        "com.reown.core.storage": "1.6.0",
+        "com.reown.unity.dependencies": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.core.network": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.core.common": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.core.storage": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.core.common": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.sign": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.core": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.sign.nethereum": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.nethereum.unity": "6.1.0",
+        "com.reown.sign": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.sign.nethereum.unity": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.sign.nethereum": "1.6.0",
+        "com.reown.sign.unity": "1.6.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.sign.unity": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.reown.sign": "1.6.0",
+        "com.unity.modules.androidjni": "1.0.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.reown.unity.dependencies": {
+      "version": "1.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "url": "https://package.openupm.com"
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -229,6 +348,23 @@
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0"
       }
+    },
+    "com.unity.vectorgraphics": {
+      "version": "3.0.0-preview.7",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.ugui": "2.0.0",
+        "com.unity.2d.sprite": "1.0.0",
+        "com.unity.modules.ui": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.physics2d": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.vectorgraphics": "1.0.0",
+        "com.unity.modules.imageconversion": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.visualscripting": {
       "version": "1.9.10",

@@ -1,0 +1,31 @@
+#network-loading-view__icon-container {
+    width: 90px;
+    height: 96px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+    overflow: hidden;
+    background-image: resource("Reown/AppKit/Images/hexagon");
+}
+
+#network-loading-view__icon {
+    width: 100px;
+    height: 100px;
+    border-radius: var(--ro-border-radius-s);
+    overflow: hidden;
+    position: absolute;
+}
+
+#network-loading-view__approve-label {
+    margin-bottom: 8px;
+    -unity-text-align: middle-center;
+    color: var(--ro-color-fg-100);
+}
+
+#network-loading-view__message-label {
+    margin-bottom: 16px;
+    -unity-text-align: middle-center;
+    color: var(--ro-color-fg-200);
+}

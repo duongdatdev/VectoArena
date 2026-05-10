@@ -1,0 +1,61 @@
+:root {
+    flex-direction: row;
+    align-self: flex-start;
+    border-radius: 8px;
+    -unity-text-align: middle-center;
+}
+
+:root:hover {
+    background-color: var(--ro-gray-glass-005);
+}
+
+:root:active:hover {
+    background-color: var(--ro-gray-glass-010);
+}
+
+#link__icon {
+    margin-right: 4px;
+    width: 12px;
+    height: 12px;
+    align-self: center;
+}
+
+.link--size-small {
+    padding: 2px 6px 2px 6px;
+    font-size: var(--ro-font-size-small);
+    letter-spacing: var(--ro-letter-spacing-small);
+}
+
+.link--size-medium {
+    padding: 2px 8px 2px 8px;
+    font-size: var(--ro-font-size-paragraph);
+    letter-spacing: var(--ro-letter-spacing-paragraph);
+}
+
+.link--variant-main {
+    color: var(--ro-color-accent-100);
+}
+
+.link--variant-gray {
+    color: var(--ro-color-fg-200);
+}
+
+.link--variant-main > #link__icon {
+    --unity-image-tint-color: var(--ro-color-accent-100);
+}
+
+.link--variant-gray > #link__icon {
+    --unity-image-tint-color: var(--ro-color-fg-200);
+}
+
+.link--variant-icon > #link__icon {
+    margin-right: 0;
+}
+
+.link--variant-icon > #link__text {
+    display: none;
+}
+
+Label {
+    padding: 0;
+}

@@ -1,35 +1,61 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss" />
-    <Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss" />
-    
-    <ui:VisualElement name="root" class="fill-parent">
-        <!-- Player Header -->
+    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss?fileID=7433441132597879392&amp;guid=5361e9a08344f03498b48a01e9b8c49b&amp;type=3#CommonStyle"/>
+    <Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss?fileID=7433441132597879392&amp;guid=399def787dd730443bd29e0f59ca2db4&amp;type=3#HomeScreenStyle"/>
+    <ui:VisualElement name="root" picking-mode="Ignore" class="fill-parent home-root">
+        <ui:VisualElement name="CharacterStage" picking-mode="Ignore" class="character-stage">
+        </ui:VisualElement>
+
+        <!-- Player Header (Top-Left): Profile + Name -->
         <ui:VisualElement name="Header" class="player-header">
             <ui:Button name="ProfileButton" class="profile-button"/>
             <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-name"/>
         </ui:VisualElement>
-        
-        <!-- Top Right -->
-        <ui:VisualElement name="TopButtons" class="top-buttons">
+
+        <!-- Top Bar (Top-Right): Currencies + Settings -->
+        <ui:VisualElement name="TopBar" class="top-bar">
+            <!-- Currency Displays -->
+            <ui:VisualElement name="CurrencyBar" class="currency-bar">
+                <!-- VEC Token Display -->
+                <ui:Button name="VecDisplay" class="currency-pill currency-pill--vec">
+                    <ui:VisualElement class="currency-pill__icon currency-pill__icon--vec"/>
+                    <ui:Label name="VecAmount" text="0" class="currency-pill__amount"/>
+                </ui:Button>
+                <!-- Coin Display -->
+                <ui:VisualElement name="CoinDisplay" class="currency-pill currency-pill--coin">
+                    <ui:VisualElement class="currency-pill__icon currency-pill__icon--coin"/>
+                    <ui:Label name="CoinAmount" text="1,500" class="currency-pill__amount"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <!-- Wallet Button -->
+            <ui:Button name="WalletButton" class="wallet-button">
+                <ui:VisualElement class="wallet-button__icon"/>
+                <ui:Label name="WalletLabel" text="CONNECT" class="wallet-button__label"/>
+            </ui:Button>
             <ui:Button name="SettingsButton" class="settings-button"/>
         </ui:VisualElement>
-        
-        <!-- Left Side -->
-        <ui:VisualElement name="LeftButtons" class="left-buttons">
-            <ui:Button name="CollectionButton" text="COLLECTION" class="button-with-icon collection-button">
-                <ui:VisualElement name="CollectionIcon" class="button-icon collection-icon"/>
-            </ui:Button>
-            <ui:Button name="ShopButton" text="SHOP" class="button-with-icon shop-button">
-                <ui:VisualElement name="ShopIcon" class="button-icon shop-icon"/>
-            </ui:Button>
+
+        <!-- Left Buttons -->
+        <ui:VisualElement name="LeftButtons" class="main-buttons main-buttons--left">
+            <ui:VisualElement name="Actions" class="left-actions">
+                <ui:Button name="CollectionButton" text="COLLECTION" class="button-with-icon collection-button" style="width: 140px; -unity-font-style: bold;">
+                    <ui:VisualElement name="CollectionIcon" class="button-icon collection-icon" style="top: -9px; left: 20px; height: 97px; width: 99px;"/>
+                </ui:Button>
+                <ui:Button name="ShopButton" text="SHOP" icon-image="" class="button-with-icon shop-button" style="width: 142px; -unity-font-style: bold;">
+                    <ui:VisualElement name="ShopIcon" class="button-icon shop-icon" style="top: -10px; left: 18px; height: 92px; width: 106px;"/>
+                </ui:Button>
+            </ui:VisualElement>
         </ui:VisualElement>
-        
-        <!-- Right Side -->
-        <ui:VisualElement name="RightButtons" class="right-buttons">
+
+        <!-- Right Buttons -->
+        <ui:VisualElement name="RightButtons" class="main-buttons main-buttons--right">
+            <ui:Button name="GameModeButton" class="game-mode-button">
+                <ui:Label text="SOLO" class="game-mode-label"/>
+                <ui:Label text="BATTLE ROYALE" class="game-mode-title"/>
+            </ui:Button>
             <ui:Button name="PlayButton" text="PLAY" class="play-button"/>
         </ui:VisualElement>
-        
-        <!-- Matchmaking Overlay (Hidden) -->
+
+        <!-- Matchmaking Overlay -->
         <ui:VisualElement name="Matchmaking" class="fill-parent matchmaking-container hidden">
             <ui:VisualElement name="MatchmakingStatus" class="matchmaking-status">
                 <ui:Label name="MatchTimer" text="00:00" class="match-timer"/>
@@ -37,6 +63,28 @@
             </ui:VisualElement>
             <ui:Button name="CancelMatchmaking" class="button-close" style="position: absolute; right: 50px; top: 50px;"/>
         </ui:VisualElement>
+
+        <!-- Web3 Deposit Popup -->
+        <ui:VisualElement name="DepositPopup" class="fill-parent deposit-popup hidden">
+            <ui:VisualElement class="deposit-popup__backdrop"/>
+            <ui:VisualElement class="deposit-popup__panel">
+                <ui:VisualElement class="deposit-popup__header">
+                    <ui:Label text="DEPOSIT VEC" class="deposit-popup__title"/>
+                    <ui:Button name="DepositCloseButton" class="button-close"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="deposit-popup__body">
+                    <ui:Label text="Transfer VEC tokens from your wallet to the game." class="deposit-popup__description"/>
+                    <ui:VisualElement class="deposit-popup__amount-row">
+                        <ui:Label text="Amount:" class="deposit-popup__label"/>
+                        <ui:TextField name="DepositAmountField" value="10" class="deposit-popup__input"/>
+                    </ui:VisualElement>
+                    <ui:Label name="DepositStatus" text="" class="deposit-popup__status"/>
+                    <ui:Button name="DepositConfirmButton" text="DEPOSIT" class="button-long button-long--yellow deposit-popup__confirm"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Collection Screen (inline) -->
         <ui:VisualElement name="CollectionScreen" class="fill-parent collection-screen hidden">
             <ui:VisualElement class="collection-header">
                 <ui:Button name="CollectionBackButton" class="button-close" style="position: relative; right: 0; top: 0;"/>

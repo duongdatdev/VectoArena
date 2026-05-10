@@ -1,8 +1,8 @@
 :root {
     --color-primary: rgb(240, 209, 94);
     --color-accent: rgb(196, 84, 122);
-    --font-bold: url("project://database/Assets/Art/UI/Fonts/Stawix-Bold-Static.asset");
-    --font-regular: url("project://database/Assets/Art/UI/Fonts/Stawix-Bold-Static.asset");
+    --font-bold: url("project://database/Assets/Art/UI/Fonts/Stawix - Amsi Pro Condensed Bold.otf");
+    --font-regular: url("project://database/Assets/Art/UI/Fonts/Stawix - Amsi Pro Condensed Bold.otf");
     -unity-font-definition: var(--font-regular);
 }
 

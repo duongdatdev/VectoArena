@@ -9,6 +9,10 @@ public static class PlayerInventory
     private static readonly HashSet<string> ownedSkins = new HashSet<string> { DefaultSkinId };
     private static int coins;
     private static int vecBalance;
+    private static int level = 1;
+    private static int xp;
+    private static int xpToNextLevel = 100;
+    private static float xpProgress;
     private static string equippedSkinId = DefaultSkinId;
     private static string username;
     private static bool loadedFromServer;
@@ -17,6 +21,10 @@ public static class PlayerInventory
 
     public static int Coins => coins;
     public static int VecBalance => vecBalance;
+    public static int Level => level;
+    public static int Xp => xp;
+    public static int XpToNextLevel => xpToNextLevel;
+    public static float XpProgress => xpProgress;
     public static string Username => string.IsNullOrWhiteSpace(username) ? "GUEST" : username;
     public static bool LoadedFromServer => loadedFromServer;
 
@@ -102,6 +110,10 @@ public static class PlayerInventory
 
         coins = profile.coinBalance;
         vecBalance = profile.vecBalance;
+        level = Mathf.Max(1, profile.level);
+        xp = Mathf.Max(0, profile.xp);
+        xpToNextLevel = Mathf.Max(0, profile.xpToNextLevel);
+        xpProgress = Mathf.Clamp01(profile.xpProgress);
         username = profile.username;
         equippedSkinId = string.IsNullOrEmpty(profile.equippedPlayerSkin) ? DefaultSkinId : profile.equippedPlayerSkin;
         ownedSkins.Clear();

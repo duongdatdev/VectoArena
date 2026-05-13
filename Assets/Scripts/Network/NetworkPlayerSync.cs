@@ -3,6 +3,7 @@ using VectoArena.Schema;
 using Colyseus;
 using System;
 using System.Collections.Generic;
+using UnityEngine.Rendering;
 
 public class NetworkPlayerSync : MonoBehaviour
 {
@@ -55,12 +56,12 @@ public class NetworkPlayerSync : MonoBehaviour
 
         if (!isLocalPlayer)
         {
-            // initial position and rotation for remote player
+            // Initial position and rotation for remote player.
             transform.position = new Vector3(state.x, state.y, state.z);
             transform.rotation = Quaternion.Euler(0, state.rotation, 0);
             lastRemotePosition = transform.position;
 
-            // script that should only run for the local player
+            // Scripts and physics that should only run for the local player.
             if (TryGetComponent<PlayerController>(out var controller))
             {
                 controller.enabled = false;
@@ -70,6 +71,17 @@ public class NetworkPlayerSync : MonoBehaviour
             {
                 rb.isKinematic = true;
             }
+
+            ConfigureRemoteVisuals();
+        }
+    }
+
+    private void ConfigureRemoteVisuals()
+    {
+        foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
         }
     }
 

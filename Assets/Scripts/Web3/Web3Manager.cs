@@ -10,6 +10,7 @@ public class Web3Manager : MonoBehaviour
 {
     public static Web3Manager Instance { get; private set; }
     private const string ThirdwebAutoConnectOptionsKey = "ThirdwebAutoConnectOptions";
+    private const int DepositTransactionTimeoutSeconds = 180;
 
     [Header("Web3 Configuration (Loaded from Config)")]
     private ulong chainId => ConfigManager.Config.chainId;
@@ -178,14 +179,35 @@ public class Web3Manager : MonoBehaviour
                 return false;
             }
 
+            if (string.IsNullOrEmpty(tokenContractAddress))
+            {
+                Debug.LogError("Token contract address is empty. Check tokenContractAddress in appsettings.json.");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(treasuryWalletAddress))
+            {
+                Debug.LogError("Treasury wallet address is empty. Check treasuryWalletAddress in appsettings.json.");
+                return false;
+            }
+
             Debug.Log($"Transferring tokens to {treasuryWalletAddress}...");
-            
-            var receipt = await ThirdwebManager.Instance.ActiveWallet.Transfer(
+
+            var transferTask = ThirdwebManager.Instance.ActiveWallet.Transfer(
                 chainId: this.chainId, 
                 toAddress: treasuryWalletAddress, 
                 weiAmount: weiAmount, 
                 tokenAddress: tokenContractAddress
             );
+
+            var completedTask = await Task.WhenAny(transferTask, Task.Delay(DepositTransactionTimeoutSeconds * 1000));
+            if (completedTask != transferTask)
+            {
+                Debug.LogError($"Deposit transaction timed out after {DepositTransactionTimeoutSeconds} seconds. Check the wallet prompt and network/RPC status.");
+                return false;
+            }
+
+            var receipt = await transferTask;
 
             if (receipt != null)
             {

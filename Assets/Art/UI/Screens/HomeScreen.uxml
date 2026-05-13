@@ -9,6 +9,13 @@
         <ui:VisualElement name="Header" class="player-header">
             <ui:Button name="ProfileButton" class="profile-button"/>
             <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-name"/>
+            <ui:VisualElement name="PlayerProgress" class="player-progress">
+                <ui:Label name="PlayerLevel" text="LV 1" class="player-level"/>
+                <ui:VisualElement class="xp-bar">
+                    <ui:VisualElement name="XpFill" class="xp-bar__fill"/>
+                </ui:VisualElement>
+                <ui:Label name="PlayerXp" text="0 / 100 XP" class="player-xp"/>
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Top Bar (Top-Right): Currencies + Settings -->

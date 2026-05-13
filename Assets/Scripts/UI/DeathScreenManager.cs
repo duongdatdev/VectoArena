@@ -14,6 +14,7 @@ public class DeathScreenManager : MonoBehaviour
 
     private bool isDead = false;
     private NetworkPlayerSync localPlayerSync;
+    private NetworkManager.MatchResultMessage lastMatchResult;
 
     private void OnEnable()
     {
@@ -40,6 +41,7 @@ public class DeathScreenManager : MonoBehaviour
         {
             NetworkManager.Instance.OnGameOver += HandleGameOver;
             NetworkManager.Instance.OnKillFeedReceived += HandleKillFeed;
+            NetworkManager.Instance.OnMatchResultReceived += HandleMatchResult;
         }
     }
 
@@ -49,6 +51,7 @@ public class DeathScreenManager : MonoBehaviour
         {
             NetworkManager.Instance.OnGameOver -= HandleGameOver;
             NetworkManager.Instance.OnKillFeedReceived -= HandleKillFeed;
+            NetworkManager.Instance.OnMatchResultReceived -= HandleMatchResult;
         }
     }
 
@@ -95,6 +98,12 @@ public class DeathScreenManager : MonoBehaviour
 
     private void HandleGameOver()
     {
+        if (lastMatchResult != null)
+        {
+            ShowMatchResultScreen(lastMatchResult);
+            return;
+        }
+
         if (localPlayerSync != null && localPlayerSync.GetState() != null && !localPlayerSync.GetState().isDead)
         {
             // We survived!
@@ -104,6 +113,29 @@ public class DeathScreenManager : MonoBehaviour
         {
             ShowDeathScreen("MATCH OVER", "");
         }
+    }
+
+    private void HandleMatchResult(NetworkManager.MatchResultMessage result)
+    {
+        lastMatchResult = result;
+        ShowMatchResultScreen(result);
+    }
+
+    private void ShowMatchResultScreen(NetworkManager.MatchResultMessage result)
+    {
+        string title = result.isWinner ? "VICTORY" : "ELIMINATED";
+        string levelText = result.xpToNextLevel <= 0
+            ? $"LV {result.level} - MAX"
+            : $"LV {result.level} - {result.xp:N0}/{result.xpToNextLevel:N0} XP";
+        string levelUpText = result.levelsGained > 0 ? $"\nLEVEL UP +{result.levelsGained}" : "";
+        string stats =
+            $"Placement: #{result.placement}\n" +
+            $"Kills: {result.kills}\n" +
+            $"XP Earned: +{result.xpEarned:N0}\n" +
+            levelText +
+            levelUpText;
+
+        ShowDeathScreen(title, stats);
     }
 
     private void ShowDeathScreen(string title, string stats)
@@ -138,11 +170,12 @@ public class DeathScreenManager : MonoBehaviour
         }
     }
 
-    private void ReturnToLobby()
+    private async void ReturnToLobby()
     {
         if (NetworkManager.Instance != null)
         {
-            NetworkManager.Instance.CancelMatchmaking();
+            await NetworkManager.Instance.CancelMatchmaking();
+            await PlayerInventory.LoadFromServer();
         }
         SceneManager.LoadScene("MainScene");
     }

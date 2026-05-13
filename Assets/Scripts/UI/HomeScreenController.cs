@@ -10,6 +10,9 @@ public class HomeScreenController : MonoBehaviour
     private VisualElement root;
 
     private Label playerNameText;
+    private Label playerLevelLabel;
+    private Label playerXpLabel;
+    private VisualElement xpFill;
     private Button playButton;
     private Button settingsButton;
     private Button shopButton;
@@ -56,6 +59,9 @@ public class HomeScreenController : MonoBehaviour
         VectoAudioManager.PlayMainMenuMusic();
 
         playerNameText = root.Q<Label>("PlayerName");
+        playerLevelLabel = root.Q<Label>("PlayerLevel");
+        playerXpLabel = root.Q<Label>("PlayerXp");
+        xpFill = root.Q<VisualElement>("XpFill");
         playButton = root.Q<Button>("PlayButton");
         settingsButton = root.Q<Button>("SettingsButton");
         shopButton = root.Q<Button>("ShopButton");
@@ -144,6 +150,19 @@ public class HomeScreenController : MonoBehaviour
     {
         if (playerNameText != null)
             playerNameText.text = PlayerInventory.Username.ToUpperInvariant();
+
+        if (playerLevelLabel != null)
+            playerLevelLabel.text = $"LV {PlayerInventory.Level}";
+
+        if (playerXpLabel != null)
+        {
+            playerXpLabel.text = PlayerInventory.XpToNextLevel <= 0
+                ? "MAX"
+                : $"{PlayerInventory.Xp:N0} / {PlayerInventory.XpToNextLevel:N0} XP";
+        }
+
+        if (xpFill != null)
+            xpFill.style.width = Length.Percent(Mathf.Clamp01(PlayerInventory.XpProgress) * 100f);
 
         RefreshCurrencyDisplay();
     }
@@ -274,7 +293,7 @@ public class HomeScreenController : MonoBehaviour
             return;
         }
 
-        if (depositStatus != null) depositStatus.text = "Processing deposit...";
+        if (depositStatus != null) depositStatus.text = "Waiting for wallet confirmation...";
         if (depositConfirmButton != null) depositConfirmButton.SetEnabled(false);
 
         try

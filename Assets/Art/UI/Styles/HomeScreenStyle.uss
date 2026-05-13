@@ -322,6 +322,50 @@
     text-overflow: ellipsis;
 }
 
+.player-progress {
+    position: absolute;
+    left: 150px;
+    top: 58px;
+    width: 320px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.player-level {
+    width: 64px;
+    font-size: 24px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+}
+
+.xp-bar {
+    width: 150px;
+    height: 16px;
+    background-color: rgba(0, 0, 0, 0.65);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+}
+
+.xp-bar__fill {
+    width: 0%;
+    height: 100%;
+    background-color: rgb(73, 212, 212);
+}
+
+.player-xp {
+    width: 100px;
+    margin-left: 8px;
+    font-size: 18px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+}
+
 .settings-button {
     background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-settings.png?fileID=21300000&guid=81bdc28af928c47228c71078970f94ea&type=3#icon-settings");
     width: 94px;

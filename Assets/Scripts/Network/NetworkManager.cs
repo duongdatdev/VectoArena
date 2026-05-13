@@ -42,6 +42,7 @@ public class NetworkManager : MonoBehaviour
     public event Action OnGameStart;
     public event Action<KillFeedMessage> OnKillFeedReceived;
     public event Action OnGameOver;
+    public event Action<MatchResultMessage> OnMatchResultReceived;
 
     // using a generic object here for now. 
     // remember to swap this out with actual schema later.
@@ -325,6 +326,11 @@ public class NetworkManager : MonoBehaviour
             {
                 Debug.Log("GAME_OVER message received");
                 OnGameOver?.Invoke();
+            });
+
+            room.OnMessage<MatchResultMessage>("match_result", (message) =>
+            {
+                OnMatchResultReceived?.Invoke(message);
             });
 
             room.OnMessage<KillFeedMessage>("kill_feed", (message) =>
@@ -776,9 +782,28 @@ public class NetworkManager : MonoBehaviour
         public string username;
         public int vecBalance;
         public int coinBalance;
+        public int level;
+        public int xp;
+        public int xpToNextLevel;
+        public float xpProgress;
+        public int levelsGained;
         public string equippedPlayerSkin;
         public string[] ownedSkins;
         public ShopSkinResponse[] shopSkins;
+    }
+
+    [Serializable]
+    public class MatchResultMessage
+    {
+        public int placement;
+        public int kills;
+        public int xpEarned;
+        public int level;
+        public int xp;
+        public int xpToNextLevel;
+        public float xpProgress;
+        public int levelsGained;
+        public bool isWinner;
     }
 
     [Serializable]

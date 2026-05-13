@@ -17,6 +17,7 @@ public class MainScenePreviewController : MonoBehaviour
     private RuntimeAnimatorController previewAnimatorController;
     private GameObject homeScreenPrefabObj;
     private Transform localAnchor;
+    private Transform localCharacterAnchor;
     private Transform previewParent;
 
     private async void OnEnable()
@@ -121,9 +122,12 @@ public class MainScenePreviewController : MonoBehaviour
 
         if (homeScreenPrefabObj != null)
         {
+            Transform localRoot = RecursiveFind(homeScreenPrefabObj.transform, "Local");
             localAnchor = RecursiveFind(homeScreenPrefabObj.transform, "Local Anchor");
+            localCharacterAnchor = localRoot != null ? RecursiveFind(localRoot, "CharacterAnchor") : null;
             if (localAnchor == null) Debug.LogWarning("Local Anchor not found in HomeScreen prefab!");
-            previewParent = localAnchor != null ? localAnchor : transform;
+            if (localCharacterAnchor == null) Debug.LogWarning("Local/CharacterAnchor not found in HomeScreen prefab!");
+            previewParent = localCharacterAnchor != null ? localCharacterAnchor : (localAnchor != null ? localAnchor : transform);
             DisableRemotePartyMemberShadows();
 
             var uiDoc = homeScreenPrefabObj.GetComponent<UnityEngine.UIElements.UIDocument>();
@@ -208,16 +212,16 @@ public class MainScenePreviewController : MonoBehaviour
             return;
         }
 
-        Transform targetParent = previewParent != null ? previewParent : (localAnchor != null ? localAnchor : transform);
+        Transform targetParent = previewParent != null ? previewParent : (localCharacterAnchor != null ? localCharacterAnchor : (localAnchor != null ? localAnchor : transform));
         if (previewTransform.parent != targetParent)
         {
             previewTransform.SetParent(targetParent, false);
         }
 
-        if (targetParent == localAnchor && localAnchor != null)
+        if (targetParent == localCharacterAnchor && localCharacterAnchor != null)
         {
             previewTransform.localPosition = Vector3.zero;
-            previewTransform.localRotation = Quaternion.Euler(anchoredPreviewRotation);
+            previewTransform.localRotation = Quaternion.identity;
             previewTransform.localScale = Vector3.one;
             return;
         }

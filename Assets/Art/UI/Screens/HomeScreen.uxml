@@ -87,6 +87,16 @@
                     </ui:VisualElement>
                     <ui:Label name="DepositStatus" text="" class="deposit-popup__status"/>
                     <ui:Button name="DepositConfirmButton" text="DEPOSIT" class="button-long button-long--yellow deposit-popup__confirm"/>
+                    <ui:VisualElement class="transaction-history">
+                        <ui:VisualElement class="transaction-history__header">
+                            <ui:Label text="TRANSACTION HISTORY" class="transaction-history__title"/>
+                            <ui:Button name="TransactionHistoryButton" text="REFRESH" class="transaction-history__button"/>
+                        </ui:VisualElement>
+                        <ui:Label name="TransactionHistoryStatus" text="LOADING HISTORY..." class="transaction-history__status"/>
+                        <ui:ScrollView name="TransactionHistoryScroll" class="transaction-history__scroll">
+                            <ui:VisualElement name="TransactionHistoryList" class="transaction-history__list"/>
+                        </ui:ScrollView>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

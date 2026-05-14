@@ -163,6 +163,28 @@ public class NetworkManager : MonoBehaviour
         return await SendPlayerRequest(HttpMethod.Post, "/player/equip-skin", new SkinRequest { skinId = skinId });
     }
 
+    public async Task<TransactionHistoryResponse> LoadTransactions(string currencyType = "VEC", string type = null, int limit = 20, int offset = 0)
+    {
+        var queryParts = new List<string>();
+
+        if (!string.IsNullOrEmpty(currencyType))
+        {
+            queryParts.Add("currencyType=" + Uri.EscapeDataString(currencyType));
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            queryParts.Add("type=" + Uri.EscapeDataString(type));
+        }
+
+        queryParts.Add("limit=" + Mathf.Clamp(limit, 1, 100));
+        queryParts.Add("offset=" + Mathf.Max(0, offset));
+
+        string path = "/player/transactions?" + string.Join("&", queryParts);
+        string response = await SendPlayerRequestRaw(HttpMethod.Get, path, null);
+        return JsonConvert.DeserializeObject<TransactionHistoryResponse>(response);
+    }
+
     public async Task<bool> LinkWallet(string walletAddress)
     {
         try
@@ -814,6 +836,33 @@ public class NetworkManager : MonoBehaviour
         public int price;
         public bool owned;
         public bool equipped;
+    }
+
+    [Serializable]
+    public class TransactionHistoryResponse
+    {
+        public CurrencyTransactionResponse[] transactions;
+        public int limit;
+        public int offset;
+        public int total;
+    }
+
+    [Serializable]
+    public class CurrencyTransactionResponse
+    {
+        public string id;
+        public string currencyType;
+        public string type;
+        public int amount;
+        public int balanceBefore;
+        public int balanceAfter;
+        public string status;
+        public string txHash;
+        public int? chainId;
+        public string contractAddress;
+        public string referenceId;
+        public string note;
+        public string createdAt;
     }
 
     [Serializable]

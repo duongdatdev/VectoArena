@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using System;
+using System.Globalization;
 using System.Numerics;
 using Thirdweb.Unity;
 
@@ -34,6 +36,9 @@ public class HomeScreenController : MonoBehaviour
     private Button depositConfirmButton;
     private TextField depositAmountField;
     private Label depositStatus;
+    private Button transactionHistoryButton;
+    private Label transactionHistoryStatus;
+    private VisualElement transactionHistoryList;
 
     // Popups
     public SettingsPopupController settingsController;
@@ -82,6 +87,9 @@ public class HomeScreenController : MonoBehaviour
         depositConfirmButton = root.Q<Button>("DepositConfirmButton");
         depositAmountField = root.Q<TextField>("DepositAmountField");
         depositStatus = root.Q<Label>("DepositStatus");
+        transactionHistoryButton = root.Q<Button>("TransactionHistoryButton");
+        transactionHistoryStatus = root.Q<Label>("TransactionHistoryStatus");
+        transactionHistoryList = root.Q<VisualElement>("TransactionHistoryList");
 
         matchmakingContainer = root.Q<VisualElement>("Matchmaking");
         matchTimer = root.Q<Label>("MatchTimer");
@@ -108,6 +116,7 @@ public class HomeScreenController : MonoBehaviour
         if (vecDisplay != null) vecDisplay.clicked += OnClickVecDeposit;
         if (depositCloseButton != null) depositCloseButton.clicked += CloseDepositPopup;
         if (depositConfirmButton != null) depositConfirmButton.clicked += OnClickDepositConfirm;
+        if (transactionHistoryButton != null) transactionHistoryButton.clicked += LoadTransactionHistory;
 
         if (NetworkManager.Instance != null)
         {
@@ -269,6 +278,7 @@ public class HomeScreenController : MonoBehaviour
         depositPopup.RemoveFromClassList("hidden");
         if (depositStatus != null) depositStatus.text = "";
         if (depositAmountField != null) depositAmountField.value = "10";
+        LoadTransactionHistory();
     }
 
     private void CloseDepositPopup()
@@ -306,6 +316,7 @@ public class HomeScreenController : MonoBehaviour
             {
                 if (depositStatus != null) depositStatus.text = $"Successfully deposited {amount} VEC!";
                 RefreshCurrencyDisplay();
+                LoadTransactionHistory();
             }
             else
             {
@@ -321,6 +332,179 @@ public class HomeScreenController : MonoBehaviour
         {
             if (depositConfirmButton != null) depositConfirmButton.SetEnabled(true);
         }
+    }
+
+    // =============== TRANSACTION HISTORY ===============
+
+    private async void LoadTransactionHistory()
+    {
+        if (transactionHistoryList == null || NetworkManager.Instance == null)
+        {
+            return;
+        }
+
+        transactionHistoryList.Clear();
+        if (transactionHistoryStatus != null)
+        {
+            transactionHistoryStatus.text = "LOADING HISTORY...";
+        }
+
+        if (transactionHistoryButton != null)
+        {
+            transactionHistoryButton.SetEnabled(false);
+        }
+
+        try
+        {
+            NetworkManager.TransactionHistoryResponse response = await NetworkManager.Instance.LoadTransactions("VEC", null, 20, 0);
+            RenderTransactionHistory(response);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Failed to load transaction history: " + e.Message);
+            if (transactionHistoryStatus != null)
+            {
+                transactionHistoryStatus.text = "UNABLE TO LOAD HISTORY";
+            }
+        }
+        finally
+        {
+            if (transactionHistoryButton != null)
+            {
+                transactionHistoryButton.SetEnabled(true);
+            }
+        }
+    }
+
+    private void RenderTransactionHistory(NetworkManager.TransactionHistoryResponse response)
+    {
+        transactionHistoryList.Clear();
+
+        if (response?.transactions == null || response.transactions.Length == 0)
+        {
+            if (transactionHistoryStatus != null)
+            {
+                transactionHistoryStatus.text = "NO VEC TRANSACTIONS YET";
+            }
+            return;
+        }
+
+        if (transactionHistoryStatus != null)
+        {
+            transactionHistoryStatus.text = $"{response.transactions.Length} RECENT VEC TRANSACTIONS";
+        }
+
+        foreach (NetworkManager.CurrencyTransactionResponse transaction in response.transactions)
+        {
+            transactionHistoryList.Add(CreateTransactionRow(transaction));
+        }
+    }
+
+    private VisualElement CreateTransactionRow(NetworkManager.CurrencyTransactionResponse transaction)
+    {
+        VisualElement row = new VisualElement();
+        row.AddToClassList("transaction-row");
+
+        VisualElement mainColumn = new VisualElement();
+        mainColumn.AddToClassList("transaction-row__main");
+
+        Label title = new Label(FormatTransactionTitle(transaction));
+        title.AddToClassList("transaction-row__title");
+
+        Label meta = new Label(FormatTransactionMeta(transaction));
+        meta.AddToClassList("transaction-row__meta");
+
+        Label balance = new Label($"BAL {transaction.balanceBefore:N0} -> {transaction.balanceAfter:N0}");
+        balance.AddToClassList("transaction-row__balance");
+
+        mainColumn.Add(title);
+        mainColumn.Add(meta);
+        mainColumn.Add(balance);
+
+        VisualElement rightColumn = new VisualElement();
+        rightColumn.AddToClassList("transaction-row__right");
+
+        Label amount = new Label(FormatTransactionAmount(transaction));
+        amount.AddToClassList("transaction-row__amount");
+        amount.AddToClassList(transaction.amount >= 0 ? "transaction-row__amount--positive" : "transaction-row__amount--negative");
+        rightColumn.Add(amount);
+
+        string explorerUrl = GetExplorerUrl(transaction);
+        if (!string.IsNullOrEmpty(explorerUrl))
+        {
+            Button explorerButton = new Button();
+            explorerButton.text = ShortenHash(transaction.txHash);
+            explorerButton.AddToClassList("transaction-row__explorer");
+            explorerButton.clicked += () => Application.OpenURL(explorerUrl);
+            rightColumn.Add(explorerButton);
+        }
+
+        row.Add(mainColumn);
+        row.Add(rightColumn);
+        return row;
+    }
+
+    private string FormatTransactionTitle(NetworkManager.CurrencyTransactionResponse transaction)
+    {
+        string type = string.IsNullOrEmpty(transaction.type) ? "TRANSACTION" : transaction.type.Replace("_", " ");
+        string status = string.IsNullOrEmpty(transaction.status) ? "UNKNOWN" : transaction.status.Replace("_", " ");
+        return $"{type} - {status}";
+    }
+
+    private string FormatTransactionMeta(NetworkManager.CurrencyTransactionResponse transaction)
+    {
+        string time = FormatTransactionTime(transaction.createdAt);
+        if (!string.IsNullOrEmpty(transaction.note))
+        {
+            return $"{time} - {transaction.note}";
+        }
+
+        return time;
+    }
+
+    private string FormatTransactionTime(string createdAt)
+    {
+        if (DateTime.TryParse(createdAt, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTime parsed))
+        {
+            return parsed.ToLocalTime().ToString("MMM d, HH:mm", CultureInfo.InvariantCulture).ToUpperInvariant();
+        }
+
+        return "UNKNOWN TIME";
+    }
+
+    private string FormatTransactionAmount(NetworkManager.CurrencyTransactionResponse transaction)
+    {
+        string sign = transaction.amount > 0 ? "+" : "";
+        string currency = string.IsNullOrEmpty(transaction.currencyType) ? "VEC" : transaction.currencyType;
+        return $"{sign}{transaction.amount:N0} {currency}";
+    }
+
+    private string GetExplorerUrl(NetworkManager.CurrencyTransactionResponse transaction)
+    {
+        if (string.IsNullOrEmpty(transaction.txHash) || !transaction.chainId.HasValue)
+        {
+            return null;
+        }
+
+        switch (transaction.chainId.Value)
+        {
+            case 11155111:
+                return $"https://sepolia.etherscan.io/tx/{transaction.txHash}";
+            case 84532:
+                return $"https://sepolia.basescan.org/tx/{transaction.txHash}";
+            default:
+                return null;
+        }
+    }
+
+    private string ShortenHash(string txHash)
+    {
+        if (string.IsNullOrEmpty(txHash) || txHash.Length <= 14)
+        {
+            return txHash;
+        }
+
+        return txHash.Substring(0, 6) + "..." + txHash.Substring(txHash.Length - 4);
     }
 
     // =============== MATCHMAKING ===============

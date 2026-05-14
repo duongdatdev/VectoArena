@@ -262,6 +262,133 @@
     align-self: center;
 }
 
+.transaction-history {
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top-width: 2px;
+    border-top-color: rgba(100, 70, 180, 0.35);
+}
+
+.transaction-history__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.transaction-history__title {
+    font-size: 26px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+}
+
+.transaction-history__button {
+    height: 42px;
+    padding-left: 18px;
+    padding-right: 18px;
+    background-color: rgba(73, 212, 212, 0.18);
+    border-width: 2px;
+    border-color: rgba(73, 212, 212, 0.5);
+    border-radius: 18px;
+    color: rgb(73, 212, 212);
+    font-size: 18px;
+    -unity-font-definition: var(--font-bold);
+}
+
+.transaction-history__status {
+    min-height: 28px;
+    font-size: 19px;
+    color: rgb(180, 170, 200);
+    -unity-font-definition: var(--font-bold);
+    margin-bottom: 8px;
+}
+
+.transaction-history__scroll {
+    height: 220px;
+    background-color: rgba(8, 5, 22, 0.55);
+    border-width: 2px;
+    border-color: rgba(73, 212, 212, 0.18);
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.transaction-history__list {
+    width: 100%;
+}
+
+.transaction-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 92px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background-color: rgba(40, 30, 70, 0.72);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.transaction-row__main {
+    flex-grow: 1;
+    margin-right: 14px;
+}
+
+.transaction-row__right {
+    width: 150px;
+    align-items: flex-end;
+}
+
+.transaction-row__title {
+    font-size: 19px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+}
+
+.transaction-row__meta {
+    font-size: 16px;
+    color: rgb(180, 170, 200);
+    margin-top: 3px;
+    white-space: normal;
+}
+
+.transaction-row__balance {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 3px;
+}
+
+.transaction-row__amount {
+    font-size: 21px;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-right;
+}
+
+.transaction-row__amount--positive {
+    color: rgb(73, 212, 212);
+}
+
+.transaction-row__amount--negative {
+    color: rgb(255, 130, 130);
+}
+
+.transaction-row__explorer {
+    height: 32px;
+    margin-top: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgba(240, 209, 94, 0.14);
+    border-width: 1px;
+    border-color: rgba(240, 209, 94, 0.5);
+    border-radius: 12px;
+    color: rgb(240, 209, 94);
+    font-size: 15px;
+    -unity-font-definition: var(--font-bold);
+}
+
 .main-buttons {
     position: absolute;
     bottom: 46px;

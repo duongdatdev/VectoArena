@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using VectoArena.UI.MainMenu;
@@ -19,29 +21,63 @@ public class MainScenePreviewController : MonoBehaviour
     private Transform localAnchor;
     private Transform localCharacterAnchor;
     private Transform previewParent;
+    private CancellationTokenSource loadCancellation;
 
-    private async void OnEnable()
+    private void OnEnable()
     {
+        loadCancellation?.Cancel();
+        loadCancellation?.Dispose();
+        loadCancellation = new CancellationTokenSource();
+
         EnsureEventSystem();
         EnsureHomeScreenPrefab();
         PlayerInventory.Changed += RefreshCharacter;
         RefreshCharacter();
-        await LoadEquippedSkin();
+        _ = LoadEquippedSkin(loadCancellation.Token);
     }
 
     private void OnDisable()
     {
         PlayerInventory.Changed -= RefreshCharacter;
+        CancelPendingLoad();
     }
 
-    private async Task LoadEquippedSkin()
+    private void OnDestroy()
     {
-        await PlayerInventory.LoadFromServer();
+        PlayerInventory.Changed -= RefreshCharacter;
+        CancelPendingLoad();
+    }
+
+    private async Task LoadEquippedSkin(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await PlayerInventory.LoadFromServer();
+        }
+        catch (Exception ex)
+        {
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                Debug.LogWarning("Failed to load equipped skin for main scene preview: " + ex.Message);
+            }
+            return;
+        }
+
+        if (cancellationToken.IsCancellationRequested || this == null || !isActiveAndEnabled)
+        {
+            return;
+        }
+
         RefreshCharacter();
     }
 
     private void RefreshCharacter()
     {
+        if (this == null || !isActiveAndEnabled)
+        {
+            return;
+        }
+
         string equippedSkinId = PlayerInventory.EquippedSkinId;
         if (currentCharacter != null && currentSkinId == equippedSkinId)
         {
@@ -212,6 +248,11 @@ public class MainScenePreviewController : MonoBehaviour
             return;
         }
 
+        if (this == null)
+        {
+            return;
+        }
+
         Transform targetParent = previewParent != null ? previewParent : (localCharacterAnchor != null ? localCharacterAnchor : (localAnchor != null ? localAnchor : transform));
         if (previewTransform.parent != targetParent)
         {
@@ -340,5 +381,17 @@ public class MainScenePreviewController : MonoBehaviour
         {
             animator.Play(stateName, 0, 0f);
         }
+    }
+
+    private void CancelPendingLoad()
+    {
+        if (loadCancellation == null)
+        {
+            return;
+        }
+
+        loadCancellation.Cancel();
+        loadCancellation.Dispose();
+        loadCancellation = null;
     }
 }

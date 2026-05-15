@@ -13,6 +13,7 @@ public class DeathScreenManager : MonoBehaviour
     private Button returnToLobbyButton;
 
     private bool isDead = false;
+    private bool isReturningToLobby = false;
     private NetworkPlayerSync localPlayerSync;
     private NetworkManager.MatchResultMessage lastMatchResult;
 
@@ -47,6 +48,11 @@ public class DeathScreenManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (returnToLobbyButton != null)
+        {
+            returnToLobbyButton.clicked -= ReturnToLobby;
+        }
+
         if (NetworkManager.Instance != null)
         {
             NetworkManager.Instance.OnGameOver -= HandleGameOver;
@@ -132,6 +138,7 @@ public class DeathScreenManager : MonoBehaviour
             $"Placement: #{result.placement}\n" +
             $"Kills: {result.kills}\n" +
             $"XP Earned: +{result.xpEarned:N0}\n" +
+            $"VEC Earned: +{result.vecEarned:N0}\n" +
             levelText +
             levelUpText;
 
@@ -170,13 +177,42 @@ public class DeathScreenManager : MonoBehaviour
         }
     }
 
-    private async void ReturnToLobby()
+    private void ReturnToLobby()
     {
+        if (isReturningToLobby)
+        {
+            return;
+        }
+
+        isReturningToLobby = true;
+
+        if (returnToLobbyButton != null)
+        {
+            returnToLobbyButton.SetEnabled(false);
+            returnToLobbyButton.text = "RETURNING...";
+        }
+
         if (NetworkManager.Instance != null)
         {
-            await NetworkManager.Instance.CancelMatchmaking();
-            await PlayerInventory.LoadFromServer();
+            _ = CleanupMatchSession();
         }
+
         SceneManager.LoadScene("MainScene");
+    }
+
+    private async System.Threading.Tasks.Task CleanupMatchSession()
+    {
+        try
+        {
+            if (NetworkManager.Instance != null)
+            {
+                await NetworkManager.Instance.CancelMatchmaking();
+                await PlayerInventory.LoadFromServer();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("Return to lobby cleanup failed: " + ex.Message);
+        }
     }
 }

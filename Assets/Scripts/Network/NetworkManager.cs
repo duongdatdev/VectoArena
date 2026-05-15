@@ -480,6 +480,10 @@ public class NetworkManager : MonoBehaviour
         Vector3 spawnPos = new Vector3(item.x, item.y, item.z);
         GameObject spawnedItem = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
         spawnedItem.name = $"Item_{item.type}_{key}";
+        if (item.type == "VEC")
+        {
+            ConfigureVecPickup(spawnedItem);
+        }
 
         WeaponPickup pickup = spawnedItem.GetComponent<WeaponPickup>();
         if (pickup != null)
@@ -507,6 +511,38 @@ public class NetworkManager : MonoBehaviour
         itemObjects.Add(key, spawnedItem);
         UpdateItemPickupProgressVisual(key, item);
         Debug.Log($"Spawned item {item.type} at {spawnPos}");
+    }
+
+    private void ConfigureVecPickup(GameObject spawnedItem)
+    {
+        if (spawnedItem == null)
+        {
+            return;
+        }
+
+        if (spawnedItem.GetComponent<VecPickupMarker>() == null)
+        {
+            spawnedItem.AddComponent<VecPickupMarker>();
+        }
+
+        bool hasTrigger = false;
+        Collider[] colliders = spawnedItem.GetComponentsInChildren<Collider>(true);
+        foreach (Collider collider in colliders)
+        {
+            if (collider != null && collider.isTrigger)
+            {
+                hasTrigger = true;
+                break;
+            }
+        }
+
+        if (!hasTrigger)
+        {
+            SphereCollider trigger = spawnedItem.AddComponent<SphereCollider>();
+            trigger.isTrigger = true;
+            trigger.radius = 1.35f;
+            trigger.center = new Vector3(0f, 0.55f, 0f);
+        }
     }
 
     private void OnItemRemove(string key, ItemState item)
@@ -697,6 +733,36 @@ public class NetworkManager : MonoBehaviour
 
         zoneController.SetServerAuthoritative(true);
         zoneController.ApplyState(room.State.zone);
+    }
+
+    public GameObject FindPlayerObjectByUsername(string username)
+    {
+        if (string.IsNullOrEmpty(username))
+        {
+            return null;
+        }
+
+        foreach (KeyValuePair<string, GameObject> entry in playerObjects)
+        {
+            GameObject playerObject = entry.Value;
+            if (playerObject == null)
+            {
+                continue;
+            }
+
+            NetworkPlayerSync sync = playerObject.GetComponent<NetworkPlayerSync>();
+            if (sync == null || sync.GetState() == null)
+            {
+                continue;
+            }
+
+            if (string.Equals(sync.GetState().username, username, StringComparison.OrdinalIgnoreCase))
+            {
+                return playerObject;
+            }
+        }
+
+        return null;
     }
 
     private void SpawnPlayer(string key, PlayerState playerState)

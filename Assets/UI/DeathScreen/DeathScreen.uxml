@@ -1,12 +1,92 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="DeathScreen.uss" />
+    <ui:Style src="DeathScreen.uss" />
     <ui:VisualElement name="DeathScreenContainer" class="death-screen-container">
-        <ui:VisualElement class="death-screen-overlay">
-            <ui:Label name="DeathTitle" text="ELIMINATED" class="death-title" />
+        <ui:VisualElement name="WinCelebrationPanel" class="win-celebration-panel">
+            <ui:VisualElement class="win-light left" />
+            <ui:VisualElement class="win-light right" />
+            <ui:VisualElement class="you-win-title">
+                <ui:VisualElement class="you-win-gradient" />
+                <ui:VisualElement class="you-win-banner" />
+                <ui:VisualElement class="you-win-crown">
+                    <ui:VisualElement class="you-win-star" />
+                </ui:VisualElement>
+                <ui:VisualElement class="you-win-text shadow-a" />
+                <ui:VisualElement class="you-win-text shadow-b" />
+                <ui:VisualElement class="you-win-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="SpectatingPanel" class="spectating-panel">
+            <ui:VisualElement class="spectating-title-wrap">
+                <ui:Label text="SPECTATING" class="spectating-title" />
+                <ui:Label text="BATTLE ROYALE" class="spectating-mode" />
+            </ui:VisualElement>
+            <ui:VisualElement class="defeated-by-wrap">
+                <ui:Label name="DefeatedByName" text="Enemy" class="defeated-by-name" />
+                <ui:Label text="DEFEATED YOU" class="defeated-by-text" />
+            </ui:VisualElement>
+            <ui:Button name="SpectatingLeaveBtn" text="LEAVE" class="spectating-leave-btn" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="ResultPanel" class="death-screen-overlay result-panel">
+            <ui:VisualElement class="result-header">
+                <ui:Label text="STANDINGS" class="standings-title" />
+                <ui:Label name="DeathTitle" text="ELIMINATED" class="death-title" />
+                <ui:Label name="ResultSubtitle" text="Better luck next match" class="result-subtitle" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="standings-body">
+                <ui:VisualElement class="standings-player-card">
+                    <ui:VisualElement class="standings-avatar">
+                        <ui:Label text="V" class="standings-avatar-letter" />
+                    </ui:VisualElement>
+                    <ui:Label name="LocalPlacementLarge" text="20." class="local-placement-large" />
+                    <ui:Label name="LocalPlayerName" text="YOU" class="local-player-name" />
+                    <ui:VisualElement name="VecRewardCard" class="vec-reward-card compact">
+                        <ui:VisualElement class="vec-icon-wrap">
+                            <ui:Label text="V" class="vec-icon-letter" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="vec-reward-copy">
+                            <ui:Label text="YOUR VEC" class="vec-reward-label" />
+                            <ui:Label name="VecRewardValue" text="+0" class="vec-reward-value" />
+                            <ui:Label name="VecRewardHint" text="Added to your wallet balance" class="vec-reward-hint" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="standings-board">
+                    <ui:VisualElement class="standings-board-header">
+                        <ui:Label text="#" class="standings-col-rank" />
+                        <ui:Label text="PLAYER" class="standings-col-player" />
+                        <ui:Label text="KILLS" class="standings-col-kills" />
+                        <ui:Label text="REWARD" class="standings-col-reward" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="standings-row local">
+                        <ui:Label name="PlacementValue" text="20." class="standings-col-rank" />
+                        <ui:Label name="LocalPlayerNameRow" text="YOU" class="standings-col-player" />
+                        <ui:Label name="KillsValue" text="0" class="standings-col-kills" />
+                        <ui:Label name="VecRewardValueRow" text="+0 VEC" class="standings-col-reward" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="standings-row muted">
+                        <ui:Label text="-" class="standings-col-rank" />
+                        <ui:Label text="XP EARNED" class="standings-col-player" />
+                        <ui:Label name="XpValue" text="+0" class="standings-col-kills" />
+                        <ui:Label name="LevelUpValue" text="" class="standings-col-reward" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="level-row">
+                <ui:Label name="LevelValue" text="LV --" class="level-value" />
+                <ui:VisualElement class="xp-bar">
+                    <ui:VisualElement name="XpBarFill" class="xp-bar-fill" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
             <ui:Label name="DeathStats" text="KILLED BY&#10;Player1 - Rifle" class="death-stats" />
-            
+
             <ui:VisualElement class="death-buttons-container">
-                <ui:Button name="ReturnToLobbyBtn" text="RETURN TO LOBBY" class="death-btn primary-btn" />
+                <ui:Button name="ReturnToLobbyBtn" text="CLAIM &amp; RETURN" class="death-btn primary-btn" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

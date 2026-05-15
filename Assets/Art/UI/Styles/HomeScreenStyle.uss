@@ -606,10 +606,27 @@
     padding-bottom: 17px;
 }
 
+.play-button--normal {
+    font-size: 45px;
+}
+
 .play-button:active {
     background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-play-pressed.png?fileID=21300000&guid=0c1582fd373454a23a0eb59fd8950cd4&type=3#button-play-pressed");
     padding-left: 46px;
     padding-top: 24px;
+}
+
+.airdrop-lock-label {
+    width: 180px;
+    margin-top: -24px;
+    margin-right: 178px;
+    margin-bottom: 14px;
+    font-size: 17px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
 }
 
 .matchmaking-container {

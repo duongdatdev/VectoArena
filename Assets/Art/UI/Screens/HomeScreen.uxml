@@ -47,7 +47,7 @@
                 <ui:Button name="CollectionButton" text="COLLECTION" class="button-with-icon collection-button" style="width: 140px; -unity-font-style: bold;">
                     <ui:VisualElement name="CollectionIcon" class="button-icon collection-icon" style="top: -9px; left: 20px; height: 97px; width: 99px;"/>
                 </ui:Button>
-                <ui:Button name="ShopButton" text="SHOP" icon-image="" class="button-with-icon shop-button" style="width: 142px; -unity-font-style: bold;">
+                <ui:Button name="ShopButton" text="SHOP" class="button-with-icon shop-button" style="width: 142px; -unity-font-style: bold;">
                     <ui:VisualElement name="ShopIcon" class="button-icon shop-icon" style="top: -10px; left: 18px; height: 92px; width: 106px;"/>
                 </ui:Button>
             </ui:VisualElement>
@@ -56,10 +56,11 @@
         <!-- Right Buttons -->
         <ui:VisualElement name="RightButtons" class="main-buttons main-buttons--right">
             <ui:Button name="GameModeButton" class="game-mode-button">
-                <ui:Label text="SOLO" class="game-mode-label"/>
-                <ui:Label text="BATTLE ROYALE" class="game-mode-title"/>
+                <ui:Label text="PLAY TO" class="game-mode-label"/>
+                <ui:Label text="AIRDROP" class="game-mode-title"/>
             </ui:Button>
-            <ui:Button name="PlayButton" text="PLAY" class="play-button"/>
+            <ui:Label name="AirdropLockLabel" text="UNLOCKS AT LV 5" class="airdrop-lock-label"/>
+            <ui:Button name="PlayButton" text="PLAY NORMAL" class="play-button play-button--normal"/>
         </ui:VisualElement>
 
         <!-- Matchmaking Overlay -->

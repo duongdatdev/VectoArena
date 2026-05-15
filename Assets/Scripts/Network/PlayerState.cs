@@ -57,5 +57,8 @@ public PlayerState() { }
 
 		[Type(13, "string")]
 		public string skinId = default(string);
+
+		[Type(14, "number")]
+		public float vecCarried = default(float);
 	}
 }

@@ -33,6 +33,7 @@ public class NetworkManager : MonoBehaviour
     [Header("Item / Weapon Config")]
     public WeaponDatabase weaponDatabase;
     public GameObject itemMedicalKitPrefab;
+    public GameObject itemVecPrefab;
 
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
@@ -280,7 +281,17 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    public async Task ConnectAndJoinBattle()
+    public Task ConnectAndJoinBattle()
+    {
+        return ConnectAndJoinBattle(false);
+    }
+
+    public Task ConnectAndJoinAirdrop()
+    {
+        return ConnectAndJoinBattle(true);
+    }
+
+    private async Task ConnectAndJoinBattle(bool playToAirdrop)
     {
         while (isConnectingToBattle)
         {
@@ -315,7 +326,8 @@ public class NetworkManager : MonoBehaviour
                 { "accessToken", authToken }
             };
             
-            var joinedRoom = await client.JoinOrCreate<GameState>("battle", options);
+            var roomName = playToAirdrop ? "airdrop" : "battle";
+            var joinedRoom = await client.JoinOrCreate<GameState>(roomName, options);
             if (cancelMatchmakingRequested)
             {
                 await joinedRoom.Leave();
@@ -450,6 +462,10 @@ public class NetworkManager : MonoBehaviour
         {
             prefabToSpawn = itemMedicalKitPrefab;
         }
+        else if (item.type == "VEC")
+        {
+            prefabToSpawn = itemVecPrefab;
+        }
         else if (weaponDatabase != null)
         {
             prefabToSpawn = weaponDatabase.GetFloatingItemPrefab(item.type);
@@ -522,6 +538,16 @@ public class NetworkManager : MonoBehaviour
         }
 
         if (message.itemType == "MedicalKit")
+        {
+            VectoAudioManager.PlayPickup(message.itemType, playerObj.transform.position, message.playerId == room?.SessionId);
+            if (!string.IsNullOrEmpty(message.itemId))
+            {
+                itemWeaponConfigs.Remove(message.itemId);
+            }
+            return;
+        }
+
+        if (message.itemType == "VEC")
         {
             VectoAudioManager.PlayPickup(message.itemType, playerObj.transform.position, message.playerId == room?.SessionId);
             if (!string.IsNullOrEmpty(message.itemId))
@@ -825,6 +851,7 @@ public class NetworkManager : MonoBehaviour
         public int xpToNextLevel;
         public float xpProgress;
         public int levelsGained;
+        public int vecEarned;
         public bool isWinner;
     }
 

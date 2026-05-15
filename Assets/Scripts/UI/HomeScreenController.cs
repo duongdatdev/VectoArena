@@ -16,6 +16,8 @@ public class HomeScreenController : MonoBehaviour
     private Label playerXpLabel;
     private VisualElement xpFill;
     private Button playButton;
+    private Button airdropButton;
+    private Label airdropLockLabel;
     private Button settingsButton;
     private Button shopButton;
     private Button collectionButton;
@@ -68,6 +70,8 @@ public class HomeScreenController : MonoBehaviour
         playerXpLabel = root.Q<Label>("PlayerXp");
         xpFill = root.Q<VisualElement>("XpFill");
         playButton = root.Q<Button>("PlayButton");
+        airdropButton = root.Q<Button>("GameModeButton");
+        airdropLockLabel = root.Q<Label>("AirdropLockLabel");
         settingsButton = root.Q<Button>("SettingsButton");
         shopButton = root.Q<Button>("ShopButton");
         collectionButton = root.Q<Button>("CollectionButton");
@@ -99,6 +103,7 @@ public class HomeScreenController : MonoBehaviour
 
         // Callbacks
         playButton.clicked += OnClickPlay;
+        if (airdropButton != null) airdropButton.clicked += OnClickAirdrop;
         cancelMatchmaking.clicked += OnClickCancel;
         
         settingsButton.clicked += () => {
@@ -174,6 +179,21 @@ public class HomeScreenController : MonoBehaviour
             xpFill.style.width = Length.Percent(Mathf.Clamp01(PlayerInventory.XpProgress) * 100f);
 
         RefreshCurrencyDisplay();
+        RefreshAirdropAccess();
+    }
+
+    private void RefreshAirdropAccess()
+    {
+        bool unlocked = PlayerInventory.Level >= 5;
+        if (airdropButton != null)
+        {
+            airdropButton.SetEnabled(unlocked);
+        }
+
+        if (airdropLockLabel != null)
+        {
+            airdropLockLabel.text = unlocked ? "VEC DROPS ENABLED" : "UNLOCKS AT LV 5";
+        }
     }
 
     private async System.Threading.Tasks.Task LoadPlayerProfileForMainScene()
@@ -512,11 +532,34 @@ public class HomeScreenController : MonoBehaviour
     private void OnClickPlay()
     {
         VectoAudioManager.Play2D(VectoAudioId.EnterGame);
+        StartMatchmaking(false);
+    }
+
+    private void OnClickAirdrop()
+    {
+        if (PlayerInventory.Level < 5)
+        {
+            RefreshAirdropAccess();
+            return;
+        }
+
+        VectoAudioManager.Play2D(VectoAudioId.EnterGame);
+        StartMatchmaking(true);
+    }
+
+    private void StartMatchmaking(bool playToAirdrop)
+    {
         matchmakingContainer.RemoveFromClassList("hidden");
         isMatchmaking = true;
         matchmakingStartTime = Time.time;
         timerSchedule.Resume();
-        
+
+        if (playToAirdrop)
+        {
+            _ = NetworkManager.Instance.ConnectAndJoinAirdrop();
+            return;
+        }
+
         _ = NetworkManager.Instance.ConnectAndJoinBattle();
     }
 

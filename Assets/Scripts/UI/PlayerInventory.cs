@@ -15,6 +15,7 @@ public static class PlayerInventory
     private static float xpProgress;
     private static string equippedSkinId = DefaultSkinId;
     private static string username;
+    private static string linkedWalletAddress;
     private static bool loadedFromServer;
 
     public static event Action Changed;
@@ -26,6 +27,7 @@ public static class PlayerInventory
     public static int XpToNextLevel => xpToNextLevel;
     public static float XpProgress => xpProgress;
     public static string Username => string.IsNullOrWhiteSpace(username) ? "GUEST" : username;
+    public static string LinkedWalletAddress => linkedWalletAddress;
     public static bool LoadedFromServer => loadedFromServer;
 
     public static string EquippedSkinId => string.IsNullOrEmpty(equippedSkinId) ? DefaultSkinId : equippedSkinId;
@@ -115,6 +117,7 @@ public static class PlayerInventory
         xpToNextLevel = Mathf.Max(0, profile.xpToNextLevel);
         xpProgress = Mathf.Clamp01(profile.xpProgress);
         username = profile.username;
+        linkedWalletAddress = NormalizeWalletAddress(profile.walletAddress);
         equippedSkinId = string.IsNullOrEmpty(profile.equippedPlayerSkin) ? DefaultSkinId : profile.equippedPlayerSkin;
         ownedSkins.Clear();
         ownedSkins.Add(DefaultSkinId);
@@ -131,5 +134,10 @@ public static class PlayerInventory
         }
 
         Changed?.Invoke();
+    }
+
+    private static string NormalizeWalletAddress(string walletAddress)
+    {
+        return string.IsNullOrWhiteSpace(walletAddress) ? null : walletAddress.Trim().ToLowerInvariant();
     }
 }

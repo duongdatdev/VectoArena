@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Thirdweb.Unity;
 using Thirdweb;
+#if THIRDWEB_REOWN
+using Reown.AppKit.Unity;
+#endif
 
 // Run BEFORE ThirdwebManager's Awake so we can set ClientId in time
 [DefaultExecutionOrder(-200)]
@@ -122,40 +125,50 @@ public class Web3Manager : MonoBehaviour
 
             Debug.Log($"[Web3Manager] Connecting to Chain: {this.chainId} using ClientID: {ConfigManager.Config.thirdwebClientId}");
 
-            PlayerPrefs.DeleteKey(ThirdwebAutoConnectOptionsKey);
-            PlayerPrefs.Save();
+            string linkedWalletAddress = NormalizeWalletAddress(PlayerInventory.LinkedWalletAddress);
+#if UNITY_EDITOR
+            await DisconnectWalletSession("Editor wallet link starts from a clean Reown session.");
+#endif
 
-            if (ThirdwebManager.Instance.ActiveWallet != null)
-            {
-                await ThirdwebManager.Instance.DisconnectWallet();
-            }
-
-            // MetaMask wallet ID for Reown (WalletConnect)
-            const string METAMASK_WALLET_ID = "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96";
-
-            var walletOptions = new WalletOptions(
-                provider: WalletProvider.ReownWallet, 
-                chainId: this.chainId, 
-                reownOptions: new ReownOptions(
-                    singleWalletId: METAMASK_WALLET_ID
-                )
-            );
-
-            var wallet = await ThirdwebManager.Instance.ConnectWallet(walletOptions);
+            bool shouldResumeWalletSession = !Application.isEditor && !string.IsNullOrEmpty(linkedWalletAddress);
+            var wallet = await ConnectReownWallet(shouldResumeWalletSession);
             string address = await wallet.GetAddress();
+            string normalizedAddress = NormalizeWalletAddress(address);
 
             Debug.Log($"Connected Wallet: {address}");
 
-            // Link to Backend
-            bool linked = await NetworkManager.Instance.LinkWallet(address);
+            if (!string.IsNullOrEmpty(linkedWalletAddress))
+            {
+                if (normalizedAddress != linkedWalletAddress && shouldResumeWalletSession)
+                {
+                    await DisconnectWalletSession("Resumed wallet does not match this account; opening a fresh Reown connection.");
+                    wallet = await ConnectReownWallet(false);
+                    address = await wallet.GetAddress();
+                    normalizedAddress = NormalizeWalletAddress(address);
+                }
+
+                if (normalizedAddress == linkedWalletAddress)
+                {
+                    Debug.Log("Connected wallet matches linked account wallet.");
+                    return true;
+                }
+
+                Debug.LogError("Connected wallet does not match this account's linked wallet.");
+                await DisconnectWalletSession("Wrong wallet connected; clearing wallet session.");
+                return false;
+            }
+
+            bool linked = await NetworkManager.Instance.LinkWallet(normalizedAddress);
             if (linked)
             {
                 Debug.Log("Wallet successfully linked to account!");
+                await PlayerInventory.LoadFromServer();
                 return true;
             }
             else
             {
                 Debug.LogError("Failed to link wallet to backend.");
+                await DisconnectWalletSession("Wallet link failed; clearing unlinked wallet session.");
                 return false;
             }
         }
@@ -164,6 +177,74 @@ public class Web3Manager : MonoBehaviour
             Debug.LogError($"Error connecting wallet: {e.Message}");
             return false;
         }
+    }
+
+    private Task<IThirdwebWallet> ConnectReownWallet(bool tryResumeSession)
+    {
+        // MetaMask wallet ID for Reown (WalletConnect)
+        const string METAMASK_WALLET_ID = "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96";
+
+        var walletOptions = new WalletOptions(
+            provider: WalletProvider.ReownWallet,
+            chainId: this.chainId,
+            reownOptions: new ReownOptions(
+                singleWalletId: METAMASK_WALLET_ID,
+                tryResumeSession: tryResumeSession
+            )
+        );
+
+        return ThirdwebManager.Instance.ConnectWallet(walletOptions);
+    }
+
+    public async Task DisconnectWalletSession(string reason = null)
+    {
+        if (!string.IsNullOrEmpty(reason))
+        {
+            Debug.Log($"[Web3Manager] {reason}");
+        }
+
+        PlayerPrefs.DeleteKey(ThirdwebAutoConnectOptionsKey);
+        PlayerPrefs.Save();
+
+        if (ThirdwebManager.Instance != null && ThirdwebManager.Instance.ActiveWallet != null)
+        {
+            await ThirdwebManager.Instance.DisconnectWallet();
+        }
+
+        await DisconnectReownSessionIfNeeded();
+    }
+
+    private async Task DisconnectReownSessionIfNeeded()
+    {
+#if THIRDWEB_REOWN
+        if (!AppKit.IsInitialized || AppKit.ConnectorController == null)
+        {
+            return;
+        }
+
+        if (!AppKit.ConnectorController.IsAccountConnected)
+        {
+            return;
+        }
+
+        try
+        {
+            Debug.Log("[Web3Manager] Disconnecting existing Reown session before wallet link.");
+            await AppKit.ConnectorController.DisconnectAsync();
+            AppKit.CloseModal();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[Web3Manager] Failed to disconnect existing Reown session: {e.Message}");
+        }
+#else
+        await Task.CompletedTask;
+#endif
+    }
+
+    private string NormalizeWalletAddress(string walletAddress)
+    {
+        return string.IsNullOrWhiteSpace(walletAddress) ? null : walletAddress.Trim().ToLowerInvariant();
     }
 
     /// <summary>

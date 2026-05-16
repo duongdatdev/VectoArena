@@ -894,6 +894,7 @@ public class NetworkManager : MonoBehaviour
     public class PlayerProfileResponse
     {
         public string username;
+        public string walletAddress;
         public int vecBalance;
         public int coinBalance;
         public int level;

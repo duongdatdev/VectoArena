@@ -221,19 +221,55 @@ public class HomeScreenController : MonoBehaviour
     {
         if (walletButton == null || walletLabel == null) return;
 
-        // Check if Thirdweb wallet is connected
-        if (ThirdwebManager.Instance != null && ThirdwebManager.Instance.ActiveWallet != null)
-        {
-            isWalletConnected = true;
-            walletButton.AddToClassList("wallet-button--connected");
-            // Show truncated address
-            _ = UpdateWalletLabel();
-        }
-        else
+        _ = RefreshWalletStateAsync();
+    }
+
+    private async System.Threading.Tasks.Task RefreshWalletStateAsync()
+    {
+        if (walletButton == null || walletLabel == null) return;
+
+        string linkedWalletAddress = NormalizeWalletAddress(PlayerInventory.LinkedWalletAddress);
+        if (ThirdwebManager.Instance == null || ThirdwebManager.Instance.ActiveWallet == null)
         {
             isWalletConnected = false;
             walletButton.RemoveFromClassList("wallet-button--connected");
-            walletLabel.text = "CONNECT";
+            walletLabel.text = string.IsNullOrEmpty(linkedWalletAddress) ? "CONNECT" : ShortenWalletAddress(linkedWalletAddress);
+            return;
+        }
+
+        try
+        {
+            string activeWalletAddress = NormalizeWalletAddress(await ThirdwebManager.Instance.ActiveWallet.GetAddress());
+            if (!string.IsNullOrEmpty(linkedWalletAddress) && activeWalletAddress != linkedWalletAddress)
+            {
+                isWalletConnected = false;
+                walletButton.RemoveFromClassList("wallet-button--connected");
+                walletLabel.text = ShortenWalletAddress(linkedWalletAddress);
+
+                if (Web3Manager.Instance != null)
+                {
+                    await Web3Manager.Instance.DisconnectWalletSession("Active wallet does not match this account's linked wallet.");
+                }
+                return;
+            }
+
+            if (string.IsNullOrEmpty(linkedWalletAddress))
+            {
+                isWalletConnected = false;
+                walletButton.RemoveFromClassList("wallet-button--connected");
+                walletLabel.text = "CONNECT";
+                return;
+            }
+
+            isWalletConnected = true;
+            walletButton.AddToClassList("wallet-button--connected");
+            walletLabel.text = ShortenWalletAddress(activeWalletAddress);
+        }
+        catch
+        {
+            isWalletConnected = false;
+            walletButton.RemoveFromClassList("wallet-button--connected");
+            walletLabel.text = string.IsNullOrEmpty(linkedWalletAddress) ? "CONNECT" : ShortenWalletAddress(linkedWalletAddress);
         }
     }
 
@@ -248,6 +284,21 @@ public class HomeScreenController : MonoBehaviour
         {
             walletLabel.text = "CONNECTED";
         }
+    }
+
+    private string NormalizeWalletAddress(string walletAddress)
+    {
+        return string.IsNullOrWhiteSpace(walletAddress) ? null : walletAddress.Trim().ToLowerInvariant();
+    }
+
+    private string ShortenWalletAddress(string walletAddress)
+    {
+        if (string.IsNullOrEmpty(walletAddress) || walletAddress.Length <= 14)
+        {
+            return string.IsNullOrEmpty(walletAddress) ? "CONNECT" : walletAddress;
+        }
+
+        return walletAddress.Substring(0, 6) + "..." + walletAddress.Substring(walletAddress.Length - 4);
     }
 
     private async void OnClickWallet()

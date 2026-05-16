@@ -60,6 +60,7 @@
                 <ui:Label text="AIRDROP" class="game-mode-title"/>
             </ui:Button>
             <ui:Label name="AirdropLockLabel" text="UNLOCKS AT LV 5" class="airdrop-lock-label"/>
+            <ui:Label name="LockedVecAmount" text="LOCKED VEC: 0" class="locked-vec-label"/>
             <ui:Button name="PlayButton" text="PLAY NORMAL" class="play-button play-button--normal"/>
         </ui:VisualElement>
 
@@ -87,6 +88,7 @@
                         <ui:TextField name="DepositAmountField" value="10" class="deposit-popup__input"/>
                     </ui:VisualElement>
                     <ui:Label name="DepositStatus" text="" class="deposit-popup__status"/>
+                    <ui:Label name="DepositLockedVec" text="Locked VEC: 0" class="deposit-popup__locked-vec"/>
                     <ui:Button name="DepositConfirmButton" text="DEPOSIT" class="button-long button-long--yellow deposit-popup__confirm"/>
                     <ui:VisualElement class="transaction-history">
                         <ui:VisualElement class="transaction-history__header">

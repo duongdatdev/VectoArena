@@ -7,6 +7,7 @@ public class SkinCatalogItem
     public string Id;
     public string DisplayName;
     public int Price;
+    public string CurrencyType = "COIN";
     public string PrefabResourcePath;
     public string IconResourcePath;
 }
@@ -20,6 +21,7 @@ public static class SkinCatalog
             Id = "Female01",
             DisplayName = "Vecto Hero",
             Price = 0,
+            CurrencyType = "COIN",
             PrefabResourcePath = "",
             IconResourcePath = "CharacterSkins/Female01/Icon_Char_Female01"
         },
@@ -28,6 +30,7 @@ public static class SkinCatalog
             Id = "Female02",
             DisplayName = "Nova Runner",
             Price = 500,
+            CurrencyType = "COIN",
             PrefabResourcePath = "CharacterSkins/Female02/Char_Female02",
             IconResourcePath = "CharacterSkins/Female02/Icon_Char_Female02"
         },
@@ -36,6 +39,7 @@ public static class SkinCatalog
             Id = "CorposFemale",
             DisplayName = "Corpos Agent",
             Price = 800,
+            CurrencyType = "COIN",
             PrefabResourcePath = "CharacterSkins/CorposFemale/Char_CorposFemale",
             IconResourcePath = "CharacterSkins/CorposFemale/Icon_Char_CorposFemale"
         },
@@ -43,7 +47,8 @@ public static class SkinCatalog
         {
             Id = "AssassinFemale",
             DisplayName = "Shadow Assassin",
-            Price = 1200,
+            Price = 25,
+            CurrencyType = "VEC",
             PrefabResourcePath = "CharacterSkins/AssassinFemale/Char_AssassinFemale",
             IconResourcePath = "CharacterSkins/AssassinFemale/Icon_Char_AssassinFemale"
         }

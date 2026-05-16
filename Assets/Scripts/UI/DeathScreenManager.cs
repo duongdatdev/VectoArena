@@ -272,7 +272,7 @@ public class DeathScreenManager : MonoBehaviour
         if (vecRewardHint != null)
         {
             vecRewardHint.text = result.vecEarned > 0
-                ? "Added to your VEC balance when you return"
+                ? "Added to locked VEC when you return"
                 : "No VEC earned this match";
         }
 

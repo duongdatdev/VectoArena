@@ -57,7 +57,7 @@ public class StoreScreenController : MonoBehaviour
         PlayerInventory.EnsureInitialized();
         if (coinsAmount != null)
         {
-            coinsAmount.text = $"{PlayerInventory.Coins:N0} COINS";
+            coinsAmount.text = $"{PlayerInventory.Coins:N0} COINS  |  {PlayerInventory.VecUnlockedBalance:N0} VEC";
         }
         productList.Clear();
 
@@ -90,14 +90,14 @@ public class StoreScreenController : MonoBehaviour
         buyButton.AddToClassList("button-long");
         buyButton.AddToClassList("button-long--yellow");
         buyButton.AddToClassList("product-price-btn");
-        buyButton.text = owned ? equipped ? "EQUIPPED" : "EQUIP" : $"{item.Price:N0} COINS";
+        buyButton.text = owned ? equipped ? "EQUIPPED" : "EQUIP" : $"{item.Price:N0} {GetCurrencyLabel(item)}";
         buyButton.clicked += async () =>
         {
             buyButton.SetEnabled(false);
             bool success = await PlayerInventory.TryBuySkinAsync(item);
             if (storeStatus != null)
             {
-                storeStatus.text = success ? $"{item.DisplayName.ToUpper()} READY" : "NOT ENOUGH COINS";
+                storeStatus.text = success ? $"{item.DisplayName.ToUpper()} READY" : $"NOT ENOUGH {GetCurrencyLabel(item)}";
             }
             RefreshProducts();
         };
@@ -106,5 +106,10 @@ public class StoreScreenController : MonoBehaviour
         card.Add(name);
         card.Add(buyButton);
         return card;
+    }
+
+    private string GetCurrencyLabel(SkinCatalogItem item)
+    {
+        return string.Equals(item.CurrencyType, "VEC", System.StringComparison.OrdinalIgnoreCase) ? "VEC" : "COINS";
     }
 }

@@ -54,7 +54,7 @@ public class CollectionScreenController
         PlayerInventory.EnsureInitialized();
         if (coinsAmount != null)
         {
-            coinsAmount.text = $"{PlayerInventory.Coins:N0} COINS";
+            coinsAmount.text = $"{PlayerInventory.Coins:N0} COINS  |  {PlayerInventory.VecUnlockedBalance:N0} VEC";
         }
         skinList.Clear();
 
@@ -84,7 +84,7 @@ public class CollectionScreenController
         Label name = new Label(item.DisplayName.ToUpper());
         name.AddToClassList("collection-card-name");
 
-        Label state = new Label(owned ? equipped ? "EQUIPPED" : "OWNED" : $"LOCKED - {item.Price:N0} COINS");
+        Label state = new Label(owned ? equipped ? "EQUIPPED" : "OWNED" : $"LOCKED - {item.Price:N0} {GetCurrencyLabel(item)}");
         state.AddToClassList("collection-card-state");
 
         Button action = new Button();
@@ -109,5 +109,10 @@ public class CollectionScreenController
         card.Add(state);
         card.Add(action);
         return card;
+    }
+
+    private string GetCurrencyLabel(SkinCatalogItem item)
+    {
+        return string.Equals(item.CurrencyType, "VEC", System.StringComparison.OrdinalIgnoreCase) ? "VEC" : "COINS";
     }
 }

@@ -8,7 +8,8 @@ public static class PlayerInventory
     public const string DefaultSkinId = "Female01";
     private static readonly HashSet<string> ownedSkins = new HashSet<string> { DefaultSkinId };
     private static int coins;
-    private static int vecBalance;
+    private static int vecUnlockedBalance;
+    private static int vecLockedBalance;
     private static int level = 1;
     private static int xp;
     private static int xpToNextLevel = 100;
@@ -21,7 +22,8 @@ public static class PlayerInventory
     public static event Action Changed;
 
     public static int Coins => coins;
-    public static int VecBalance => vecBalance;
+    public static int VecUnlockedBalance => vecUnlockedBalance;
+    public static int VecLockedBalance => vecLockedBalance;
     public static int Level => level;
     public static int Xp => xp;
     public static int XpToNextLevel => xpToNextLevel;
@@ -40,7 +42,8 @@ public static class PlayerInventory
     public static void ResetToGuest()
     {
         coins = 0;
-        vecBalance = 0;
+        vecUnlockedBalance = 0;
+        vecLockedBalance = 0;
         level = 1;
         xp = 0;
         xpToNextLevel = 100;
@@ -128,7 +131,8 @@ public static class PlayerInventory
         }
 
         coins = profile.coinBalance;
-        vecBalance = profile.vecBalance;
+        vecUnlockedBalance = profile.vecUnlockedBalance;
+        vecLockedBalance = profile.vecLockedBalance;
         level = Mathf.Max(1, profile.level);
         xp = Mathf.Max(0, profile.xp);
         xpToNextLevel = Mathf.Max(0, profile.xpToNextLevel);

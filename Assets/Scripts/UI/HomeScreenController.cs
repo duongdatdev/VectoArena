@@ -18,6 +18,7 @@ public class HomeScreenController : MonoBehaviour
     private Button playButton;
     private Button airdropButton;
     private Label airdropLockLabel;
+    private Label lockedVecAmountLabel;
     private Button settingsButton;
     private Button shopButton;
     private Button collectionButton;
@@ -38,6 +39,7 @@ public class HomeScreenController : MonoBehaviour
     private Button depositConfirmButton;
     private TextField depositAmountField;
     private Label depositStatus;
+    private Label depositLockedVecLabel;
     private Button transactionHistoryButton;
     private Label transactionHistoryStatus;
     private VisualElement transactionHistoryList;
@@ -72,6 +74,7 @@ public class HomeScreenController : MonoBehaviour
         playButton = root.Q<Button>("PlayButton");
         airdropButton = root.Q<Button>("GameModeButton");
         airdropLockLabel = root.Q<Label>("AirdropLockLabel");
+        lockedVecAmountLabel = root.Q<Label>("LockedVecAmount");
         settingsButton = root.Q<Button>("SettingsButton");
         shopButton = root.Q<Button>("ShopButton");
         collectionButton = root.Q<Button>("CollectionButton");
@@ -91,6 +94,7 @@ public class HomeScreenController : MonoBehaviour
         depositConfirmButton = root.Q<Button>("DepositConfirmButton");
         depositAmountField = root.Q<TextField>("DepositAmountField");
         depositStatus = root.Q<Label>("DepositStatus");
+        depositLockedVecLabel = root.Q<Label>("DepositLockedVec");
         transactionHistoryButton = root.Q<Button>("TransactionHistoryButton");
         transactionHistoryStatus = root.Q<Label>("TransactionHistoryStatus");
         transactionHistoryList = root.Q<VisualElement>("TransactionHistoryList");
@@ -155,9 +159,13 @@ public class HomeScreenController : MonoBehaviour
     private void RefreshCurrencyDisplay()
     {
         if (vecAmountLabel != null)
-            vecAmountLabel.text = FormatCurrency(PlayerInventory.VecBalance);
+            vecAmountLabel.text = FormatCurrency(PlayerInventory.VecUnlockedBalance);
         if (coinAmountLabel != null)
             coinAmountLabel.text = FormatCurrency(PlayerInventory.Coins);
+        if (lockedVecAmountLabel != null)
+            lockedVecAmountLabel.text = $"LOCKED VEC: {FormatCurrency(PlayerInventory.VecLockedBalance)}";
+        if (depositLockedVecLabel != null)
+            depositLockedVecLabel.text = $"Locked VEC: {PlayerInventory.VecLockedBalance:N0}";
     }
 
     private void RefreshPlayerProfileDisplay()
@@ -348,6 +356,7 @@ public class HomeScreenController : MonoBehaviour
         if (depositPopup == null) return;
         depositPopup.RemoveFromClassList("hidden");
         if (depositStatus != null) depositStatus.text = "";
+        if (depositLockedVecLabel != null) depositLockedVecLabel.text = $"Locked VEC: {PlayerInventory.VecLockedBalance:N0}";
         if (depositAmountField != null) depositAmountField.value = "10";
         LoadTransactionHistory();
     }
@@ -547,7 +556,10 @@ public class HomeScreenController : MonoBehaviour
     {
         string sign = transaction.amount > 0 ? "+" : "";
         string currency = string.IsNullOrEmpty(transaction.currencyType) ? "VEC" : transaction.currencyType;
-        return $"{sign}{transaction.amount:N0} {currency}";
+        string bucket = currency == "VEC" && !string.IsNullOrEmpty(transaction.vecBucket)
+            ? $" {transaction.vecBucket}"
+            : "";
+        return $"{sign}{transaction.amount:N0} {currency}{bucket}";
     }
 
     private string GetExplorerUrl(NetworkManager.CurrencyTransactionResponse transaction)

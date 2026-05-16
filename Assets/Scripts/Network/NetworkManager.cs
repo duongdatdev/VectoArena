@@ -985,7 +985,8 @@ public class NetworkManager : MonoBehaviour
     {
         public string username;
         public string walletAddress;
-        public int vecBalance;
+        public int vecUnlockedBalance;
+        public int vecLockedBalance;
         public int coinBalance;
         public int level;
         public int xp;
@@ -1018,6 +1019,7 @@ public class NetworkManager : MonoBehaviour
         public string id;
         public string displayName;
         public int price;
+        public string currencyType;
         public bool owned;
         public bool equipped;
     }
@@ -1036,6 +1038,7 @@ public class NetworkManager : MonoBehaviour
     {
         public string id;
         public string currencyType;
+        public string vecBucket;
         public string type;
         public int amount;
         public int balanceBefore;

@@ -257,6 +257,14 @@
     min-height: 30px;
 }
 
+.deposit-popup__locked-vec {
+    font-size: 20px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-bottom: 8px;
+}
+
 .deposit-popup__confirm {
     margin-top: 10px;
     align-self: center;
@@ -624,6 +632,18 @@
     margin-bottom: 14px;
     font-size: 17px;
     color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+}
+
+.locked-vec-label {
+    width: 210px;
+    margin-right: 162px;
+    margin-bottom: 14px;
+    font-size: 18px;
+    color: rgb(73, 212, 212);
     -unity-font-definition: var(--font-bold);
     -unity-text-align: middle-center;
     -unity-text-outline-width: 1px;

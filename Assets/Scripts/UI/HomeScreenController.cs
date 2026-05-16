@@ -25,6 +25,7 @@ public class HomeScreenController : MonoBehaviour
 
     // Currencies
     private Label vecAmountLabel;
+    private Label lockedVecTopAmountLabel;
     private Label coinAmountLabel;
     private Button vecDisplay;
 
@@ -81,6 +82,7 @@ public class HomeScreenController : MonoBehaviour
 
         // Currency displays
         vecAmountLabel = root.Q<Label>("VecAmount");
+        lockedVecTopAmountLabel = root.Q<Label>("LockedVecTopAmount");
         coinAmountLabel = root.Q<Label>("CoinAmount");
         vecDisplay = root.Q<Button>("VecDisplay");
 
@@ -160,6 +162,8 @@ public class HomeScreenController : MonoBehaviour
     {
         if (vecAmountLabel != null)
             vecAmountLabel.text = FormatCurrency(PlayerInventory.VecUnlockedBalance);
+        if (lockedVecTopAmountLabel != null)
+            lockedVecTopAmountLabel.text = FormatCurrency(PlayerInventory.VecLockedBalance);
         if (coinAmountLabel != null)
             coinAmountLabel.text = FormatCurrency(PlayerInventory.Coins);
         if (lockedVecAmountLabel != null)

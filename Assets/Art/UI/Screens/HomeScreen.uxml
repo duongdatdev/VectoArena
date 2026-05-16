@@ -28,6 +28,14 @@
                     <ui:VisualElement class="currency-pill__icon currency-pill__icon--vec"/>
                     <ui:Label name="VecAmount" text="0" class="currency-pill__amount"/>
                 </ui:Button>
+                <!-- Locked VEC Display -->
+                <ui:VisualElement name="LockedVecDisplay" class="currency-pill currency-pill--locked-vec">
+                    <ui:VisualElement class="currency-pill__icon-wrap">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--locked-vec"/>
+                        <ui:VisualElement class="currency-pill__lock-badge"/>
+                    </ui:VisualElement>
+                    <ui:Label name="LockedVecTopAmount" text="0" class="currency-pill__amount"/>
+                </ui:VisualElement>
                 <!-- Coin Display -->
                 <ui:VisualElement name="CoinDisplay" class="currency-pill currency-pill--coin">
                     <ui:VisualElement class="currency-pill__icon currency-pill__icon--coin"/>

@@ -214,6 +214,18 @@ public class Web3Manager : MonoBehaviour
         await DisconnectReownSessionIfNeeded();
     }
 
+    public void ForgetWalletSession(string reason = null)
+    {
+        if (!string.IsNullOrEmpty(reason))
+        {
+            Debug.Log($"[Web3Manager] {reason}");
+        }
+
+        PlayerPrefs.DeleteKey(ThirdwebAutoConnectOptionsKey);
+        PlayerPrefs.Save();
+
+    }
+
     private async Task DisconnectReownSessionIfNeeded()
     {
 #if THIRDWEB_REOWN

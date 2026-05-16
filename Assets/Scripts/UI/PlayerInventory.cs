@@ -37,6 +37,23 @@ public static class PlayerInventory
         ownedSkins.Add(DefaultSkinId);
     }
 
+    public static void ResetToGuest()
+    {
+        coins = 0;
+        vecBalance = 0;
+        level = 1;
+        xp = 0;
+        xpToNextLevel = 100;
+        xpProgress = 0f;
+        username = null;
+        linkedWalletAddress = null;
+        equippedSkinId = DefaultSkinId;
+        loadedFromServer = false;
+        ownedSkins.Clear();
+        ownedSkins.Add(DefaultSkinId);
+        Changed?.Invoke();
+    }
+
     public static bool IsSkinOwned(string skinId)
     {
         EnsureInitialized();

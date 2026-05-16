@@ -30,8 +30,11 @@ public class VectoAudioManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        GameSettings.Initialize();
         CreateSources();
         CreateAudioListener();
+        GameSettings.Changed += ApplySettings;
+        ApplySettings();
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -177,7 +180,7 @@ public class VectoAudioManager : MonoBehaviour
         }
 
         musicSource.clip = clip;
-        musicSource.volume = entry.volume;
+        musicSource.volume = entry.volume * GameSettings.MusicVolume;
         musicSource.loop = true;
         musicSource.spatialBlend = 0f;
         musicSource.Play();
@@ -195,7 +198,7 @@ public class VectoAudioManager : MonoBehaviour
         AudioSource source = GetSource();
         source.transform.position = position;
         source.clip = clip;
-        source.volume = entry.volume;
+        source.volume = entry.volume * GameSettings.SfxVolume;
         source.loop = entry.loop;
         source.spatialBlend = is3D ? spatialBlend3D : 0f;
         source.minDistance = minDistance3D;
@@ -280,7 +283,7 @@ public class VectoAudioManager : MonoBehaviour
         if (startEntry != null && startClip != null)
         {
             musicSource.clip = startClip;
-            musicSource.volume = startEntry.volume;
+            musicSource.volume = startEntry.volume * GameSettings.MusicVolume;
             musicSource.loop = false;
             musicSource.spatialBlend = 0f;
             musicSource.Play();
@@ -311,6 +314,58 @@ public class VectoAudioManager : MonoBehaviour
                 return isLocalPlayer ? VectoAudioId.QuadzookaShotLocal : VectoAudioId.QuadzookaShot;
             default:
                 return isLocalPlayer ? VectoAudioId.AssaultRifleShotLocal : VectoAudioId.AssaultRifleShot;
+        }
+    }
+
+    private void ApplySettings()
+    {
+        AudioListener.volume = GameSettings.MasterVolume;
+
+        if (musicSource != null && musicSource.isPlaying)
+        {
+            VectoAudioEntry musicEntry = GetEntryByClip(musicSource.clip);
+            if (musicEntry != null)
+            {
+                musicSource.volume = musicEntry.volume * GameSettings.MusicVolume;
+            }
+        }
+
+        if (sources == null)
+        {
+            return;
+        }
+
+        foreach (AudioSource source in sources)
+        {
+            if (source == null || !source.isPlaying)
+            {
+                continue;
+            }
+
+            VectoAudioEntry entry = GetEntryByClip(source.clip);
+            if (entry != null)
+            {
+                source.volume = entry.volume * GameSettings.SfxVolume;
+            }
+        }
+    }
+
+    private VectoAudioEntry GetEntryByClip(AudioClip clip)
+    {
+        if (clip == null || library == null || library.entries == null)
+        {
+            return null;
+        }
+
+        return library.entries.Find(entry => entry.clips != null && entry.clips.Contains(clip));
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            GameSettings.Changed -= ApplySettings;
+            Instance = null;
         }
     }
 }

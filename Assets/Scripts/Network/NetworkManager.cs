@@ -873,6 +873,43 @@ public class NetworkManager : MonoBehaviour
         return leaveRoomTask;
     }
 
+    public async Task Logout()
+    {
+        cancelMatchmakingRequested = true;
+        authToken = null;
+        hasGameStarted = false;
+
+        if (leaveRoomTask != null)
+        {
+            await leaveRoomTask;
+            leaveRoomTask = null;
+        }
+
+        await LeaveCurrentRoom();
+        playerObjects.Clear();
+        itemObjects.Clear();
+        itemWeaponConfigs.Clear();
+    }
+
+    public void LogoutLocal(bool leaveRoom = false)
+    {
+        cancelMatchmakingRequested = true;
+        authToken = null;
+        hasGameStarted = false;
+
+        var currentRoom = room;
+        room = null;
+        leaveRoomTask = null;
+        playerObjects.Clear();
+        itemObjects.Clear();
+        itemWeaponConfigs.Clear();
+
+        if (leaveRoom && currentRoom != null)
+        {
+            _ = LeaveRoomBestEffort(currentRoom);
+        }
+    }
+
     private async Task LeaveCurrentRoom()
     {
         var currentRoom = room;
@@ -894,6 +931,26 @@ public class NetworkManager : MonoBehaviour
         if (leaveRoomTask != null && leaveRoomTask.IsCompleted)
         {
             leaveRoomTask = null;
+        }
+    }
+
+    private async Task LeaveRoomBestEffort(Room<GameState> roomToLeave)
+    {
+        try
+        {
+            Task leaveTask = roomToLeave.Leave();
+            Task completedTask = await Task.WhenAny(leaveTask, Task.Delay(1500));
+            if (completedTask != leaveTask)
+            {
+                Debug.LogWarning("Logout room leave timed out; continuing.");
+                return;
+            }
+
+            await leaveTask;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("Logout room leave failed: " + ex.Message);
         }
     }
 

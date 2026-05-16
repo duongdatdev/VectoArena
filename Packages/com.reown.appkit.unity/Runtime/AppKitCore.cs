@@ -25,7 +25,6 @@ namespace Reown.AppKit.Unity
             }
             else
             {
-                Debug.LogError("[AppKit] Instance already exists. Destroying...");
                 Destroy(gameObject);
             }
         }

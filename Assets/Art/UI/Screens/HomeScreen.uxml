@@ -20,6 +20,7 @@
 
         <!-- Top Bar (Top-Right): Currencies + Settings -->
         <ui:VisualElement name="TopBar" class="top-bar">
+            <ui:Button name="SettingsButton" class="settings-button"/>
             <!-- Currency Displays -->
             <ui:VisualElement name="CurrencyBar" class="currency-bar">
                 <!-- VEC Token Display -->
@@ -38,7 +39,6 @@
                 <ui:VisualElement class="wallet-button__icon"/>
                 <ui:Label name="WalletLabel" text="CONNECT" class="wallet-button__label"/>
             </ui:Button>
-            <ui:Button name="SettingsButton" class="settings-button"/>
         </ui:VisualElement>
 
         <!-- Left Buttons -->

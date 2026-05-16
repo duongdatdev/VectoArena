@@ -44,8 +44,8 @@
 .top-bar {
     flex-direction: row-reverse;
     position: absolute;
-    top: 28px;
-    right: 42px;
+    top: 18px;
+    right: 24px;
     align-items: center;
 }
 
@@ -495,8 +495,9 @@
 
 .settings-button {
     background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-settings.png?fileID=21300000&guid=81bdc28af928c47228c71078970f94ea&type=3#icon-settings");
-    width: 94px;
-    height: 94px;
+    width: 82px;
+    height: 82px;
+    margin-left: 16px;
     background-color: transparent;
     border-width: 0;
     -unity-background-scale-mode: scale-to-fit;

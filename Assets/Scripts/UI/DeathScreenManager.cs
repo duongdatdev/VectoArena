@@ -135,7 +135,8 @@ public class DeathScreenManager : MonoBehaviour
             if (localPlayerSync.GetState().isDead)
             {
                 isDead = true;
-                ShowSpectatingScreen("");
+                SpectateRandomAlivePlayer();
+                ShowSpectatingScreen("THE ZONE");
             }
         }
     }
@@ -146,19 +147,26 @@ public class DeathScreenManager : MonoBehaviour
         {
             if (msg.victimName == localPlayerSync.GetState().username)
             {
-                // We got killed by someone.
-                SpectatePlayer(msg.killerName);
+                if (string.IsNullOrEmpty(msg.killerName))
+                {
+                    SpectateRandomAlivePlayer();
+                }
+                else
+                {
+                    SpectatePlayer(msg.killerName);
+                }
+
                 if (isDead)
                 {
                     if (defeatedByName != null)
                     {
-                        defeatedByName.text = msg.killerName;
+                        defeatedByName.text = string.IsNullOrEmpty(msg.killerName) ? "THE ZONE" : msg.killerName;
                     }
                     return;
                 }
 
                 isDead = true;
-                ShowSpectatingScreen(msg.killerName);
+                ShowSpectatingScreen(string.IsNullOrEmpty(msg.killerName) ? "THE ZONE" : msg.killerName);
             }
         }
     }
@@ -311,6 +319,23 @@ public class DeathScreenManager : MonoBehaviour
         }
     }
 
+    private void SpectateRandomAlivePlayer()
+    {
+        if (NetworkManager.Instance == null)
+        {
+            return;
+        }
+
+        string localSessionId = localPlayerSync != null ? localPlayerSync.GetSessionId() : null;
+        GameObject targetPlayer = NetworkManager.Instance.FindRandomAlivePlayerObject(localSessionId);
+        if (targetPlayer == null)
+        {
+            return;
+        }
+
+        SetCameraTarget(targetPlayer.transform);
+    }
+
     private void SpectatePlayer(string playerName)
     {
         if (NetworkManager.Instance == null || string.IsNullOrEmpty(playerName))
@@ -324,6 +349,16 @@ public class DeathScreenManager : MonoBehaviour
             return;
         }
 
+        SetCameraTarget(targetPlayer.transform);
+    }
+
+    private void SetCameraTarget(Transform target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
         Camera mainCamera = Camera.main;
         if (mainCamera == null)
         {
@@ -333,7 +368,7 @@ public class DeathScreenManager : MonoBehaviour
         CameraFollow cameraFollow = mainCamera.GetComponent<CameraFollow>();
         if (cameraFollow != null)
         {
-            cameraFollow.target = targetPlayer.transform;
+            cameraFollow.target = target;
         }
     }
 

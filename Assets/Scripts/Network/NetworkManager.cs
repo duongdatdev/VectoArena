@@ -765,6 +765,39 @@ public class NetworkManager : MonoBehaviour
         return null;
     }
 
+    public GameObject FindRandomAlivePlayerObject(string excludedSessionId = null)
+    {
+        List<GameObject> alivePlayers = new List<GameObject>();
+
+        foreach (KeyValuePair<string, GameObject> entry in playerObjects)
+        {
+            if (!string.IsNullOrEmpty(excludedSessionId) && entry.Key == excludedSessionId)
+            {
+                continue;
+            }
+
+            GameObject playerObject = entry.Value;
+            if (playerObject == null)
+            {
+                continue;
+            }
+
+            NetworkPlayerSync sync = playerObject.GetComponent<NetworkPlayerSync>();
+            PlayerState playerState = sync != null ? sync.GetState() : null;
+            if (playerState != null && !playerState.isDead && playerState.hp > 0)
+            {
+                alivePlayers.Add(playerObject);
+            }
+        }
+
+        if (alivePlayers.Count == 0)
+        {
+            return null;
+        }
+
+        return alivePlayers[UnityEngine.Random.Range(0, alivePlayers.Count)];
+    }
+
     private void SpawnPlayer(string key, PlayerState playerState)
     {
         if (playerObjects.ContainsKey(key) && playerObjects[key] != null) return;

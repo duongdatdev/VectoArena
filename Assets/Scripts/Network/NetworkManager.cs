@@ -995,6 +995,7 @@ public class NetworkManager : MonoBehaviour
         public int levelsGained;
         public string equippedPlayerSkin;
         public string[] ownedSkins;
+        public ShopSkinResponse[] skinOwnership;
         public ShopSkinResponse[] shopSkins;
     }
 
@@ -1017,13 +1018,17 @@ public class NetworkManager : MonoBehaviour
     public class ShopSkinResponse
     {
         public string id;
+        public string skinId;
         public string displayName;
         public string prefabKey;
         public int price;
         public string currencyType;
         public string ownershipType;
         public SkinNftMappingResponse nft;
+        public NftSkinInfoResponse nftInfo;
         public bool owned;
+        public bool canEquip;
+        public string source;
         public bool equipped;
     }
 
@@ -1034,6 +1039,17 @@ public class NetworkManager : MonoBehaviour
         public string contractAddress;
         public string tokenId;
         public string collectionKey;
+    }
+
+    [Serializable]
+    public class NftSkinInfoResponse
+    {
+        public int? chainId;
+        public string contractAddress;
+        public string tokenId;
+        public string standard;
+        public int balance;
+        public string lastSyncedAt;
     }
 
     [Serializable]

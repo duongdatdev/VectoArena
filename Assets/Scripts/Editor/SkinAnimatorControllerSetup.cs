@@ -9,7 +9,11 @@ public static class SkinAnimatorControllerSetup
     {
         "Assets/Resources/CharacterSkins/Female02/Char_Female02.prefab",
         "Assets/Resources/CharacterSkins/CorposFemale/Char_CorposFemale.prefab",
-        "Assets/Resources/CharacterSkins/AssassinFemale/Char_AssassinFemale.prefab"
+        "Assets/Resources/CharacterSkins/AssassinFemale/Char_AssassinFemale.prefab",
+        "Assets/Resources/CharacterSkins/CyberBunny/Char_CyberBunny.prefab",
+        "Assets/Resources/CharacterSkins/Iceking/Char_Iceking.prefab",
+        "Assets/Resources/CharacterSkins/Anubis/Char_Anubis.prefab",
+        "Assets/Resources/CharacterSkins/GearedApe/Char_GearedApe.prefab"
     };
 
     [MenuItem("VectoArena/Setup Skin Animator Controllers")]

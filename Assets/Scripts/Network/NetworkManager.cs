@@ -1018,10 +1018,22 @@ public class NetworkManager : MonoBehaviour
     {
         public string id;
         public string displayName;
+        public string prefabKey;
         public int price;
         public string currencyType;
+        public string ownershipType;
+        public SkinNftMappingResponse nft;
         public bool owned;
         public bool equipped;
+    }
+
+    [Serializable]
+    public class SkinNftMappingResponse
+    {
+        public int? chainId;
+        public string contractAddress;
+        public string tokenId;
+        public string collectionKey;
     }
 
     [Serializable]

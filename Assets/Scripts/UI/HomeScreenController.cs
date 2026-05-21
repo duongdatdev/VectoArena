@@ -18,7 +18,6 @@ public class HomeScreenController : MonoBehaviour
     private Button playButton;
     private Button airdropButton;
     private Label airdropLockLabel;
-    private Label lockedVecAmountLabel;
     private Button settingsButton;
     private Button shopButton;
     private Button collectionButton;
@@ -75,7 +74,6 @@ public class HomeScreenController : MonoBehaviour
         playButton = root.Q<Button>("PlayButton");
         airdropButton = root.Q<Button>("GameModeButton");
         airdropLockLabel = root.Q<Label>("AirdropLockLabel");
-        lockedVecAmountLabel = root.Q<Label>("LockedVecAmount");
         settingsButton = root.Q<Button>("SettingsButton");
         shopButton = root.Q<Button>("ShopButton");
         collectionButton = root.Q<Button>("CollectionButton");
@@ -166,8 +164,6 @@ public class HomeScreenController : MonoBehaviour
             lockedVecTopAmountLabel.text = FormatCurrency(PlayerInventory.VecLockedBalance);
         if (coinAmountLabel != null)
             coinAmountLabel.text = FormatCurrency(PlayerInventory.Coins);
-        if (lockedVecAmountLabel != null)
-            lockedVecAmountLabel.text = $"LOCKED VEC: {FormatCurrency(PlayerInventory.VecLockedBalance)}";
         if (depositLockedVecLabel != null)
             depositLockedVecLabel.text = $"Locked VEC: {PlayerInventory.VecLockedBalance:N0}";
     }

@@ -674,18 +674,6 @@
     -unity-text-outline-color: black;
 }
 
-.locked-vec-label {
-    width: 210px;
-    margin-right: 162px;
-    margin-bottom: 14px;
-    font-size: 18px;
-    color: rgb(73, 212, 212);
-    -unity-font-definition: var(--font-bold);
-    -unity-text-align: middle-center;
-    -unity-text-outline-width: 1px;
-    -unity-text-outline-color: black;
-}
-
 .matchmaking-container {
     background-color: rgba(0, 0, 0, 0.75);
     justify-content: center;

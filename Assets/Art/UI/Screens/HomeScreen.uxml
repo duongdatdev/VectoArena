@@ -68,7 +68,6 @@
                 <ui:Label text="AIRDROP" class="game-mode-title"/>
             </ui:Button>
             <ui:Label name="AirdropLockLabel" text="UNLOCKS AT LV 5" class="airdrop-lock-label"/>
-            <ui:Label name="LockedVecAmount" text="LOCKED VEC: 0" class="locked-vec-label"/>
             <ui:Button name="PlayButton" text="PLAY NORMAL" class="play-button play-button--normal"/>
         </ui:VisualElement>
 

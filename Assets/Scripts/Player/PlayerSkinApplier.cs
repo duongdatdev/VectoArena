@@ -30,7 +30,8 @@ public static class PlayerSkinApplier
             return ResolveSkinAnimator(playerRoot);
         }
 
-        RuntimeAnimatorController animatorController = ResolveSkinAnimator(playerRoot)?.runtimeAnimatorController;
+        RuntimeAnimatorController fallbackAnimatorController = ResolveSkinAnimator(playerRoot)?.runtimeAnimatorController;
+        RuntimeAnimatorController skinAnimatorController = ResolveSkinAnimatorController(item);
         RemoveAllSkinRoots(playerRoot.transform);
 
         GameObject skinInstance = UnityEngine.Object.Instantiate(skinPrefab, playerRoot.transform);
@@ -42,9 +43,13 @@ public static class PlayerSkinApplier
         SetLayerRecursively(skinInstance.transform, playerRoot.layer);
 
         Animator animator = skinInstance.GetComponentInChildren<Animator>(true);
-        if (animator != null && animator.runtimeAnimatorController == null && animatorController != null)
+        if (animator != null && skinAnimatorController != null)
         {
-            animator.runtimeAnimatorController = animatorController;
+            animator.runtimeAnimatorController = skinAnimatorController;
+        }
+        else if (animator != null && animator.runtimeAnimatorController == null && fallbackAnimatorController != null)
+        {
+            animator.runtimeAnimatorController = fallbackAnimatorController;
         }
 
         EnsureAnimationEventReceiver(animator);
@@ -69,6 +74,17 @@ public static class PlayerSkinApplier
             skinRoot.SetParent(null);
             UnityEngine.Object.Destroy(skinRoot.gameObject);
         }
+    }
+
+    private static RuntimeAnimatorController ResolveSkinAnimatorController(SkinCatalogItem item)
+    {
+        RuntimeAnimatorController controller = SkinCatalog.LoadAnimatorController(item);
+        if (controller == null && item != null && !string.IsNullOrEmpty(item.AnimatorControllerResourcePath))
+        {
+            Debug.LogWarning($"Skin animator controller not found: {item.AnimatorControllerResourcePath}");
+        }
+
+        return controller;
     }
 
     private static void RemoveDuplicateSkinRoots(Transform playerRoot, string skinIdToKeep)

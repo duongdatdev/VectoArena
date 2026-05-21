@@ -42,14 +42,22 @@ public static class SkinAnimatorControllerSetup
                 continue;
             }
 
-            animator.runtimeAnimatorController = controller;
+            RuntimeAnimatorController skinController = ResolveSkinController(prefabPath, controller);
+            animator.runtimeAnimatorController = skinController;
             EditorUtility.SetDirty(animator);
             EditorUtility.SetDirty(prefab);
             PrefabUtility.SavePrefabAsset(prefab);
-            Debug.Log($"Assigned character_animator.controller to {prefabPath}");
+            Debug.Log($"Assigned {skinController.name} to {prefabPath}");
         }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+    }
+
+    private static RuntimeAnimatorController ResolveSkinController(string prefabPath, RuntimeAnimatorController fallbackController)
+    {
+        string controllerPath = prefabPath.Substring(0, prefabPath.Length - ".prefab".Length) + "_animator.overrideController";
+        RuntimeAnimatorController overrideController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(controllerPath);
+        return overrideController != null ? overrideController : fallbackController;
     }
 }

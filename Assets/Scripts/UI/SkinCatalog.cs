@@ -13,6 +13,7 @@ public class SkinCatalogItem
     public SkinNftMapping Nft;
     public string PrefabResourcePath;
     public string IconResourcePath;
+    public string AnimatorControllerResourcePath;
 }
 
 [Serializable]
@@ -88,7 +89,8 @@ public static class SkinCatalog
                 CollectionKey = "vectoarena-genesis-skins"
             },
             PrefabResourcePath = "CharacterSkins/CyberBunny/Char_CyberBunny",
-            IconResourcePath = "CharacterSkins/CyberBunny/Icon_Char_CyberBunny"
+            IconResourcePath = "CharacterSkins/CyberBunny/Icon_Char_CyberBunny",
+            AnimatorControllerResourcePath = "CharacterSkins/CyberBunny/Char_CyberBunny_animator"
         },
         new SkinCatalogItem
         {
@@ -142,7 +144,8 @@ public static class SkinCatalog
                 CollectionKey = "vectoarena-genesis-skins"
             },
             PrefabResourcePath = "CharacterSkins/GearedApe/Char_GearedApe",
-            IconResourcePath = "CharacterSkins/GearedApe/Icon_Char_GearedApe"
+            IconResourcePath = "CharacterSkins/GearedApe/Icon_Char_GearedApe",
+            AnimatorControllerResourcePath = "CharacterSkins/GearedApe/Char_GearedApe_animator"
         }
     };
 
@@ -162,5 +165,25 @@ public static class SkinCatalog
     public static Texture2D LoadIcon(SkinCatalogItem item)
     {
         return Resources.Load<Texture2D>(item.IconResourcePath);
+    }
+
+    public static RuntimeAnimatorController LoadAnimatorController(SkinCatalogItem item)
+    {
+        if (item == null)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrEmpty(item.AnimatorControllerResourcePath))
+        {
+            return Resources.Load<RuntimeAnimatorController>(item.AnimatorControllerResourcePath);
+        }
+
+        if (!string.IsNullOrEmpty(item.PrefabResourcePath))
+        {
+            return Resources.Load<RuntimeAnimatorController>(item.PrefabResourcePath + "_animator");
+        }
+
+        return null;
     }
 }

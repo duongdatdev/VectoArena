@@ -104,7 +104,7 @@ public class MainScenePreviewController : MonoBehaviour
         currentSkinId = equippedSkinId;
 
         Animator animator = currentCharacter.GetComponentInChildren<Animator>(true);
-        EnsurePreviewAnimatorController(animator);
+        EnsurePreviewAnimatorController(animator, SkinCatalog.GetById(equippedSkinId));
         ConfigurePreviewAnimator(animator);
         
         EnsureCharacterInteraction(currentCharacter);
@@ -272,22 +272,28 @@ public class MainScenePreviewController : MonoBehaviour
         previewTransform.localScale = fallbackPreviewScale;
     }
 
-    private void EnsurePreviewAnimatorController(Animator animator)
+    private void EnsurePreviewAnimatorController(Animator animator, SkinCatalogItem item)
     {
         if (animator == null)
         {
             return;
         }
 
-        RuntimeAnimatorController controller = ResolvePreviewAnimatorController();
+        RuntimeAnimatorController controller = ResolvePreviewAnimatorController(item);
         if (controller != null && animator.runtimeAnimatorController != controller)
         {
             animator.runtimeAnimatorController = controller;
         }
     }
 
-    private RuntimeAnimatorController ResolvePreviewAnimatorController()
+    private RuntimeAnimatorController ResolvePreviewAnimatorController(SkinCatalogItem item)
     {
+        RuntimeAnimatorController skinController = SkinCatalog.LoadAnimatorController(item);
+        if (skinController != null)
+        {
+            return skinController;
+        }
+
         if (previewAnimatorController != null)
         {
             return previewAnimatorController;

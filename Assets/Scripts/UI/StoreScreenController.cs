@@ -110,11 +110,14 @@ public class StoreScreenController : MonoBehaviour
             }
             else if (isNft)
             {
-                success = false;
-                if (storeStatus != null)
+                success = await PlayerInventory.TryBuyNftSkinAsync(item, status =>
                 {
-                    storeStatus.text = "NFT BUY FLOW NOT AVAILABLE YET";
-                }
+                    buyButton.text = status;
+                    if (storeStatus != null)
+                    {
+                        storeStatus.text = status;
+                    }
+                });
             }
             else
             {
@@ -125,7 +128,13 @@ public class StoreScreenController : MonoBehaviour
             {
                 if (success)
                 {
-                    storeStatus.text = owned ? $"EQUIPPED {item.DisplayName.ToUpper()}" : $"{item.DisplayName.ToUpper()} READY";
+                    SkinOwnershipState refreshedState = PlayerInventory.GetSkinState(item);
+                    bool nowEquipped = (refreshedState != null && refreshedState.Equipped) || PlayerInventory.EquippedSkinId == item.Id;
+                    storeStatus.text = nowEquipped ? $"EQUIPPED {item.DisplayName.ToUpper()}" : $"{item.DisplayName.ToUpper()} READY";
+                }
+                else if (!string.IsNullOrEmpty(PlayerInventory.LastOperationError))
+                {
+                    storeStatus.text = PlayerInventory.LastOperationError;
                 }
                 else if (!isNft)
                 {
@@ -158,8 +167,7 @@ public class StoreScreenController : MonoBehaviour
             return "BUY NFT";
         }
 
-        int price = state != null ? state.Price : item.Price;
-        return $"{price:N0} {GetCurrencyLabel(item, state)}";
+        return "BUY";
     }
 
     private string GetCurrencyLabel(SkinCatalogItem item, SkinOwnershipState state = null)

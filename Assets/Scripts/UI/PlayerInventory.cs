@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ public static class PlayerInventory
     private static string username;
     private static string linkedWalletAddress;
     private static bool loadedFromServer;
+    private static string lastOperationError;
 
     public static event Action Changed;
 
@@ -32,6 +34,7 @@ public static class PlayerInventory
     public static string Username => string.IsNullOrWhiteSpace(username) ? "GUEST" : username;
     public static string LinkedWalletAddress => linkedWalletAddress;
     public static bool LoadedFromServer => loadedFromServer;
+    public static string LastOperationError => lastOperationError;
 
     public static string EquippedSkinId => string.IsNullOrEmpty(equippedSkinId) ? DefaultSkinId : equippedSkinId;
 
@@ -58,6 +61,7 @@ public static class PlayerInventory
         linkedWalletAddress = null;
         equippedSkinId = DefaultSkinId;
         loadedFromServer = false;
+        lastOperationError = null;
         ownedSkins.Clear();
         ownedSkins.Add(DefaultSkinId);
         skinStates.Clear();
@@ -126,12 +130,122 @@ public static class PlayerInventory
 
         try
         {
+            lastOperationError = null;
             ApplyProfile(await NetworkManager.Instance.BuyPlayerSkin(item.Id));
             return true;
         }
         catch (Exception ex)
         {
             Debug.LogError("Failed to buy skin: " + ex.Message);
+            lastOperationError = ex.Message;
+            Changed?.Invoke();
+            return false;
+        }
+    }
+
+    public static async Task<bool> TryBuyNftSkinAsync(SkinCatalogItem item)
+    {
+        return await TryBuyNftSkinAsync(item, null);
+    }
+
+    public static async Task<bool> TryBuyNftSkinAsync(SkinCatalogItem item, Action<string> setStatus)
+    {
+        lastOperationError = null;
+
+        if (item == null)
+        {
+            lastOperationError = "Invalid NFT skin.";
+            Changed?.Invoke();
+            return false;
+        }
+
+        if (!loadedFromServer)
+        {
+            await LoadFromServer();
+        }
+
+        SkinOwnershipState state = GetSkinState(item);
+        if (state == null || !state.IsNft)
+        {
+            lastOperationError = "This skin is not an NFT skin.";
+            Changed?.Invoke();
+            return false;
+        }
+
+        if (state.Owned && state.CanEquip)
+        {
+            return await EquipSkinAsync(item.Id);
+        }
+
+        if (Web3Manager.Instance == null)
+        {
+            lastOperationError = "Web3Manager not found.";
+            Changed?.Invoke();
+            return false;
+        }
+
+        if (NetworkManager.Instance == null)
+        {
+            lastOperationError = "NetworkManager not found.";
+            Changed?.Invoke();
+            return false;
+        }
+
+        string walletAddress;
+        ulong chainId;
+        string vecTokenAddress;
+        string nftContractAddress;
+        BigInteger tokenId;
+        BigInteger priceWei;
+
+        try
+        {
+            ResolveNftPurchaseConfig(item, state, out chainId, out vecTokenAddress, out nftContractAddress, out tokenId, out priceWei);
+
+            setStatus?.Invoke("CONNECTING WALLET");
+            walletAddress = await Web3Manager.Instance.EnsureWalletConnectedAsync();
+
+            setStatus?.Invoke("CHECKING NETWORK");
+            await Web3Manager.Instance.EnsureCorrectChainAsync(chainId);
+
+            BigInteger balance = await Web3Manager.Instance.GetErc20BalanceAsync(vecTokenAddress, walletAddress);
+            if (balance < priceWei)
+            {
+                lastOperationError = "Insufficient VEC.";
+                Changed?.Invoke();
+                return false;
+            }
+
+            BigInteger allowance = await Web3Manager.Instance.GetErc20AllowanceAsync(vecTokenAddress, walletAddress, nftContractAddress);
+            if (allowance < priceWei)
+            {
+                setStatus?.Invoke("APPROVING VEC");
+                await Web3Manager.Instance.ApproveErc20Async(vecTokenAddress, nftContractAddress, priceWei);
+            }
+
+            setStatus?.Invoke("BUYING NFT");
+            await Web3Manager.Instance.BuySkinNftAsync(nftContractAddress, tokenId);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Failed to buy NFT skin: " + ex.Message);
+            lastOperationError = GetFriendlyNftError(ex);
+            Changed?.Invoke();
+            return false;
+        }
+
+        try
+        {
+            setStatus?.Invoke("SYNCING NFT");
+            await NetworkManager.Instance.SyncNftOwnershipAsync();
+            await LoadFromServer();
+            lastOperationError = null;
+            return IsSkinOwned(item.Id) && GetSkinState(item)?.CanEquip == true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("NFT purchase confirmed but sync failed: " + ex.Message);
+            lastOperationError = "Purchase confirmed, sync failed. Please retry sync.";
             Changed?.Invoke();
             return false;
         }
@@ -146,12 +260,14 @@ public static class PlayerInventory
 
         try
         {
+            lastOperationError = null;
             ApplyProfile(await NetworkManager.Instance.EquipPlayerSkin(skinId));
             return true;
         }
         catch (Exception ex)
         {
             Debug.LogError("Failed to equip skin: " + ex.Message);
+            lastOperationError = ex.Message;
             Changed?.Invoke();
             return false;
         }
@@ -201,6 +317,120 @@ public static class PlayerInventory
         }
 
         Changed?.Invoke();
+    }
+
+    private static void ResolveNftPurchaseConfig(
+        SkinCatalogItem item,
+        SkinOwnershipState state,
+        out ulong chainId,
+        out string vecTokenAddress,
+        out string nftContractAddress,
+        out BigInteger tokenId,
+        out BigInteger priceWei)
+    {
+        AppConfig config = ConfigManager.Config;
+        NetworkManager.NftSkinInfoResponse nftInfo = state.NftInfo;
+        NetworkManager.SkinNftMappingResponse nft = state.Nft;
+        NftSkinConfig configuredSkin = GetConfiguredNftSkin(item.Id);
+
+        int? profileChainId = nftInfo?.chainId ?? nft?.chainId;
+        chainId = profileChainId.HasValue && profileChainId.Value > 0 ? (ulong)profileChainId.Value : config.nftChainId;
+
+        nftContractAddress = FirstNonEmpty(nftInfo?.contractAddress, nft?.contractAddress, config.skinNftContractAddress);
+        vecTokenAddress = FirstNonEmpty(config.vecTokenAddress, config.tokenContractAddress);
+
+        string tokenIdText = FirstNonEmpty(nftInfo?.tokenId, nft?.tokenId, configuredSkin?.tokenId);
+        string priceWeiText = FirstNonEmpty(configuredSkin?.priceWei, config.nftSkinPriceWei);
+
+        if (chainId == 0)
+        {
+            throw new InvalidOperationException("NFT chainId is missing.");
+        }
+
+        if (string.IsNullOrWhiteSpace(nftContractAddress))
+        {
+            throw new InvalidOperationException("NFT contract address is missing.");
+        }
+
+        if (string.IsNullOrWhiteSpace(vecTokenAddress))
+        {
+            throw new InvalidOperationException("VEC token address is missing.");
+        }
+
+        if (!BigInteger.TryParse(tokenIdText, out tokenId))
+        {
+            throw new InvalidOperationException("NFT tokenId is missing or invalid.");
+        }
+
+        if (!BigInteger.TryParse(priceWeiText, out priceWei) || priceWei <= BigInteger.Zero)
+        {
+            throw new InvalidOperationException("NFT price is missing or invalid.");
+        }
+    }
+
+    private static NftSkinConfig GetConfiguredNftSkin(string skinId)
+    {
+        NftSkinConfig[] configuredSkins = ConfigManager.Config.nftSkins;
+        if (configuredSkins == null)
+        {
+            return null;
+        }
+
+        foreach (NftSkinConfig configuredSkin in configuredSkins)
+        {
+            if (configuredSkin != null && string.Equals(configuredSkin.skinId, skinId, StringComparison.OrdinalIgnoreCase))
+            {
+                return configuredSkin;
+            }
+        }
+
+        return null;
+    }
+
+    private static string FirstNonEmpty(params string[] values)
+    {
+        foreach (string value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string GetFriendlyNftError(Exception ex)
+    {
+        string message = ex.Message ?? string.Empty;
+        string lower = message.ToLowerInvariant();
+
+        if (lower.Contains("insufficient"))
+        {
+            return "Insufficient VEC.";
+        }
+
+        if (lower.Contains("user rejected") || lower.Contains("denied") || lower.Contains("cancel"))
+        {
+            return "Wallet request was rejected.";
+        }
+
+        if (lower.Contains("network") || lower.Contains("chain") || lower.Contains("sepolia"))
+        {
+            return "Please switch wallet network to Sepolia.";
+        }
+
+        if (lower.Contains("wallet"))
+        {
+            return message;
+        }
+
+        if (lower.Contains("revert") || lower.Contains("failed"))
+        {
+            return "Transaction failed.";
+        }
+
+        return string.IsNullOrWhiteSpace(message) ? "NFT purchase failed." : message;
     }
 
     private static void ApplySkinResponses(NetworkManager.ShopSkinResponse[] skins)

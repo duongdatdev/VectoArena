@@ -200,6 +200,24 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    public async Task<WalletNonceResponse> GetWalletNonceAsync()
+    {
+        string response = await SendPlayerRequestRaw(HttpMethod.Get, "/wallet/nonce", null);
+        return JsonConvert.DeserializeObject<WalletNonceResponse>(response);
+    }
+
+    public async Task<WalletVerifyResponse> VerifyWalletAsync(string address, string signature, string nonce)
+    {
+        string response = await SendPlayerRequestRaw(HttpMethod.Post, "/wallet/verify", new { address, signature, nonce });
+        return JsonConvert.DeserializeObject<WalletVerifyResponse>(response);
+    }
+
+    public async Task<NftSyncResponse> SyncNftOwnershipAsync()
+    {
+        string response = await SendPlayerRequestRaw(HttpMethod.Post, "/nft/sync", new { });
+        return JsonConvert.DeserializeObject<NftSyncResponse>(response);
+    }
+
     public async Task<bool> VerifyDeposit(string txHash)
     {
         try
@@ -978,6 +996,43 @@ public class NetworkManager : MonoBehaviour
     private class PlayerApiError
     {
         public string error;
+    }
+
+    [Serializable]
+    public class WalletNonceResponse
+    {
+        public string nonce;
+        public string message;
+        public string issuedAt;
+        public string expiresAt;
+    }
+
+    [Serializable]
+    public class WalletVerifyResponse
+    {
+        public bool success;
+        public string walletAddress;
+    }
+
+    [Serializable]
+    public class NftSyncResponse
+    {
+        public string walletAddress;
+        public string syncedAt;
+        public SyncedNftSkinResponse[] nftSkins;
+    }
+
+    [Serializable]
+    public class SyncedNftSkinResponse
+    {
+        public string skinId;
+        public int chainId;
+        public string contractAddress;
+        public string tokenId;
+        public string standard;
+        public int balance;
+        public bool owned;
+        public string lastSyncedAt;
     }
 
     [Serializable]

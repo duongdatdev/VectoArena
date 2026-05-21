@@ -13,4 +13,19 @@ public class AppConfig
     public string tokenContractAddress = "";
     public string treasuryWalletAddress = "";
     public string thirdwebClientId = "";
+
+    [Header("NFT Skin Configuration")]
+    public ulong nftChainId = 11155111;
+    public string vecTokenAddress = "";
+    public string skinNftContractAddress = "";
+    public string nftSkinPriceWei = "1000000000000000000";
+    public NftSkinConfig[] nftSkins = Array.Empty<NftSkinConfig>();
+}
+
+[Serializable]
+public class NftSkinConfig
+{
+    public string skinId;
+    public string tokenId;
+    public string priceWei;
 }

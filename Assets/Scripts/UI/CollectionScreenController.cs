@@ -95,15 +95,61 @@ public class CollectionScreenController
         action.AddToClassList("button-long--yellow");
         action.AddToClassList("collection-card-button");
         action.text = GetButtonText(owned, canEquip, equipped, isNft);
-        action.SetEnabled(!equipped && ((owned && canEquip) || isNft));
+        action.SetEnabled(!equipped && ((owned && canEquip) || !owned));
         action.clicked += async () =>
         {
             if (isNft && !owned)
             {
+                action.SetEnabled(false);
+                bool nftSuccess = await PlayerInventory.TryBuyNftSkinAsync(item, status =>
+                {
+                    action.text = status;
+                    if (statusLabel != null)
+                    {
+                        statusLabel.text = status;
+                    }
+                });
+
                 if (statusLabel != null)
                 {
-                    statusLabel.text = "NFT BUY FLOW NOT AVAILABLE YET";
+                    if (nftSuccess)
+                    {
+                        statusLabel.text = $"{item.DisplayName.ToUpper()} READY";
+                    }
+                    else if (!string.IsNullOrEmpty(PlayerInventory.LastOperationError))
+                    {
+                        statusLabel.text = PlayerInventory.LastOperationError;
+                    }
+                    else
+                    {
+                        statusLabel.text = "NFT PURCHASE FAILED";
+                    }
                 }
+
+                Refresh();
+                return;
+            }
+
+            if (!owned)
+            {
+                action.SetEnabled(false);
+                bool buySuccess = await PlayerInventory.TryBuySkinAsync(item);
+                if (statusLabel != null)
+                {
+                    if (buySuccess)
+                    {
+                        statusLabel.text = $"{item.DisplayName.ToUpper()} READY";
+                    }
+                    else if (!string.IsNullOrEmpty(PlayerInventory.LastOperationError))
+                    {
+                        statusLabel.text = PlayerInventory.LastOperationError;
+                    }
+                    else
+                    {
+                        statusLabel.text = $"NOT ENOUGH {GetCurrencyLabel(item, stateInfo)}";
+                    }
+                }
+
                 Refresh();
                 return;
             }
@@ -149,7 +195,7 @@ public class CollectionScreenController
     {
         if (equipped)
         {
-            return "SELECTED";
+            return "EQUIPPED";
         }
 
         if (owned && canEquip)
@@ -157,7 +203,7 @@ public class CollectionScreenController
             return "EQUIP";
         }
 
-        return isNft ? "BUY NFT" : "BUY IN SHOP";
+        return isNft ? "BUY NFT" : "BUY";
     }
 
     private string GetCurrencyLabel(SkinCatalogItem item, SkinOwnershipState state = null)

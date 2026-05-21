@@ -1,21 +1,25 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss?fileID=7433441132597879392&amp;guid=5361e9a08344f03498b48a01e9b8c49b&amp;type=3#CommonStyle"/>
-    <Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss?fileID=7433441132597879392&amp;guid=399def787dd730443bd29e0f59ca2db4&amp;type=3#HomeScreenStyle"/>
+    <ui:Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss?fileID=7433441132597879392&amp;guid=5361e9a08344f03498b48a01e9b8c49b&amp;type=3#CommonStyle"/>
+    <ui:Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss?fileID=7433441132597879392&amp;guid=399def787dd730443bd29e0f59ca2db4&amp;type=3#HomeScreenStyle"/>
     <ui:VisualElement name="root" picking-mode="Ignore" class="fill-parent home-root">
         <ui:VisualElement name="CharacterStage" picking-mode="Ignore" class="character-stage">
         </ui:VisualElement>
 
         <!-- Player Header (Top-Left): Profile + Name -->
         <ui:VisualElement name="Header" class="player-header">
-            <ui:Button name="ProfileButton" class="profile-button"/>
-            <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-name"/>
-            <ui:VisualElement name="PlayerProgress" class="player-progress">
-                <ui:Label name="PlayerLevel" text="LV 1" class="player-level"/>
-                <ui:VisualElement class="xp-bar">
-                    <ui:VisualElement name="XpFill" class="xp-bar__fill"/>
+            <ui:Button name="TrophiesHolder" class="player-header__trophies-holder">
+                <ui:VisualElement name="ProfileXpBar" class="player-header__xp-bar">
+                    <ui:VisualElement name="XpFill" class="player-header__xp-fill"/>
                 </ui:VisualElement>
-                <ui:Label name="PlayerXp" text="0 / 100 XP" class="player-xp"/>
-            </ui:VisualElement>
+                <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-header__name"/>
+            </ui:Button>
+            <ui:Button name="ProfileButton" class="player-header__profile-button">
+                <ui:VisualElement name="Holder" class="player-header__profile-holder">
+                    <ui:VisualElement name="ProfileAvatar" class="player-header__avatar"/>
+                    <ui:Label name="PlayerLevel" text="1" class="player-header__level"/>
+                    <ui:VisualElement name="PlayerLevelStar" class="player-header__fame-star-1"/>
+                </ui:VisualElement>
+            </ui:Button>
         </ui:VisualElement>
 
         <!-- Top Bar (Top-Right): Currencies + Settings -->
@@ -25,12 +29,14 @@
             <ui:VisualElement name="CurrencyBar" class="currency-bar">
                 <!-- VEC Token Display -->
                 <ui:Button name="VecDisplay" class="currency-pill currency-pill--vec">
-                    <ui:VisualElement class="currency-pill__icon currency-pill__icon--vec"/>
+                    <ui:VisualElement class="currency-pill__icon-outline">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--vec"/>
+                    </ui:VisualElement>
                     <ui:Label name="VecAmount" text="0" class="currency-pill__amount"/>
                 </ui:Button>
                 <!-- Locked VEC Display -->
                 <ui:VisualElement name="LockedVecDisplay" class="currency-pill currency-pill--locked-vec">
-                    <ui:VisualElement class="currency-pill__icon-wrap">
+                    <ui:VisualElement class="currency-pill__icon-outline currency-pill__icon-wrap">
                         <ui:VisualElement class="currency-pill__icon currency-pill__icon--locked-vec"/>
                         <ui:VisualElement class="currency-pill__lock-badge"/>
                     </ui:VisualElement>
@@ -38,13 +44,17 @@
                 </ui:VisualElement>
                 <!-- Coin Display -->
                 <ui:VisualElement name="CoinDisplay" class="currency-pill currency-pill--coin">
-                    <ui:VisualElement class="currency-pill__icon currency-pill__icon--coin"/>
+                    <ui:VisualElement class="currency-pill__icon-outline">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--coin"/>
+                    </ui:VisualElement>
                     <ui:Label name="CoinAmount" text="1,500" class="currency-pill__amount"/>
                 </ui:VisualElement>
             </ui:VisualElement>
             <!-- Wallet Button -->
             <ui:Button name="WalletButton" class="wallet-button">
-                <ui:VisualElement class="wallet-button__icon"/>
+                <ui:VisualElement class="wallet-button__icon-outline">
+                    <ui:VisualElement class="wallet-button__icon"/>
+                </ui:VisualElement>
                 <ui:Label name="WalletLabel" text="CONNECT" class="wallet-button__label"/>
             </ui:Button>
         </ui:VisualElement>
@@ -116,8 +126,19 @@
             <ui:VisualElement class="collection-header">
                 <ui:Button name="CollectionBackButton" class="button-close" style="position: relative; right: 0; top: 0;"/>
                 <ui:Label text="COLLECTION" class="collection-title"/>
-                <ui:VisualElement class="currency-display">
-                    <ui:Label name="CollectionCoinsAmount" text="1,500 COINS" class="currency-label"/>
+                <ui:VisualElement class="header-currency-row">
+                    <ui:VisualElement class="currency-display currency-display--coin">
+                        <ui:VisualElement class="currency-display__icon-outline">
+                            <ui:VisualElement class="currency-display__icon currency-display__icon--coin"/>
+                        </ui:VisualElement>
+                        <ui:Label name="CollectionCoinsAmount" text="1,500" class="currency-label"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="currency-display currency-display--vec">
+                        <ui:VisualElement class="currency-display__icon-outline">
+                            <ui:VisualElement class="currency-display__icon currency-display__icon--vec"/>
+                        </ui:VisualElement>
+                        <ui:Label name="CollectionVecAmount" text="0" class="currency-label"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="CollectionStatus" text="SELECT OWNED SKINS TO EQUIP" class="collection-status"/>

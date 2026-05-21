@@ -52,155 +52,149 @@
 .currency-bar {
     flex-direction: row;
     align-items: center;
-    margin-right: 16px;
+    margin-right: 14px;
 }
 
 /* Currency pill (individual currency display) */
 .currency-pill {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(10, 5, 25, 0.7);
-    border-radius: 30px;
-    padding: 6px 18px 6px 8px;
-    margin-left: 12px;
-    border-width: 2px;
-    border-color: rgba(100, 70, 180, 0.5);
-    height: 56px;
-    min-width: 132px;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 46px;
+    padding-right: 16px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 22px;
+    border-width: 0;
+    height: 45px;
+    min-width: 138px;
+    overflow: visible;
 }
 
 .currency-pill:hover {
-    border-color: rgba(160, 120, 255, 0.7);
-    background-color: rgba(20, 10, 50, 0.85);
+    background-color: rgb(32, 28, 52);
 }
 
-.currency-pill--vec {
-    border-color: rgba(73, 212, 212, 0.5);
+.currency-pill:active {
+    scale: 0.95 0.95;
 }
 
-.currency-pill--vec:hover {
-    border-color: rgba(73, 212, 212, 0.8);
-}
-
-.currency-pill--coin {
-    border-color: rgba(240, 209, 94, 0.5);
-}
-
-.currency-pill--coin:hover {
-    border-color: rgba(240, 209, 94, 0.8);
-}
-
-.currency-pill--locked-vec {
-    border-color: rgba(240, 180, 70, 0.55);
-}
-
-.currency-pill--locked-vec:hover {
-    border-color: rgba(255, 205, 92, 0.85);
-}
-
-.currency-pill__icon-wrap {
-    width: 42px;
-    height: 42px;
-    margin-right: 8px;
-}
-
-.currency-pill__icon {
-    width: 38px;
-    height: 38px;
-    margin-right: 8px;
+.currency-pill__icon-outline {
+    position: absolute;
+    left: -24px;
+    width: 72px;
+    height: 72px;
+    align-items: center;
+    justify-content: center;
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.currency-pill__icon-wrap > .currency-pill__icon {
-    width: 38px;
-    height: 38px;
-    margin-right: 0;
+.currency-pill__icon {
+    width: 68px;
+    height: 68px;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .currency-pill__icon--vec {
-    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-vec.png");
-    -unity-background-image-tint-color: rgb(73, 212, 212);
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
 }
 
 .currency-pill__icon--locked-vec {
-    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-vec.png");
-    -unity-background-image-tint-color: rgb(240, 180, 70);
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
 }
 
 .currency-pill__lock-badge {
     position: absolute;
-    right: -2px;
-    bottom: -2px;
-    width: 18px;
-    height: 18px;
+    right: 8px;
+    bottom: 8px;
+    width: 17px;
+    height: 17px;
     background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-collection-lock.png");
     -unity-background-scale-mode: scale-to-fit;
 }
 
 .currency-pill__icon--coin {
-    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-coin.png");
-    -unity-background-image-tint-color: rgb(240, 209, 94);
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
 }
 
 .currency-pill__amount {
-    font-size: 30px;
+    height: 48px;
+    font-size: 34px;
     color: white;
     -unity-font-definition: var(--font-bold);
-    -unity-text-outline-width: 2px;
-    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
-    min-width: 50px;
-    -unity-text-align: middle-right;
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 3px 5px 0 rgb(0, 0, 0);
+    min-width: 76px;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
 }
 
 /* Wallet Button */
 .wallet-button {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(73, 212, 212, 0.15);
-    border-radius: 30px;
-    padding: 6px 20px 6px 10px;
-    margin-right: 16px;
-    border-width: 2px;
-    border-color: rgba(73, 212, 212, 0.5);
-    height: 56px;
-    transition-duration: 0.2s;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 34px;
+    padding-right: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 22px;
+    border-width: 0;
+    height: 45px;
+    min-width: 142px;
+    overflow: visible;
 }
 
 .wallet-button:hover {
-    background-color: rgba(73, 212, 212, 0.3);
-    border-color: rgb(73, 212, 212);
+    background-color: rgb(32, 28, 52);
 }
 
 .wallet-button:active {
-    scale: 0.93 0.93;
+    scale: 0.95 0.95;
 }
 
 .wallet-button--connected {
-    background-color: rgba(50, 200, 100, 0.15);
-    border-color: rgba(50, 200, 100, 0.5);
+    background-color: rgb(23, 20, 38);
 }
 
 .wallet-button--connected:hover {
-    background-color: rgba(50, 200, 100, 0.3);
-    border-color: rgb(50, 200, 100);
+    background-color: rgb(32, 28, 52);
+}
+
+.wallet-button__icon-outline {
+    position: absolute;
+    left: -8px;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
 }
 
 .wallet-button__icon {
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
+    width: 30px;
+    height: 30px;
     background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-wallet.png");
     -unity-background-scale-mode: scale-to-fit;
     -unity-background-image-tint-color: rgb(73, 212, 212);
 }
 
 .wallet-button__label {
-    font-size: 24px;
-    color: rgb(73, 212, 212);
+    height: 32px;
+    font-size: 19px;
+    color: white;
     -unity-font-definition: var(--font-bold);
-    -unity-text-outline-width: 1px;
-    -unity-text-outline-color: rgba(0, 0, 0, 0.6);
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 2px 3px 0 rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
 }
 
 /* ===================== DEPOSIT POPUP ===================== */
@@ -462,79 +456,133 @@
     left: 82px;
     top: 34px;
     align-items: center;
-    scale: 1.08 1.08;
+    scale: 1.04 1.04;
 }
 
-.profile-button {
-    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-profile.png?fileID=21300000&guid=3f3e6e2aea9444cbb92bb223a33ea6a8&type=3#background-profile");
-    width: 154px;
-    height: 130px;
+.player-header__profile-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-profile.png");
+    width: 164px;
+    height: 138px;
     background-color: transparent;
     border-width: 0;
+    overflow: visible;
+    padding: 0;
 }
 
-.profile-button:active {
-    -unity-background-image-tint-color: rgb(200, 200, 200);
+.player-header__profile-button:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-profile-pressed.png");
 }
 
-.player-name {
+.player-header__profile-holder {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.player-header__profile-button:active .player-header__profile-holder {
+    left: -4px;
+    right: -6px;
+    top: 6px;
+    bottom: -6px;
+}
+
+.player-header__avatar {
+    position: absolute;
+    left: 24px;
+    top: 11px;
+    width: 104px;
+    height: 104px;
+    border-radius: 52px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Shared/avatar-default.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.player-header__level {
+    font-size: 34px;
+    color: rgb(255, 255, 255);
+    position: absolute;
+    top: 73px;
+    left: 75px;
+    width: 42px;
+    -unity-text-align: upper-center;
+    text-shadow: -43px 3px 0 rgb(0, 0, 0);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.player-header__fame-star-1 {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-star-bronze.png");
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    left: 84px;
+    top: 113px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.player-header__trophies-holder {
+    position: relative;
+    width: 330px;
+    height: 136px;
+    flex-direction: row;
+    align-items: flex-start;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-profile.png");
+    left: -83px;
+    justify-content: space-between;
+    padding-left: 75px;
+    padding-right: 24px;
+    padding-top: 53px;
+    background-color: transparent;
+    border-width: 0;
+    overflow: visible;
+}
+
+.player-header__name {
     position: absolute;
     font-size: 32px;
-    left: 150px;
-    top: 14px;
-    width: 300px;
-    color: rgb(255, 255, 255);
-    -unity-font-definition: var(--font-bold);
-    -unity-text-outline-width: 5px;
-    -unity-text-outline-color: rgb(0, 0, 0);
+    -unity-text-align: lower-left;
     text-shadow: 5px 5px 0 rgb(0, 0, 0);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
     white-space: nowrap;
     overflow: hidden;
+    -unity-text-overflow-position: end;
     text-overflow: ellipsis;
-}
-
-.player-progress {
-    position: absolute;
-    left: 150px;
-    top: 58px;
-    width: 320px;
-    flex-direction: row;
-    align-items: center;
-}
-
-.player-level {
-    width: 64px;
-    font-size: 24px;
-    color: rgb(240, 209, 94);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    left: 164px;
+    top: 12px;
+    color: rgb(255, 255, 255);
     -unity-font-definition: var(--font-bold);
-    -unity-text-outline-width: 2px;
-    -unity-text-outline-color: black;
+    width: 150px;
+    height: 44px;
 }
 
-.xp-bar {
-    width: 150px;
+.player-header__xp-bar {
+    position: absolute;
+    left: 78px;
+    bottom: 16px;
+    width: 116px;
     height: 16px;
-    background-color: rgba(0, 0, 0, 0.65);
-    border-radius: 8px;
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.25);
+    padding: 2px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/progress-battlepass-bg.png");
+    -unity-background-scale-mode: stretch-to-fill;
     overflow: hidden;
 }
 
-.xp-bar__fill {
+.player-header__xp-fill {
     width: 0%;
     height: 100%;
-    background-color: rgb(73, 212, 212);
-}
-
-.player-xp {
-    width: 100px;
-    margin-left: 8px;
-    font-size: 18px;
-    color: white;
-    -unity-font-definition: var(--font-bold);
-    -unity-text-outline-width: 1px;
-    -unity-text-outline-color: black;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/progress-battlepass.png");
+    -unity-background-scale-mode: stretch-to-fill;
 }
 
 .settings-button {
@@ -729,18 +777,59 @@
     flex-grow: 1;
 }
 
-.currency-display {
+.header-currency-row {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 20px;
-    padding: 10px 20px;
+    margin-left: auto;
+}
+
+.currency-display {
+    width: 172px;
+    height: 45px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 46px;
+    padding-right: 14px;
+    margin-left: 22px;
+    overflow: visible;
+}
+
+.currency-display__icon-outline {
+    position: absolute;
+    left: -24px;
+    width: 72px;
+    height: 72px;
+    align-items: center;
+    justify-content: center;
+}
+
+.currency-display__icon {
+    width: 68px;
+    height: 68px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-display__icon--coin {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
+}
+
+.currency-display__icon--vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
 }
 
 .currency-label {
-    font-size: 36px;
-    color: rgb(240, 209, 94);
+    height: 48px;
+    font-size: 34px;
+    color: white;
     -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 3px 5px 0 rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
 }
 
 .collection-status {

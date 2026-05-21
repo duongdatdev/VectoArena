@@ -13,7 +13,6 @@ public class HomeScreenController : MonoBehaviour
 
     private Label playerNameText;
     private Label playerLevelLabel;
-    private Label playerXpLabel;
     private VisualElement xpFill;
     private Button playButton;
     private Button airdropButton;
@@ -69,7 +68,6 @@ public class HomeScreenController : MonoBehaviour
 
         playerNameText = root.Q<Label>("PlayerName");
         playerLevelLabel = root.Q<Label>("PlayerLevel");
-        playerXpLabel = root.Q<Label>("PlayerXp");
         xpFill = root.Q<VisualElement>("XpFill");
         playButton = root.Q<Button>("PlayButton");
         airdropButton = root.Q<Button>("GameModeButton");
@@ -174,17 +172,15 @@ public class HomeScreenController : MonoBehaviour
             playerNameText.text = PlayerInventory.Username.ToUpperInvariant();
 
         if (playerLevelLabel != null)
-            playerLevelLabel.text = $"LV {PlayerInventory.Level}";
-
-        if (playerXpLabel != null)
-        {
-            playerXpLabel.text = PlayerInventory.XpToNextLevel <= 0
-                ? "MAX"
-                : $"{PlayerInventory.Xp:N0} / {PlayerInventory.XpToNextLevel:N0} XP";
-        }
+            playerLevelLabel.text = PlayerInventory.Level.ToString("N0");
 
         if (xpFill != null)
-            xpFill.style.width = Length.Percent(Mathf.Clamp01(PlayerInventory.XpProgress) * 100f);
+        {
+            float xpProgress = PlayerInventory.XpToNextLevel <= 0
+                ? 1f
+                : Mathf.Clamp01((float)PlayerInventory.Xp / PlayerInventory.XpToNextLevel);
+            xpFill.style.width = Length.Percent(xpProgress * 100f);
+        }
 
         RefreshCurrencyDisplay();
         RefreshAirdropAccess();

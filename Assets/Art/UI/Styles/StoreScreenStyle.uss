@@ -21,18 +21,59 @@
     flex-grow: 1;
 }
 
-.currency-display {
+.header-currency-row {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 20px;
-    padding: 10px 20px;
+    margin-left: auto;
+}
+
+.currency-display {
+    width: 172px;
+    height: 45px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 46px;
+    padding-right: 14px;
+    margin-left: 22px;
+    overflow: visible;
+}
+
+.currency-display__icon-outline {
+    position: absolute;
+    left: -24px;
+    width: 72px;
+    height: 72px;
+    align-items: center;
+    justify-content: center;
+}
+
+.currency-display__icon {
+    width: 68px;
+    height: 68px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-display__icon--coin {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
+}
+
+.currency-display__icon--vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
 }
 
 .currency-label {
-    font-size: 36px;
-    color: rgb(240, 209, 94);
+    height: 48px;
+    font-size: 34px;
+    color: white;
     -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 3px 5px 0 rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
 }
 
 .store-status {
@@ -96,13 +137,79 @@
     border-color: rgb(100, 70, 150);
 }
 
+.product-icon-frame {
+    width: 220px;
+    height: 220px;
+    margin-bottom: 20px;
+}
+
 .product-icon {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
     background-color: rgba(0,0,0,0.5);
     border-radius: 10px;
-    margin-bottom: 20px;
     -unity-background-scale-mode: scale-to-fit;
+}
+
+.product-price-badge {
+    position: absolute;
+    right: -6px;
+    bottom: 6px;
+    min-width: 128px;
+    height: 34px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-width: 0;
+    border-radius: 10px;
+    padding-left: 30px;
+    padding-right: 10px;
+    overflow: visible;
+}
+
+.product-price-badge--locked {
+    background-color: rgb(37, 24, 43);
+}
+
+.product-price-badge--status {
+    background-color: rgb(23, 20, 38);
+}
+
+.product-price-badge__icon {
+    position: absolute;
+    left: -13px;
+    width: 42px;
+    height: 42px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.product-price-badge--status > .product-price-badge__icon {
+    display: none;
+}
+
+.product-price-badge__icon--coin {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
+}
+
+.product-price-badge__icon--vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
+}
+
+.product-price-badge__text {
+    height: 36px;
+    font-size: 20px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 4px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 2px 3px 0 rgb(0, 0, 0);
+    white-space: nowrap;
+}
+
+.product-price-badge--locked > .product-price-badge__text {
+    color: rgb(255, 190, 196);
 }
 
 .product-name {

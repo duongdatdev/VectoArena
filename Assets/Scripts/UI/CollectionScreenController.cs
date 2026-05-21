@@ -6,6 +6,7 @@ public class CollectionScreenController
     private readonly VisualElement root;
     private readonly VisualElement skinList;
     private readonly Label coinsAmount;
+    private readonly Label vecAmount;
     private readonly Label statusLabel;
     private readonly Button backButton;
 
@@ -14,6 +15,7 @@ public class CollectionScreenController
         root = parentRoot.Q<VisualElement>("CollectionScreen");
         skinList = parentRoot.Q<VisualElement>("CollectionSkinList");
         coinsAmount = parentRoot.Q<Label>("CollectionCoinsAmount");
+        vecAmount = parentRoot.Q<Label>("CollectionVecAmount");
         statusLabel = parentRoot.Q<Label>("CollectionStatus");
         backButton = parentRoot.Q<Button>("CollectionBackButton");
 
@@ -54,7 +56,11 @@ public class CollectionScreenController
         PlayerInventory.EnsureInitialized();
         if (coinsAmount != null)
         {
-            coinsAmount.text = $"{PlayerInventory.Coins:N0} COINS  |  {PlayerInventory.VecUnlockedBalance:N0} VEC";
+            coinsAmount.text = PlayerInventory.Coins.ToString("N0");
+        }
+        if (vecAmount != null)
+        {
+            vecAmount.text = PlayerInventory.VecUnlockedBalance.ToString("N0");
         }
         skinList.Clear();
 

@@ -119,16 +119,13 @@ namespace Reown.AppKit.Unity
 #if UNITY_WEBGL && !UNITY_EDITOR
                 await UnityEventsDispatcher.WaitForSecondsAsync(0.2f);
 #endif
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             }
         }
 
         protected override async Task ConnectAsyncCore(Wallet wallet)
         {
             WalletUtils.SetLastViewedWallet(wallet);
-
-            var tcsConnection = new TaskCompletionSource<bool>();
-            ConnectorController.AccountConnected += (_, _) => tcsConnection.SetResult(true);
 
 #if UNITY_STANDALONE || UNITY_WEBGL
             if (!string.IsNullOrEmpty(wallet.MobileLink) || !string.IsNullOrEmpty(wallet.DesktopLink))
@@ -169,28 +166,44 @@ namespace Reown.AppKit.Unity
                         (ConnectorType.WalletConnect, out var connector))
                 throw new ReownConnectorException("WalletConnect connector not found");
 
-            var connectionProposal = (WalletConnectConnectionProposal)connector.Connect();
-
-            if (string.IsNullOrEmpty(connectionProposal.Uri))
+            var tcsConnection = new TaskCompletionSource<bool>();
+            void LocalAccountConnectedHandler(object _, Connector.AccountConnectedEventArgs __)
             {
-                var tcsUri = new TaskCompletionSource<bool>();
-
-                void OnConnectionProposalOnConnectionUpdated(ConnectionProposal _)
-                {
-                    if (string.IsNullOrEmpty(connectionProposal.Uri))
-                        return;
-                    tcsUri.SetResult(true);
-                    connectionProposal.ConnectionUpdated -= OnConnectionProposalOnConnectionUpdated;
-                }
-
-                connectionProposal.ConnectionUpdated += OnConnectionProposalOnConnectionUpdated;
-
-                await tcsUri.Task;
+                ConnectorController.AccountConnected -= LocalAccountConnectedHandler;
+                tcsConnection.TrySetResult(true);
             }
 
-            Linker.OpenSessionProposalDeepLink(connectionProposal.Uri, baseUrl);
+            ConnectorController.AccountConnected += LocalAccountConnectedHandler;
 
-            await tcsConnection.Task;
+            var connectionProposal = (WalletConnectConnectionProposal)connector.Connect();
+
+            try
+            {
+                if (string.IsNullOrEmpty(connectionProposal.Uri))
+                {
+                    var tcsUri = new TaskCompletionSource<bool>();
+
+                    void OnConnectionProposalOnConnectionUpdated(ConnectionProposal _)
+                    {
+                        if (string.IsNullOrEmpty(connectionProposal.Uri))
+                            return;
+                        tcsUri.TrySetResult(true);
+                        connectionProposal.ConnectionUpdated -= OnConnectionProposalOnConnectionUpdated;
+                    }
+
+                    connectionProposal.ConnectionUpdated += OnConnectionProposalOnConnectionUpdated;
+
+                    await tcsUri.Task;
+                }
+
+                Linker.OpenSessionProposalDeepLink(connectionProposal.Uri, baseUrl);
+
+                await tcsConnection.Task;
+            }
+            finally
+            {
+                ConnectorController.AccountConnected -= LocalAccountConnectedHandler;
+            }
         }
 
         private static ViewType GetAccountViewType()

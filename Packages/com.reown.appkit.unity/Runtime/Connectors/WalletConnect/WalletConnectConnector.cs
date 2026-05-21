@@ -22,12 +22,32 @@ namespace Reown.AppKit.Unity
     {
         public override Account Account
         {
-            get => SignClient.AddressProvider.CurrentAccount();
+            get
+            {
+                try
+                {
+                    return SignClient.AddressProvider.CurrentAccount();
+                }
+                catch (Exception)
+                {
+                    return default;
+                }
+            }
         }
 
         public override IEnumerable<Account> Accounts
         {
-            get => _signClient.AddressProvider.AllAccounts();
+            get
+            {
+                try
+                {
+                    return _signClient.AddressProvider.AllAccounts();
+                }
+                catch (Exception)
+                {
+                    return Array.Empty<Account>();
+                }
+            }
         }
 
         public SignClientUnity SignClient
@@ -62,7 +82,11 @@ namespace Reown.AppKit.Unity
             if (session == null || IsAccountConnected)
                 return;
 
-            OnAccountChanged(new AccountChangedEventArgs(Account));
+            var account = Account;
+            if (string.IsNullOrWhiteSpace(account.Address))
+                return;
+
+            OnAccountChanged(new AccountChangedEventArgs(account));
         }
 
         private async void ActiveChainIdChangedHandler(object sender, SessionEvent<JToken> sessionEvent)

@@ -52,9 +52,18 @@ namespace Reown.AppKit.Unity.Utils
 
         internal RemoteSprite(string uri, IImageHandler<TImage> imageHandler)
         {
-            _uri = uri;
+            _uri = NormalizeUri(uri);
             _imageHandler = imageHandler;
             _loadingAnimator = LoadingAnimator.Instance;
+        }
+
+        private static string NormalizeUri(string uri)
+        {
+            const string ipfsPrefix = "ipfs://";
+            if (string.IsNullOrWhiteSpace(uri) || !uri.StartsWith(ipfsPrefix, StringComparison.OrdinalIgnoreCase))
+                return uri;
+
+            return "https://ipfs.io/ipfs/" + uri.Substring(ipfsPrefix.Length);
         }
 
         public void SubscribeImage(TImage image)

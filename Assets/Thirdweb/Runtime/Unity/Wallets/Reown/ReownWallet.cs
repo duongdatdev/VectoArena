@@ -285,10 +285,7 @@ namespace Thirdweb.Unity
             void OnAccountConnected(object sender, AccountConnectedEventArgs args)
             {
                 connectionEstablished = true;
-                if (!connectedTcs.Task.IsCompleted)
-                {
-                    connectedTcs.SetResult(true);
-                }
+                connectedTcs.TrySetResult(true);
             }
 
             async void OnModalOpenStateChanged(object sender, ModalOpenStateChangedEventArgs args)
@@ -316,7 +313,7 @@ namespace Thirdweb.Unity
                     if (!connectionEstablished && !connectedTcs.Task.IsCompleted)
                     {
                         ThirdwebDebug.LogWarning("Reown modal closed before connection was established.");
-                        connectedTcs.SetResult(false);
+                        connectedTcs.TrySetResult(false);
                     }
                 }
             }

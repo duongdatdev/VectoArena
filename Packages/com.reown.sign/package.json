@@ -1,0 +1,17 @@
+{
+  "name": "com.reown.sign",
+  "version": "1.6.0",
+  "displayName": "Reown.Sign",
+  "unity": "2023.1",
+  "author": "Reown",
+  "keywords": [
+    "reown"
+  ],
+  "dependencies": {
+    "com.reown.core": "1.6.0"
+  },
+  "publishConfig": {
+    "registry": "https://package.openupm.com"
+  },
+  "_fingerprint": "c5d97791bb1824f6392f37697969aae4e18b8108"
+}

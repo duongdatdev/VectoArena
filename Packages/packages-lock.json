@@ -89,13 +89,12 @@
       "url": "https://package.openupm.com"
     },
     "com.reown.sign": {
-      "version": "1.6.0",
+      "version": "file:com.reown.sign",
       "depth": 0,
-      "source": "registry",
+      "source": "embedded",
       "dependencies": {
         "com.reown.core": "1.6.0"
-      },
-      "url": "https://package.openupm.com"
+      }
     },
     "com.reown.sign.nethereum": {
       "version": "1.6.0",

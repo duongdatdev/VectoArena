@@ -7,6 +7,7 @@ public static class PlayerInventory
 {
     public const string DefaultSkinId = "Female01";
     private static readonly HashSet<string> ownedSkins = new HashSet<string> { DefaultSkinId };
+    private static readonly Dictionary<string, SkinOwnershipState> skinStates = new Dictionary<string, SkinOwnershipState>(StringComparer.OrdinalIgnoreCase);
     private static int coins;
     private static int vecUnlockedBalance;
     private static int vecLockedBalance;
@@ -37,6 +38,11 @@ public static class PlayerInventory
     public static void EnsureInitialized()
     {
         ownedSkins.Add(DefaultSkinId);
+        if (!skinStates.ContainsKey(DefaultSkinId))
+        {
+            SkinCatalogItem defaultSkin = SkinCatalog.GetById(DefaultSkinId);
+            skinStates[DefaultSkinId] = CreateFallbackState(defaultSkin);
+        }
     }
 
     public static void ResetToGuest()
@@ -54,6 +60,9 @@ public static class PlayerInventory
         loadedFromServer = false;
         ownedSkins.Clear();
         ownedSkins.Add(DefaultSkinId);
+        skinStates.Clear();
+        SkinCatalogItem defaultSkin = SkinCatalog.GetById(DefaultSkinId);
+        skinStates[DefaultSkinId] = CreateFallbackState(defaultSkin);
         Changed?.Invoke();
     }
 
@@ -61,6 +70,24 @@ public static class PlayerInventory
     {
         EnsureInitialized();
         return ownedSkins.Contains(skinId);
+    }
+
+    public static SkinOwnershipState GetSkinState(SkinCatalogItem item)
+    {
+        EnsureInitialized();
+        if (item == null)
+        {
+            return null;
+        }
+
+        if (skinStates.TryGetValue(item.Id, out SkinOwnershipState state))
+        {
+            return state;
+        }
+
+        state = CreateFallbackState(item);
+        skinStates[item.Id] = state;
+        return state;
     }
 
     public static async Task LoadFromServer()
@@ -88,6 +115,13 @@ public static class PlayerInventory
         if (!loadedFromServer)
         {
             await LoadFromServer();
+        }
+
+        SkinOwnershipState state = GetSkinState(item);
+        if (state != null && state.IsNft)
+        {
+            Changed?.Invoke();
+            return false;
         }
 
         try
@@ -142,6 +176,7 @@ public static class PlayerInventory
         equippedSkinId = string.IsNullOrEmpty(profile.equippedPlayerSkin) ? DefaultSkinId : profile.equippedPlayerSkin;
         ownedSkins.Clear();
         ownedSkins.Add(DefaultSkinId);
+        skinStates.Clear();
 
         if (profile.ownedSkins != null)
         {
@@ -154,11 +189,118 @@ public static class PlayerInventory
             }
         }
 
+        ApplySkinResponses(profile.shopSkins);
+        ApplySkinResponses(profile.skinOwnership);
+
+        foreach (SkinCatalogItem item in SkinCatalog.Items)
+        {
+            if (!skinStates.ContainsKey(item.Id))
+            {
+                skinStates[item.Id] = CreateFallbackState(item);
+            }
+        }
+
         Changed?.Invoke();
+    }
+
+    private static void ApplySkinResponses(NetworkManager.ShopSkinResponse[] skins)
+    {
+        if (skins == null)
+        {
+            return;
+        }
+
+        foreach (NetworkManager.ShopSkinResponse skin in skins)
+        {
+            if (skin == null)
+            {
+                continue;
+            }
+
+            string skinId = !string.IsNullOrEmpty(skin.skinId) ? skin.skinId : skin.id;
+            if (string.IsNullOrEmpty(skinId))
+            {
+                continue;
+            }
+
+            SkinCatalogItem catalogItem = SkinCatalog.GetById(skinId);
+            string ownershipType = string.IsNullOrEmpty(skin.ownershipType) ? catalogItem.OwnershipType : skin.ownershipType;
+            bool isNft = IsNftOwnership(ownershipType);
+            bool owned = isNft ? skin.owned : skin.owned || ownedSkins.Contains(skinId);
+            bool canEquip = isNft ? skin.canEquip : skin.canEquip || owned;
+            if (owned)
+            {
+                ownedSkins.Add(skinId);
+            }
+
+            skinStates[skinId] = new SkinOwnershipState
+            {
+                Id = skinId,
+                DisplayName = string.IsNullOrEmpty(skin.displayName) ? catalogItem.DisplayName : skin.displayName,
+                PrefabKey = string.IsNullOrEmpty(skin.prefabKey) ? catalogItem.PrefabKey : skin.prefabKey,
+                Price = skin.price,
+                CurrencyType = string.IsNullOrEmpty(skin.currencyType) ? catalogItem.CurrencyType : skin.currencyType,
+                OwnershipType = ownershipType,
+                Owned = owned,
+                CanEquip = canEquip,
+                Source = skin.source,
+                Equipped = skin.equipped || EquippedSkinId == skinId,
+                NftInfo = skin.nftInfo,
+                Nft = skin.nft
+            };
+        }
+    }
+
+    private static SkinOwnershipState CreateFallbackState(SkinCatalogItem item)
+    {
+        bool owned = ownedSkins.Contains(item.Id);
+        return new SkinOwnershipState
+        {
+            Id = item.Id,
+            DisplayName = item.DisplayName,
+            PrefabKey = item.PrefabKey,
+            Price = item.Price,
+            CurrencyType = item.CurrencyType,
+            OwnershipType = string.IsNullOrEmpty(item.OwnershipType) ? "OFFCHAIN" : item.OwnershipType,
+            Owned = owned,
+            CanEquip = owned,
+            Source = owned ? "LOCAL" : "NONE",
+            Equipped = EquippedSkinId == item.Id,
+            Nft = item.Nft == null ? null : new NetworkManager.SkinNftMappingResponse
+            {
+                chainId = item.Nft.ChainId,
+                contractAddress = item.Nft.ContractAddress,
+                tokenId = item.Nft.TokenId,
+                collectionKey = item.Nft.CollectionKey
+            }
+        };
+    }
+
+    private static bool IsNftOwnership(string ownershipType)
+    {
+        return string.Equals(ownershipType, "NFT", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeWalletAddress(string walletAddress)
     {
         return string.IsNullOrWhiteSpace(walletAddress) ? null : walletAddress.Trim().ToLowerInvariant();
     }
+}
+
+public class SkinOwnershipState
+{
+    public string Id;
+    public string DisplayName;
+    public string PrefabKey;
+    public int Price;
+    public string CurrencyType;
+    public string OwnershipType;
+    public bool Owned;
+    public bool CanEquip;
+    public string Source;
+    public bool Equipped;
+    public NetworkManager.SkinNftMappingResponse Nft;
+    public NetworkManager.NftSkinInfoResponse NftInfo;
+
+    public bool IsNft => string.Equals(OwnershipType, "NFT", StringComparison.OrdinalIgnoreCase);
 }

@@ -69,8 +69,11 @@ public class StoreScreenController : MonoBehaviour
 
     private VisualElement CreateSkinProduct(SkinCatalogItem item)
     {
-        bool owned = PlayerInventory.IsSkinOwned(item.Id);
-        bool equipped = PlayerInventory.EquippedSkinId == item.Id;
+        SkinOwnershipState state = PlayerInventory.GetSkinState(item);
+        bool owned = state != null && state.Owned;
+        bool canEquip = state != null && state.CanEquip;
+        bool isNft = state != null && state.IsNft;
+        bool equipped = (state != null && state.Equipped) || PlayerInventory.EquippedSkinId == item.Id;
 
         VisualElement card = new VisualElement();
         card.AddToClassList("product-card");
@@ -90,14 +93,44 @@ public class StoreScreenController : MonoBehaviour
         buyButton.AddToClassList("button-long");
         buyButton.AddToClassList("button-long--yellow");
         buyButton.AddToClassList("product-price-btn");
-        buyButton.text = owned ? equipped ? "EQUIPPED" : "EQUIP" : $"{item.Price:N0} {GetCurrencyLabel(item)}";
+        buyButton.text = GetButtonText(item, state, owned, canEquip, equipped, isNft);
+        buyButton.SetEnabled(!equipped);
         buyButton.clicked += async () =>
         {
+            if (equipped)
+            {
+                return;
+            }
+
             buyButton.SetEnabled(false);
-            bool success = await PlayerInventory.TryBuySkinAsync(item);
+            bool success;
+            if (owned && canEquip)
+            {
+                success = await PlayerInventory.EquipSkinAsync(item.Id);
+            }
+            else if (isNft)
+            {
+                success = false;
+                if (storeStatus != null)
+                {
+                    storeStatus.text = "NFT BUY FLOW NOT AVAILABLE YET";
+                }
+            }
+            else
+            {
+                success = await PlayerInventory.TryBuySkinAsync(item);
+            }
+
             if (storeStatus != null)
             {
-                storeStatus.text = success ? $"{item.DisplayName.ToUpper()} READY" : $"NOT ENOUGH {GetCurrencyLabel(item)}";
+                if (success)
+                {
+                    storeStatus.text = owned ? $"EQUIPPED {item.DisplayName.ToUpper()}" : $"{item.DisplayName.ToUpper()} READY";
+                }
+                else if (!isNft)
+                {
+                    storeStatus.text = $"NOT ENOUGH {GetCurrencyLabel(item, state)}";
+                }
             }
             RefreshProducts();
         };
@@ -108,8 +141,30 @@ public class StoreScreenController : MonoBehaviour
         return card;
     }
 
-    private string GetCurrencyLabel(SkinCatalogItem item)
+    private string GetButtonText(SkinCatalogItem item, SkinOwnershipState state, bool owned, bool canEquip, bool equipped, bool isNft)
     {
-        return string.Equals(item.CurrencyType, "VEC", System.StringComparison.OrdinalIgnoreCase) ? "VEC" : "COINS";
+        if (equipped)
+        {
+            return "EQUIPPED";
+        }
+
+        if (owned && canEquip)
+        {
+            return "EQUIP";
+        }
+
+        if (isNft)
+        {
+            return "BUY NFT";
+        }
+
+        int price = state != null ? state.Price : item.Price;
+        return $"{price:N0} {GetCurrencyLabel(item, state)}";
+    }
+
+    private string GetCurrencyLabel(SkinCatalogItem item, SkinOwnershipState state = null)
+    {
+        string currencyType = state != null && !string.IsNullOrEmpty(state.CurrencyType) ? state.CurrencyType : item.CurrencyType;
+        return string.Equals(currencyType, "VEC", System.StringComparison.OrdinalIgnoreCase) ? "VEC" : "COINS";
     }
 }

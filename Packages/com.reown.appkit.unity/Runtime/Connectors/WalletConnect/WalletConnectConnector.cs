@@ -176,12 +176,10 @@ namespace Reown.AppKit.Unity
         protected override async Task ChangeActiveChainAsyncCore(Chain chain)
         {
             if (chain.ChainNamespace == ChainConstants.Namespaces.Evm &&
-                !ActiveSessionIncludesChain(chain.ChainId) &&
                 ActiveSessionSupportsMethod("wallet_addEthereumChain") &&
                 ActiveSessionSupportsMethod("wallet_switchEthereumChain"))
             {
-                // If the active session supports wallet_addEthereumChain and wallet_switchEthereumChain methods,
-                // we assume it's a MetaMask session and try to make it work.
+                // MetaMask needs an explicit switch request even when the chain is already part of the WalletConnect session.
                 await ChangeActiveMetaMaskChainAsync(chain);
             }
             else
@@ -199,33 +197,14 @@ namespace Reown.AppKit.Unity
         {
             try
             {
-                // We use wallet_addEthereumChain for all chains except for Ethereum and Linea because
-                // MetaMask ships with these chains by default and wallet_addEthereumChain is not supported for them.
-                // For other chains using wallet_addEthereumChain will add the chain to MetaMask or switch to it if it's already added.
-
-                if (chain.ChainReference is "1" or "59144")
+                try
                 {
                     await AppKit.Evm.RpcRequestAsync<string>("wallet_switchEthereumChain", new SwitchEthereumChain(chain.ChainReference));
                 }
-                else
+                catch (ReownNetworkException e) when (IsMetaMaskUnrecognizedChainError(e))
                 {
-                    var ethereumChain = new EthereumChain(
-                        chain.ChainReference,
-                        chain.Name,
-                        chain.NativeCurrency,
-                        new[]
-                        {
-                            chain.RpcUrl
-                        },
-                        new[]
-                        {
-                            chain.BlockExplorer.url
-                        }
-                    );
-
-                    await AppKit.Evm.RpcRequestAsync<string>("wallet_addEthereumChain", ethereumChain);
+                    await AppKit.Evm.RpcRequestAsync<string>("wallet_addEthereumChain", ToEthereumChain(chain));
                 }
-
 
                 await _signClient.AddressProvider.SetDefaultChainIdAsync(chain.ChainId);
 
@@ -236,15 +215,7 @@ namespace Reown.AppKit.Unity
             }
             catch (ReownNetworkException e)
             {
-                try
-                {
-                    var metaMaskError = JsonConvert.DeserializeObject<MetaMaskError>(e.Message);
-                    ReownLogger.LogError($"[MetaMask Error] {metaMaskError.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogException(ex);
-                }
+                LogMetaMaskError(e);
 
                 throw;
             }
@@ -252,6 +223,87 @@ namespace Reown.AppKit.Unity
             {
                 Debug.LogException(e);
             }
+        }
+
+        private static void LogMetaMaskError(Exception exception)
+        {
+            try
+            {
+                var error = JObject.Parse(exception.Message);
+                var message = error["message"]?.Value<string>() ??
+                    error["error"]?["message"]?.Value<string>() ??
+                    exception.Message;
+                ReownLogger.LogError($"[MetaMask Error] {message}");
+            }
+            catch (JsonException)
+            {
+                ReownLogger.LogError($"[MetaMask Error] {exception.Message}");
+            }
+        }
+
+        private static bool IsMetaMaskUnrecognizedChainError(Exception exception)
+        {
+            var message = exception.Message;
+            if (string.IsNullOrWhiteSpace(message))
+                return false;
+
+            try
+            {
+                var error = JObject.Parse(message);
+                return ContainsErrorCode(error, 4902);
+            }
+            catch (JsonException)
+            {
+                return message.Contains("4902");
+            }
+        }
+
+        private static bool ContainsErrorCode(JToken token, int expectedCode)
+        {
+            if (token is JObject error && TryReadErrorCode(error, out var code) && code == expectedCode)
+                return true;
+
+            if (!token.HasValues)
+                return false;
+
+            foreach (var child in token.Children())
+            {
+                if (ContainsErrorCode(child, expectedCode))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryReadErrorCode(JObject error, out int code)
+        {
+            code = 0;
+            var token = error["code"];
+            if (token == null)
+                return false;
+
+            if (token.Type == JTokenType.Integer)
+            {
+                code = token.Value<int>();
+                return true;
+            }
+
+            return token.Type == JTokenType.String && int.TryParse(token.Value<string>(), out code);
+        }
+
+        private static EthereumChain ToEthereumChain(Chain chain)
+        {
+            return new EthereumChain(
+                chain.ChainReference,
+                chain.Name,
+                new Reown.Sign.Nethereum.Model.Currency(
+                    chain.NativeCurrency.name,
+                    chain.NativeCurrency.symbol,
+                    chain.NativeCurrency.decimals
+                ),
+                new[] { chain.RpcUrl },
+                new[] { chain.BlockExplorer.url }
+            );
         }
 
         private async Task WaitForSessionUpdateAsync(TimeSpan timeout)

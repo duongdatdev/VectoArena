@@ -456,13 +456,19 @@ public class Web3Manager : MonoBehaviour
                 return false;
             }
 
-            Debug.Log($"Transferring tokens to {treasuryWalletAddress}...");
+            ValidateAddress(tokenContractAddress, "VEC token address");
+            ValidateAddress(treasuryWalletAddress, "treasury wallet address");
 
-            var transferTask = ThirdwebManager.Instance.ActiveWallet.Transfer(
-                chainId: this.chainId, 
-                toAddress: treasuryWalletAddress, 
-                weiAmount: weiAmount, 
-                tokenAddress: tokenContractAddress
+            await EnsureCorrectChainAsync(this.chainId);
+
+            Debug.Log($"Transferring VEC to {treasuryWalletAddress}...");
+
+            ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenContractAddress, this.chainId);
+            var transferTask = token.Write(
+                wallet: ThirdwebManager.Instance.ActiveWallet,
+                method: "function transfer(address to, uint256 amount) returns (bool)",
+                weiValue: 0,
+                parameters: new object[] { treasuryWalletAddress, weiAmount }
             );
 
             var completedTask = await Task.WhenAny(transferTask, Task.Delay(DepositTransactionTimeoutSeconds * 1000));

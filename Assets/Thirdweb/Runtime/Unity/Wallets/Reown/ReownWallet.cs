@@ -370,6 +370,11 @@ namespace Thirdweb.Unity
                 return wcChain;
             }
 
+            if (chainId.ToString() == ChainConstants.References.EthereumSepolia)
+            {
+                return ChainConstants.Chains.EthereumSepolia;
+            }
+
             var twChainMeta = await Utils.GetChainMetadata(client, chainId);
             return new Chain(
                 chainNamespace: ChainConstants.Namespaces.Evm,

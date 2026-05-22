@@ -340,7 +340,6 @@ public static class PlayerInventory
         vecTokenAddress = FirstNonEmpty(config.vecTokenAddress, config.tokenContractAddress);
 
         string tokenIdText = FirstNonEmpty(nftInfo?.tokenId, nft?.tokenId, configuredSkin?.tokenId);
-        string priceWeiText = FirstNonEmpty(configuredSkin?.priceWei, config.nftSkinPriceWei);
 
         if (chainId == 0)
         {
@@ -362,10 +361,29 @@ public static class PlayerInventory
             throw new InvalidOperationException("NFT tokenId is missing or invalid.");
         }
 
-        if (!BigInteger.TryParse(priceWeiText, out priceWei) || priceWei <= BigInteger.Zero)
+        priceWei = ResolveNftPriceWei(item, state, configuredSkin, config);
+        if (priceWei <= BigInteger.Zero)
         {
             throw new InvalidOperationException("NFT price is missing or invalid.");
         }
+    }
+
+    private static BigInteger ResolveNftPriceWei(
+        SkinCatalogItem item,
+        SkinOwnershipState state,
+        NftSkinConfig configuredSkin,
+        AppConfig config)
+    {
+        int vecPrice = state != null && state.Price > 0 ? state.Price : item.Price;
+        if (vecPrice > 0)
+        {
+            return BigInteger.Pow(10, 18) * vecPrice;
+        }
+
+        string priceWeiText = FirstNonEmpty(configuredSkin?.priceWei, config.nftSkinPriceWei);
+        return BigInteger.TryParse(priceWeiText, out BigInteger configuredPriceWei)
+            ? configuredPriceWei
+            : BigInteger.Zero;
     }
 
     private static NftSkinConfig GetConfiguredNftSkin(string skinId)

@@ -96,6 +96,7 @@ namespace Reown.AppKit.Unity
         {
             public const string Ethereum = "1";
             public const string EthereumGoerli = "5";
+            public const string EthereumSepolia = "11155111";
             public const string Optimism = "10";
             public const string Ronin = "2020";
             public const string RoninSaigon = "2021";
@@ -199,6 +200,17 @@ namespace Reown.AppKit.Unity
                 "https://goerli.infura.io/v3/",
                 true,
                 $"{ChainImageUrl}/{ImageIds[References.EthereumGoerli]}"
+            );
+
+            public static readonly Chain EthereumSepolia = new(
+                Namespaces.Evm,
+                References.EthereumSepolia,
+                "Sepolia",
+                new Currency("Sepolia Ether", "ETH", 18),
+                new BlockExplorer("Etherscan", "https://sepolia.etherscan.io"),
+                "https://ethereum-sepolia-rpc.publicnode.com",
+                true,
+                $"{ChainImageUrl}/{ImageIds[References.Ethereum]}"
             );
 
             public static readonly Chain Optimism = new(
@@ -393,6 +405,7 @@ namespace Reown.AppKit.Unity
             {
                 Ethereum,
                 EthereumGoerli,
+                EthereumSepolia,
                 Optimism,
                 Ronin,
                 RoninSaigon,

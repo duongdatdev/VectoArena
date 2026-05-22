@@ -26,6 +26,7 @@ namespace Reown.AppKit.Unity
         public Chain[] supportedChains =
         {
             ChainConstants.Chains.Ethereum,
+            ChainConstants.Chains.EthereumSepolia,
             ChainConstants.Chains.Arbitrum,
             ChainConstants.Chains.Polygon,
             ChainConstants.Chains.Avalanche,

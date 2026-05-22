@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a132522cf3ac514abb9830a8260e086, type: 3}
+  m_Name: Minigun
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponType: Minigun
+  animWeaponTypeId: 3
+  weaponModelPrefab: {fileID: 581295853275894919, guid: cf20305f5d8914e438059bef60d36487, type: 3}
+  floatingItemPrefab: {fileID: 1837080936243420267, guid: 1874394bf2b297047bb3822ee05c70e4, type: 3}
+  bulletPrefab: {fileID: 5891818647442247478, guid: 397cdfcc1fe1bae488501cb1adc25daf, type: 3}
+  fireRate: 0.05
+  maxAmmo: 80
+  isMelee: 0

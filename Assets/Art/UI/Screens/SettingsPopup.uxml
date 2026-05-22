@@ -1,0 +1,89 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss" />
+    <Style src="project://database/Assets/Art/UI/Styles/SettingsPopupStyle.uss" />
+    
+    <ui:VisualElement name="root" class="fill-parent settings-overlay">
+        <ui:VisualElement name="SettingsPopup" class="settings-popup">
+            <ui:VisualElement class="settings-header">
+                <ui:Label text="SETTINGS" class="settings-title"/>
+            </ui:VisualElement>
+            <ui:Button name="CloseButton" class="settings-close"/>
+            
+            <ui:VisualElement class="settings-tabs">
+                <ui:Button name="TabSound" text="SOUND" class="settings-tab-button settings-tab-button--active"/>
+                <ui:Button name="TabGraphics" text="GRAPHICS" class="settings-tab-button"/>
+                <ui:Button name="TabControls" text="CONTROLS" class="settings-tab-button"/>
+                <ui:Button name="TabAccount" text="ACCOUNT" class="settings-tab-button"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement class="settings-content">
+                <!-- Sound Panel -->
+                <ui:VisualElement name="PanelSound" class="settings-panel">
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="Master Volume" class="settings-label"/>
+                        <ui:Slider name="MasterVolumeSlider" low-value="0" high-value="1" class="settings-slider"/>
+                        <ui:Label name="MasterVolumeValue" text="100%" class="settings-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="Music Volume" class="settings-label"/>
+                        <ui:Slider name="MusicVolumeSlider" low-value="0" high-value="1" class="settings-slider"/>
+                        <ui:Label name="MusicVolumeValue" text="80%" class="settings-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="SFX Volume" class="settings-label"/>
+                        <ui:Slider name="SfxVolumeSlider" low-value="0" high-value="1" class="settings-slider"/>
+                        <ui:Label name="SfxVolumeValue" text="100%" class="settings-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                
+                <!-- Graphics Panel -->
+                <ui:VisualElement name="PanelGraphics" class="settings-panel hidden">
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="Quality" class="settings-label"/>
+                        <ui:VisualElement class="settings-choice-group">
+                            <ui:Button name="QualityPerformanceButton" text="PERFORMANCE" class="settings-choice-button"/>
+                            <ui:Button name="QualityQualityButton" text="QUALITY" class="settings-choice-button"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="FPS Limit" class="settings-label"/>
+                        <ui:VisualElement class="settings-choice-group">
+                            <ui:Button name="Fps30Button" text="30" class="settings-choice-button settings-choice-button--small"/>
+                            <ui:Button name="Fps60Button" text="60" class="settings-choice-button settings-choice-button--small"/>
+                            <ui:Button name="Fps120Button" text="120" class="settings-choice-button settings-choice-button--small"/>
+                            <ui:Button name="FpsUnlimitedButton" text="UNLIMITED" class="settings-choice-button"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="VSyncRow" class="settings-row">
+                        <ui:Label text="VSync" class="settings-label"/>
+                        <ui:Toggle name="VSyncToggle" class="settings-toggle"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="FullscreenRow" class="settings-row">
+                        <ui:Label text="Fullscreen" class="settings-label"/>
+                        <ui:Toggle name="FullscreenToggle" class="settings-toggle"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="Show FPS" class="settings-label"/>
+                        <ui:Toggle name="ShowFpsToggle" class="settings-toggle"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Controls Panel -->
+                <ui:VisualElement name="PanelControls" class="settings-panel hidden">
+                    <ui:VisualElement class="settings-row">
+                        <ui:Label text="Camera Distance" class="settings-label"/>
+                        <ui:Slider name="CameraDistanceSlider" low-value="0.75" high-value="1.35" class="settings-slider"/>
+                        <ui:Label name="CameraDistanceValue" text="1.00x" class="settings-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                
+                <!-- Account Panel -->
+                <ui:VisualElement name="PanelAccount" class="settings-panel hidden" style="align-items: center; justify-content: center;">
+                    <ui:Label name="AccountNameLabel" text="Logged in as GUEST" class="settings-label" style="margin-bottom: 20px;"/>
+                    <ui:Label name="WalletStatusLabel" text="Wallet not linked" class="settings-label settings-label--secondary" style="margin-bottom: 50px;"/>
+                    <ui:Button name="LogoutButton" text="LOG OUT" class="button-long button-long--yellow"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

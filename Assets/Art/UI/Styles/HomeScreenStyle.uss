@@ -1,0 +1,895 @@
+.home-root {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.character-stage {
+    position: absolute;
+    left: 23%;
+    right: 23%;
+    top: 58px;
+    bottom: 96px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.game-title {
+    font-size: 84px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(22, 20, 38);
+    text-shadow: 5px 7px 0 rgb(22, 20, 38);
+    margin-top: 4px;
+}
+
+.game-subtitle {
+    font-size: 34px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgb(22, 20, 38);
+    text-shadow: 3px 4px 0 rgb(22, 20, 38);
+    margin-top: -4px;
+}
+
+.top-buttons {
+    flex-direction: row-reverse;
+    position: absolute;
+    top: 28px;
+    right: 42px;
+    align-items: center;
+}
+
+/* ===================== TOP BAR (Currencies + Wallet + Settings) ===================== */
+.top-bar {
+    flex-direction: row-reverse;
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    align-items: center;
+}
+
+.currency-bar {
+    flex-direction: row;
+    align-items: center;
+    margin-right: 14px;
+}
+
+/* Currency pill (individual currency display) */
+.currency-pill {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 46px;
+    padding-right: 16px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 22px;
+    border-width: 0;
+    height: 45px;
+    min-width: 138px;
+    overflow: visible;
+}
+
+.currency-pill:hover {
+    background-color: rgb(32, 28, 52);
+}
+
+.currency-pill:active {
+    scale: 0.95 0.95;
+}
+
+.currency-pill__icon-outline {
+    position: absolute;
+    left: -24px;
+    width: 72px;
+    height: 72px;
+    align-items: center;
+    justify-content: center;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-pill__icon {
+    width: 68px;
+    height: 68px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-pill__icon--vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
+}
+
+.currency-pill__icon--locked-vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
+}
+
+.currency-pill__lock-badge {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 17px;
+    height: 17px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-collection-lock.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-pill__icon--coin {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
+}
+
+.currency-pill__amount {
+    height: 48px;
+    font-size: 34px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 3px 5px 0 rgb(0, 0, 0);
+    min-width: 76px;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+/* Wallet Button */
+.wallet-button {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 34px;
+    padding-right: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 22px;
+    border-width: 0;
+    height: 45px;
+    min-width: 142px;
+    overflow: visible;
+}
+
+.wallet-button:hover {
+    background-color: rgb(32, 28, 52);
+}
+
+.wallet-button:active {
+    scale: 0.95 0.95;
+}
+
+.wallet-button--connected {
+    background-color: rgb(23, 20, 38);
+}
+
+.wallet-button--connected:hover {
+    background-color: rgb(32, 28, 52);
+}
+
+.wallet-button__icon-outline {
+    position: absolute;
+    left: -8px;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+}
+
+.wallet-button__icon {
+    width: 30px;
+    height: 30px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-wallet.png");
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: rgb(73, 212, 212);
+}
+
+.wallet-button__label {
+    height: 32px;
+    font-size: 19px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 2px 3px 0 rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+/* ===================== DEPOSIT POPUP ===================== */
+.deposit-popup {
+    justify-content: center;
+    align-items: center;
+}
+
+.deposit-popup__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.deposit-popup__panel {
+    width: 700px;
+    background-color: rgb(25, 18, 50);
+    border-radius: 20px;
+    border-width: 3px;
+    border-color: rgba(73, 212, 212, 0.4);
+    padding: 30px;
+}
+
+.deposit-popup__header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(100, 70, 180, 0.3);
+}
+
+.deposit-popup__title {
+    font-size: 46px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+}
+
+.deposit-popup__body {
+    align-items: center;
+}
+
+.deposit-popup__description {
+    font-size: 28px;
+    color: rgb(180, 170, 200);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-bottom: 30px;
+    white-space: normal;
+}
+
+.deposit-popup__amount-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+    justify-content: center;
+}
+
+.deposit-popup__label {
+    font-size: 32px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    margin-right: 15px;
+}
+
+.deposit-popup__input {
+    width: 200px;
+}
+
+.deposit-popup__input > .unity-text-field__input {
+    height: 60px;
+    font-size: 30px;
+    -unity-text-align: middle-center;
+}
+
+.deposit-popup__status {
+    font-size: 24px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+    min-height: 30px;
+}
+
+.deposit-popup__locked-vec {
+    font-size: 20px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-bottom: 8px;
+}
+
+.deposit-popup__confirm {
+    margin-top: 10px;
+    align-self: center;
+}
+
+.transaction-history {
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top-width: 2px;
+    border-top-color: rgba(100, 70, 180, 0.35);
+}
+
+.transaction-history__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.transaction-history__title {
+    font-size: 26px;
+    color: rgb(73, 212, 212);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+}
+
+.transaction-history__button {
+    height: 42px;
+    padding-left: 18px;
+    padding-right: 18px;
+    background-color: rgba(73, 212, 212, 0.18);
+    border-width: 2px;
+    border-color: rgba(73, 212, 212, 0.5);
+    border-radius: 18px;
+    color: rgb(73, 212, 212);
+    font-size: 18px;
+    -unity-font-definition: var(--font-bold);
+}
+
+.transaction-history__status {
+    min-height: 28px;
+    font-size: 19px;
+    color: rgb(180, 170, 200);
+    -unity-font-definition: var(--font-bold);
+    margin-bottom: 8px;
+}
+
+.transaction-history__scroll {
+    height: 220px;
+    background-color: rgba(8, 5, 22, 0.55);
+    border-width: 2px;
+    border-color: rgba(73, 212, 212, 0.18);
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.transaction-history__list {
+    width: 100%;
+}
+
+.transaction-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 92px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background-color: rgba(40, 30, 70, 0.72);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.transaction-row__main {
+    flex-grow: 1;
+    margin-right: 14px;
+}
+
+.transaction-row__right {
+    width: 150px;
+    align-items: flex-end;
+}
+
+.transaction-row__title {
+    font-size: 19px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+}
+
+.transaction-row__meta {
+    font-size: 16px;
+    color: rgb(180, 170, 200);
+    margin-top: 3px;
+    white-space: normal;
+}
+
+.transaction-row__balance {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 3px;
+}
+
+.transaction-row__amount {
+    font-size: 21px;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-right;
+}
+
+.transaction-row__amount--positive {
+    color: rgb(73, 212, 212);
+}
+
+.transaction-row__amount--negative {
+    color: rgb(255, 130, 130);
+}
+
+.transaction-row__explorer {
+    height: 32px;
+    margin-top: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgba(240, 209, 94, 0.14);
+    border-width: 1px;
+    border-color: rgba(240, 209, 94, 0.5);
+    border-radius: 12px;
+    color: rgb(240, 209, 94);
+    font-size: 15px;
+    -unity-font-definition: var(--font-bold);
+}
+
+.main-buttons {
+    position: absolute;
+    bottom: 46px;
+    flex-direction: column;
+    justify-content: flex-end;
+    top: 200px;
+}
+
+.main-buttons--left {
+    left: 50px;
+    align-items: flex-start;
+}
+
+.main-buttons--right {
+    right: 48px;
+    align-items: flex-end;
+}
+
+.left-actions {
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.player-header {
+    flex-direction: row-reverse;
+    position: absolute;
+    left: 82px;
+    top: 34px;
+    align-items: center;
+    scale: 1.04 1.04;
+}
+
+.player-header__profile-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-profile.png");
+    width: 164px;
+    height: 138px;
+    background-color: transparent;
+    border-width: 0;
+    overflow: visible;
+    padding: 0;
+}
+
+.player-header__profile-button:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-profile-pressed.png");
+}
+
+.player-header__profile-holder {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.player-header__profile-button:active .player-header__profile-holder {
+    left: -4px;
+    right: -6px;
+    top: 6px;
+    bottom: -6px;
+}
+
+.player-header__avatar {
+    position: absolute;
+    left: 24px;
+    top: 11px;
+    width: 104px;
+    height: 104px;
+    border-radius: 52px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Shared/avatar-default.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.player-header__level {
+    font-size: 34px;
+    color: rgb(255, 255, 255);
+    position: absolute;
+    top: 73px;
+    left: 75px;
+    width: 42px;
+    -unity-text-align: upper-center;
+    text-shadow: -43px 3px 0 rgb(0, 0, 0);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.player-header__fame-star-1 {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-star-bronze.png");
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    left: 84px;
+    top: 113px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.player-header__trophies-holder {
+    position: relative;
+    width: 330px;
+    height: 136px;
+    flex-direction: row;
+    align-items: flex-start;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-profile.png");
+    left: -83px;
+    justify-content: space-between;
+    padding-left: 75px;
+    padding-right: 24px;
+    padding-top: 53px;
+    background-color: transparent;
+    border-width: 0;
+    overflow: visible;
+}
+
+.player-header__name {
+    position: absolute;
+    font-size: 32px;
+    -unity-text-align: lower-left;
+    text-shadow: 5px 5px 0 rgb(0, 0, 0);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    -unity-text-overflow-position: end;
+    text-overflow: ellipsis;
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    left: 164px;
+    top: 12px;
+    color: rgb(255, 255, 255);
+    -unity-font-definition: var(--font-bold);
+    width: 150px;
+    height: 44px;
+}
+
+.player-header__xp-bar {
+    position: absolute;
+    left: 78px;
+    bottom: 16px;
+    width: 116px;
+    height: 16px;
+    padding: 2px;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/progress-battlepass-bg.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    overflow: hidden;
+}
+
+.player-header__xp-fill {
+    width: 0%;
+    height: 100%;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/progress-battlepass.png");
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.settings-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-settings.png?fileID=21300000&guid=81bdc28af928c47228c71078970f94ea&type=3#icon-settings");
+    width: 82px;
+    height: 82px;
+    margin-left: 16px;
+    background-color: transparent;
+    border-width: 0;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.settings-button:active {
+    -unity-background-image-tint-color: rgb(126, 126, 126);
+}
+
+.button-with-icon {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-round.png?fileID=21300000&guid=3cf157cf975774033a81a167148f0e18&type=3#button-round");
+    width: 236px;
+    height: 136px;
+    background-color: transparent;
+    border-width: 0;
+    font-size: 34px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 4px;
+    -unity-text-outline-color: black;
+    text-shadow: 3px 5px 0 black;
+    -unity-text-align: lower-center;
+    padding-bottom: 27px;
+    margin-bottom: 24px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-x: center;
+    -unity-slice-type: sliced;
+    background-position-y: center;
+}
+
+.button-with-icon:active {
+    scale: 0.9 0.9;
+}
+
+.button-icon {
+    position: absolute;
+    top: 13px;
+    left: 76px;
+    width: 84px;
+    height: 84px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.collection-button {
+    font-size: 27px;
+}
+
+.collection-icon {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-collection.png?fileID=21300000&guid=9eb74582f82fb15428c6bb7b432a45d5&type=3#icon-collection");
+}
+
+.shop-icon {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/icon-shop.png?fileID=21300000&guid=a0c3566edae4a44798a1c7eaf010348a&type=3#icon-shop");
+}
+
+.game-mode-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-gamemode.png?fileID=21300000&guid=523824d11b3664918bb2c87e88e8861f&type=3#button-gamemode");
+    width: 390px;
+    height: 158px;
+    background-color: transparent;
+    border-width: 0;
+    margin-bottom: 18px;
+    padding-left: 42px;
+    padding-bottom: 20px;
+    align-items: flex-start;
+    justify-content: flex-end;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.game-mode-button:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-gamemode-pressed.png?fileID=21300000&guid=adc63d7b6bc53457b8f58dde7518e226&type=3#button-gamemode-pressed");
+    padding-left: 52px;
+    padding-bottom: 10px;
+}
+
+.game-mode-label {
+    font-size: 26px;
+    color: rgb(146, 137, 162);
+    -unity-font-definition: var(--font-bold);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.game-mode-title {
+    font-size: 43px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: black;
+    text-shadow: 5px 5px 0 rgba(0, 0, 0, 0.72);
+    margin-top: -8px;
+}
+
+.play-button {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-play.png?fileID=21300000&guid=71a05c065ba274fec9063f4e6ca84a02&type=3#button-play");
+    width: 492px;
+    height: 178px;
+    background-color: transparent;
+    border-width: 0;
+    font-size: 68px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(141, 23, 1);
+    text-shadow: 4px 7px 0 rgb(141, 23, 1);
+    -unity-text-align: middle-center;
+    padding-left: 34px;
+    padding-bottom: 17px;
+}
+
+.play-button--normal {
+    font-size: 45px;
+}
+
+.play-button:active {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/button-play-pressed.png?fileID=21300000&guid=0c1582fd373454a23a0eb59fd8950cd4&type=3#button-play-pressed");
+    padding-left: 46px;
+    padding-top: 24px;
+}
+
+.airdrop-lock-label {
+    width: 180px;
+    margin-top: -24px;
+    margin-right: 178px;
+    margin-bottom: 14px;
+    font-size: 17px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: black;
+}
+
+.matchmaking-container {
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+}
+
+.matchmaking-status {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Home/background-matchmakingstatus.png?fileID=21300000&guid=64d6e183db5564504ba1f932263096e3&type=3#background-matchmakingstatus");
+    width: 800px;
+    height: 300px;
+    -unity-background-scale-mode: scale-to-fit;
+    align-items: center;
+    justify-content: center;
+}
+
+.match-timer {
+    font-size: 72px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 4px;
+    -unity-text-outline-color: black;
+    margin-bottom: -10px;
+}
+
+.match-subtitle {
+    font-size: 32px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+}
+
+.collection-screen {
+    background-color: rgb(15, 10, 30);
+}
+
+.collection-header {
+    height: 100px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(30, 20, 50, 0.8);
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.collection-title {
+    font-size: 48px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: black;
+    margin-left: 20px;
+    flex-grow: 1;
+}
+
+.header-currency-row {
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+}
+
+.currency-display {
+    width: 172px;
+    height: 45px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23, 20, 38);
+    border-radius: 10px;
+    padding-left: 46px;
+    padding-right: 14px;
+    margin-left: 22px;
+    overflow: visible;
+}
+
+.currency-display__icon-outline {
+    position: absolute;
+    left: -24px;
+    width: 72px;
+    height: 72px;
+    align-items: center;
+    justify-content: center;
+}
+
+.currency-display__icon {
+    width: 68px;
+    height: 68px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.currency-display__icon--coin {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/coin-default.png");
+}
+
+.currency-display__icon--vec {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Currencies/vec-default.png");
+}
+
+.currency-label {
+    height: 48px;
+    font-size: 34px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    text-shadow: 3px 5px 0 rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.collection-status {
+    font-size: 30px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-top: 18px;
+}
+
+.collection-scroll {
+    flex-grow: 1;
+    padding: 40px;
+}
+
+.collection-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.collection-card {
+    width: 300px;
+    height: 430px;
+    background-color: rgba(60, 40, 90, 0.6);
+    border-radius: 15px;
+    margin: 20px;
+    align-items: center;
+    padding: 20px;
+    border-width: 2px;
+    border-color: rgb(100, 70, 150);
+}
+
+.collection-card-icon {
+    width: 200px;
+    height: 200px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.collection-card-name {
+    font-size: 28px;
+    color: white;
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+}
+
+.collection-card-state {
+    font-size: 22px;
+    color: rgb(240, 209, 94);
+    -unity-font-definition: var(--font-bold);
+    -unity-text-align: middle-center;
+    margin-top: 8px;
+    margin-bottom: auto;
+}
+
+.collection-card-button {
+    width: 210px;
+    height: 60px;
+    font-size: 26px;
+}

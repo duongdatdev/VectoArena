@@ -1,0 +1,35 @@
+.wallet-search-view {
+    height: 600px;
+}
+
+.wallet-search-view__top-container {
+    margin: 12px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.wallet-search-view__qr-code-link {
+    margin-left: 12px;
+    width: 40px;
+    height: 40px;
+}
+
+#unity-content-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.wallet-search-view__input {
+    height: 40px;
+}
+
+.modal--landscape .wallet-search-view {
+    align-self: center;
+    max-width: 360px;
+}
+
+#wallet-search-view__left-slot {
+    flex-grow: 1;
+}

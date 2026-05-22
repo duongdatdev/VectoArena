@@ -1,0 +1,150 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Style src="project://database/Assets/Art/UI/Styles/CommonStyle.uss?fileID=7433441132597879392&amp;guid=5361e9a08344f03498b48a01e9b8c49b&amp;type=3#CommonStyle"/>
+    <ui:Style src="project://database/Assets/Art/UI/Styles/HomeScreenStyle.uss?fileID=7433441132597879392&amp;guid=399def787dd730443bd29e0f59ca2db4&amp;type=3#HomeScreenStyle"/>
+    <ui:VisualElement name="root" picking-mode="Ignore" class="fill-parent home-root">
+        <ui:VisualElement name="CharacterStage" picking-mode="Ignore" class="character-stage">
+        </ui:VisualElement>
+
+        <!-- Player Header (Top-Left): Profile + Name -->
+        <ui:VisualElement name="Header" class="player-header">
+            <ui:Button name="TrophiesHolder" class="player-header__trophies-holder">
+                <ui:VisualElement name="ProfileXpBar" class="player-header__xp-bar">
+                    <ui:VisualElement name="XpFill" class="player-header__xp-fill"/>
+                </ui:VisualElement>
+                <ui:Label name="PlayerName" text="PLAYER_NAME" class="player-header__name"/>
+            </ui:Button>
+            <ui:Button name="ProfileButton" class="player-header__profile-button">
+                <ui:VisualElement name="Holder" class="player-header__profile-holder">
+                    <ui:VisualElement name="ProfileAvatar" class="player-header__avatar"/>
+                    <ui:Label name="PlayerLevel" text="1" class="player-header__level"/>
+                    <ui:VisualElement name="PlayerLevelStar" class="player-header__fame-star-1"/>
+                </ui:VisualElement>
+            </ui:Button>
+        </ui:VisualElement>
+
+        <!-- Top Bar (Top-Right): Currencies + Settings -->
+        <ui:VisualElement name="TopBar" class="top-bar">
+            <ui:Button name="SettingsButton" class="settings-button"/>
+            <!-- Currency Displays -->
+            <ui:VisualElement name="CurrencyBar" class="currency-bar">
+                <!-- VEC Token Display -->
+                <ui:Button name="VecDisplay" class="currency-pill currency-pill--vec">
+                    <ui:VisualElement class="currency-pill__icon-outline">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--vec"/>
+                    </ui:VisualElement>
+                    <ui:Label name="VecAmount" text="0" class="currency-pill__amount"/>
+                </ui:Button>
+                <!-- Locked VEC Display -->
+                <ui:VisualElement name="LockedVecDisplay" class="currency-pill currency-pill--locked-vec">
+                    <ui:VisualElement class="currency-pill__icon-outline currency-pill__icon-wrap">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--locked-vec"/>
+                        <ui:VisualElement class="currency-pill__lock-badge"/>
+                    </ui:VisualElement>
+                    <ui:Label name="LockedVecTopAmount" text="0" class="currency-pill__amount"/>
+                </ui:VisualElement>
+                <!-- Coin Display -->
+                <ui:VisualElement name="CoinDisplay" class="currency-pill currency-pill--coin">
+                    <ui:VisualElement class="currency-pill__icon-outline">
+                        <ui:VisualElement class="currency-pill__icon currency-pill__icon--coin"/>
+                    </ui:VisualElement>
+                    <ui:Label name="CoinAmount" text="1,500" class="currency-pill__amount"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <!-- Wallet Button -->
+            <ui:Button name="WalletButton" class="wallet-button">
+                <ui:VisualElement class="wallet-button__icon-outline">
+                    <ui:VisualElement class="wallet-button__icon"/>
+                </ui:VisualElement>
+                <ui:Label name="WalletLabel" text="CONNECT" class="wallet-button__label"/>
+            </ui:Button>
+        </ui:VisualElement>
+
+        <!-- Left Buttons -->
+        <ui:VisualElement name="LeftButtons" class="main-buttons main-buttons--left">
+            <ui:VisualElement name="Actions" class="left-actions">
+                <ui:Button name="CollectionButton" text="COLLECTION" class="button-with-icon collection-button" style="width: 140px; -unity-font-style: bold;">
+                    <ui:VisualElement name="CollectionIcon" class="button-icon collection-icon" style="top: -9px; left: 20px; height: 97px; width: 99px;"/>
+                </ui:Button>
+                <ui:Button name="ShopButton" text="SHOP" class="button-with-icon shop-button" style="width: 142px; -unity-font-style: bold;">
+                    <ui:VisualElement name="ShopIcon" class="button-icon shop-icon" style="top: -10px; left: 18px; height: 92px; width: 106px;"/>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Right Buttons -->
+        <ui:VisualElement name="RightButtons" class="main-buttons main-buttons--right">
+            <ui:Button name="GameModeButton" class="game-mode-button">
+                <ui:Label text="PLAY TO" class="game-mode-label"/>
+                <ui:Label text="AIRDROP" class="game-mode-title"/>
+            </ui:Button>
+            <ui:Label name="AirdropLockLabel" text="UNLOCKS AT LV 5" class="airdrop-lock-label"/>
+            <ui:Button name="PlayButton" text="PLAY NORMAL" class="play-button play-button--normal"/>
+        </ui:VisualElement>
+
+        <!-- Matchmaking Overlay -->
+        <ui:VisualElement name="Matchmaking" class="fill-parent matchmaking-container hidden">
+            <ui:VisualElement name="MatchmakingStatus" class="matchmaking-status">
+                <ui:Label name="MatchTimer" text="00:00" class="match-timer"/>
+                <ui:Label text="MATCHMAKING..." class="match-subtitle"/>
+            </ui:VisualElement>
+            <ui:Button name="CancelMatchmaking" class="button-close" style="position: absolute; right: 50px; top: 50px;"/>
+        </ui:VisualElement>
+
+        <!-- Web3 Deposit Popup -->
+        <ui:VisualElement name="DepositPopup" class="fill-parent deposit-popup hidden">
+            <ui:VisualElement class="deposit-popup__backdrop"/>
+            <ui:VisualElement class="deposit-popup__panel">
+                <ui:VisualElement class="deposit-popup__header">
+                    <ui:Label text="DEPOSIT VEC" class="deposit-popup__title"/>
+                    <ui:Button name="DepositCloseButton" class="button-close"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="deposit-popup__body">
+                    <ui:Label text="Transfer VEC tokens from your wallet to the game." class="deposit-popup__description"/>
+                    <ui:VisualElement class="deposit-popup__amount-row">
+                        <ui:Label text="Amount:" class="deposit-popup__label"/>
+                        <ui:TextField name="DepositAmountField" value="10" class="deposit-popup__input"/>
+                    </ui:VisualElement>
+                    <ui:Label name="DepositStatus" text="" class="deposit-popup__status"/>
+                    <ui:Label name="DepositLockedVec" text="Locked VEC: 0" class="deposit-popup__locked-vec"/>
+                    <ui:Button name="DepositConfirmButton" text="DEPOSIT" class="button-long button-long--yellow deposit-popup__confirm"/>
+                    <ui:VisualElement class="transaction-history">
+                        <ui:VisualElement class="transaction-history__header">
+                            <ui:Label text="TRANSACTION HISTORY" class="transaction-history__title"/>
+                            <ui:Button name="TransactionHistoryButton" text="REFRESH" class="transaction-history__button"/>
+                        </ui:VisualElement>
+                        <ui:Label name="TransactionHistoryStatus" text="LOADING HISTORY..." class="transaction-history__status"/>
+                        <ui:ScrollView name="TransactionHistoryScroll" class="transaction-history__scroll">
+                            <ui:VisualElement name="TransactionHistoryList" class="transaction-history__list"/>
+                        </ui:ScrollView>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Collection Screen (inline) -->
+        <ui:VisualElement name="CollectionScreen" class="fill-parent collection-screen hidden">
+            <ui:VisualElement class="collection-header">
+                <ui:Button name="CollectionBackButton" class="button-close" style="position: relative; right: 0; top: 0;"/>
+                <ui:Label text="COLLECTION" class="collection-title"/>
+                <ui:VisualElement class="header-currency-row">
+                    <ui:VisualElement class="currency-display currency-display--coin">
+                        <ui:VisualElement class="currency-display__icon-outline">
+                            <ui:VisualElement class="currency-display__icon currency-display__icon--coin"/>
+                        </ui:VisualElement>
+                        <ui:Label name="CollectionCoinsAmount" text="1,500" class="currency-label"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="currency-display currency-display--vec">
+                        <ui:VisualElement class="currency-display__icon-outline">
+                            <ui:VisualElement class="currency-display__icon currency-display__icon--vec"/>
+                        </ui:VisualElement>
+                        <ui:Label name="CollectionVecAmount" text="0" class="currency-label"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="CollectionStatus" text="SELECT OWNED SKINS TO EQUIP" class="collection-status"/>
+            <ui:ScrollView name="CollectionScroll" class="collection-scroll">
+                <ui:VisualElement name="CollectionSkinList" class="collection-list"/>
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

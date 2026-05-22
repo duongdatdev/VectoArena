@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a132522cf3ac514abb9830a8260e086, type: 3}
+  m_Name: Rifle
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponType: Rifle
+  animWeaponTypeId: 2
+  weaponModelPrefab: {fileID: 4516585669790791156, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
+  floatingItemPrefab: {fileID: 7321050499597880137, guid: b4ceb197b30b6524885f31be8fd7975c, type: 3}
+  bulletPrefab: {fileID: 5891818647442247478, guid: 397cdfcc1fe1bae488501cb1adc25daf, type: 3}
+  fireRate: 0.1
+  maxAmmo: 30
+  isMelee: 0

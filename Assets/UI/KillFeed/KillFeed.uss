@@ -1,0 +1,48 @@
+.kill-feed-item {
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    align-items: center;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    transition-property: opacity, translate;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.kill-feed-item--fade-out {
+    opacity: 0;
+    translate: 20px 0;
+}
+
+.kill-feed-text {
+    font-size: 14px;
+    color: white;
+    -unity-font-style: bold;
+    margin: 0 4px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.killer-name {
+    color: #4CAF50; /* Green for killer (can be customized based on team) */
+}
+
+.victim-name {
+    color: #F44336; /* Red for victim */
+}
+
+.weapon-name {
+    color: #FFC107; /* Amber for weapon */
+    font-size: 12px;
+    -unity-font-style: italic;
+}
+
+.kill-feed-icon {
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255,255,255,0.2); /* Placeholder for actual weapon icon */
+    border-radius: 4px;
+    margin: 0 4px;
+}

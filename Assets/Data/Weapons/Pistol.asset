@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a132522cf3ac514abb9830a8260e086, type: 3}
+  m_Name: Pistol
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponType: Pistol
+  animWeaponTypeId: 8
+  weaponModelPrefab: {fileID: 4516585669790791156, guid: 3caa750fa852c81478a7db4ed029e47c, type: 3}
+  floatingItemPrefab: {fileID: 1315432056242612410, guid: 8259d5971bf54f14082506a8438da36d, type: 3}
+  bulletPrefab: {fileID: 5891818647442247478, guid: 397cdfcc1fe1bae488501cb1adc25daf, type: 3}
+  fireRate: 0.2
+  maxAmmo: 12
+  isMelee: 0

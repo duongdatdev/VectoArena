@@ -1,19 +1,35 @@
 {
   "dependencies": {
+    "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
+    "com.nethereum.unity": "6.1.0",
+    "com.nobi.roundedcorners": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
+    "com.reown.appkit.unity": "file:com.reown.appkit.unity",
+    "com.reown.core": "1.6.0",
+    "com.reown.core.common": "1.6.0",
+    "com.reown.core.crypto": "1.6.0",
+    "com.reown.core.network": "1.6.0",
+    "com.reown.core.storage": "1.6.0",
+    "com.reown.sign": "1.6.0",
+    "com.reown.sign.nethereum": "1.6.0",
+    "com.reown.sign.nethereum.unity": "1.6.0",
+    "com.reown.sign.unity": "1.6.0",
+    "com.reown.unity.dependencies": "1.6.0",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
     "com.unity.2d.tilemap.extras": "7.0.1",
-    "com.unity.ai.navigation": "2.0.11",
+    "com.unity.ai.navigation": "2.0.12",
     "com.unity.collab-proxy": "2.11.4",
-    "com.unity.ide.rider": "3.0.39",
+    "com.unity.ide.rider": "3.0.40",
     "com.unity.ide.visualstudio": "2.0.27",
     "com.unity.inputsystem": "1.19.0",
     "com.unity.multiplayer.center": "1.0.1",
+    "com.unity.multiplayer.playmode": "2.0.2",
     "com.unity.render-pipelines.universal": "17.4.0",
     "com.unity.test-framework": "1.6.0",
-    "com.unity.timeline": "1.8.11",
+    "com.unity.timeline": "1.8.12",
     "com.unity.ugui": "2.0.0",
     "com.unity.visualscripting": "1.9.10",
+    "io.colyseus.sdk": "https://github.com/colyseus/colyseus-unity-sdk.git#upm",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
@@ -48,5 +64,15 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.reown",
+        "com.nethereum"
+      ]
+    }
+  ]
 }

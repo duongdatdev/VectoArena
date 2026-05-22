@@ -445,6 +445,16 @@ public class NetworkManager : MonoBehaviour
     private void OnPlayerJoin(string key, PlayerState player)
     {
         Debug.Log($"Player joined schema: {player.username}, key={key}, isSceneLoaded={isSceneLoaded}, roomSessionId={room?.SessionId}");
+
+        var callbacks = Colyseus.Schema.Callbacks.Get(room);
+        callbacks.Listen(player, current => current.isDead, (_, __) =>
+        {
+            if (player.isDead)
+            {
+                RemovePlayerObject(key, "Player died and object destroyed");
+            }
+        });
+
         if (isSceneLoaded)
         {
             SpawnPlayer(key, player);
@@ -457,12 +467,23 @@ public class NetworkManager : MonoBehaviour
 
     private void OnPlayerLeave(string key, PlayerState player)
     {
-        if (playerObjects.ContainsKey(key))
+        RemovePlayerObject(key, "Player left and object destroyed");
+    }
+
+    private void RemovePlayerObject(string key, string reason)
+    {
+        if (!playerObjects.TryGetValue(key, out GameObject playerObject))
         {
-            Destroy(playerObjects[key]);
-            playerObjects.Remove(key);
-            Debug.Log("Player left and object destroyed: " + key);
+            return;
         }
+
+        if (playerObject != null)
+        {
+            Destroy(playerObject);
+        }
+
+        playerObjects.Remove(key);
+        Debug.Log($"{reason}: {key}");
     }
 
     private void OnItemAdd(string key, ItemState item)
@@ -709,6 +730,12 @@ public class NetworkManager : MonoBehaviour
         Debug.Log($"CheckAndSpawnInitialPlayers: room ready, players={room.State.players.Count}, existingObjects={playerObjects.Count}");
         room.State.players.ForEach((key, player) =>
         {
+            if (player.isDead)
+            {
+                RemovePlayerObject(key, "Dead player skipped and object destroyed");
+                return;
+            }
+
             if (!playerObjects.ContainsKey(key) || playerObjects[key] == null)
             {
                 if (playerObjects.ContainsKey(key))
@@ -818,6 +845,12 @@ public class NetworkManager : MonoBehaviour
 
     private void SpawnPlayer(string key, PlayerState playerState)
     {
+        if (playerState.isDead)
+        {
+            RemovePlayerObject(key, "Dead player spawn ignored and object destroyed");
+            return;
+        }
+
         if (playerObjects.ContainsKey(key) && playerObjects[key] != null) return;
         if (playerObjects.ContainsKey(key)) playerObjects.Remove(key);
 

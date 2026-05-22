@@ -126,6 +126,16 @@ public class NetworkPlayerSync : MonoBehaviour
         else
         {
             SyncRemoteMovementToClient();
+            SyncRemoteWeaponVisuals();
+        }
+    }
+
+    private void SyncRemoteWeaponVisuals()
+    {
+        PlayerController controller = GetComponent<PlayerController>();
+        if (controller != null)
+        {
+            controller.SyncWeaponStateFromServer();
         }
     }
 

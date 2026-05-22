@@ -843,6 +843,34 @@ public class NetworkManager : MonoBehaviour
         return alivePlayers[UnityEngine.Random.Range(0, alivePlayers.Count)];
     }
 
+    public int GetAlivePlayerCount()
+    {
+        if (room == null || room.State == null)
+        {
+            return 0;
+        }
+
+        int serverAliveCount = Mathf.RoundToInt(room.State.aliveCount);
+        if (serverAliveCount > 0)
+        {
+            return serverAliveCount;
+        }
+
+        int aliveCount = 0;
+        if (room.State.players != null)
+        {
+            room.State.players.ForEach((key, player) =>
+            {
+                if (player != null && !player.isDead && player.hp > 0)
+                {
+                    aliveCount++;
+                }
+            });
+        }
+
+        return aliveCount;
+    }
+
     private void SpawnPlayer(string key, PlayerState playerState)
     {
         if (playerState.isDead)
@@ -889,6 +917,11 @@ public class NetworkManager : MonoBehaviour
         sync.Initialize(playerState, key, room);
         sync.RefreshAnimator(skinAnimator);
 
+        if (!isLocalPlayer)
+        {
+            ApplyInitialRemoteWeaponVisuals(playerObj, playerState);
+        }
+
         // setup Camera if it's the local player
         if (isLocalPlayer)
         {
@@ -900,6 +933,49 @@ public class NetworkManager : MonoBehaviour
 
             VectoAudioManager.FollowLocalPlayer(playerObj.transform);
         }
+    }
+
+    private void ApplyInitialRemoteWeaponVisuals(GameObject playerObj, PlayerState playerState)
+    {
+        if (playerObj == null || playerState == null)
+        {
+            return;
+        }
+
+        PlayerController playerController = playerObj.GetComponent<PlayerController>();
+        if (playerController == null)
+        {
+            return;
+        }
+
+        GameObject meleePrefab = null;
+        if (weaponDatabase != null)
+        {
+            string meleeWeapon = string.IsNullOrEmpty(playerState.meleeWeapon) ? "Sword" : playerState.meleeWeapon;
+            WeaponData meleeData = weaponDatabase.GetWeaponData(meleeWeapon);
+            if (meleeData != null)
+            {
+                meleePrefab = meleeData.weaponModelPrefab;
+            }
+        }
+
+        playerController.EnsureMeleeWeaponVisual(meleePrefab);
+
+        if (!string.IsNullOrEmpty(playerState.rangedWeapon) && weaponDatabase != null)
+        {
+            WeaponData rangedData = weaponDatabase.GetWeaponData(playerState.rangedWeapon);
+            if (rangedData != null)
+            {
+                playerController.EquipWeapon(
+                    rangedData.weaponModelPrefab,
+                    rangedData.bulletPrefab,
+                    rangedData.fireRate,
+                    rangedData.maxAmmo
+                );
+            }
+        }
+
+        playerController.SyncWeaponStateFromServer();
     }
 
     private bool hasGameStarted = false;

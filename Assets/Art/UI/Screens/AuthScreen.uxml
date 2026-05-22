@@ -6,11 +6,6 @@
         <!-- Background -->
         <ui:VisualElement name="Background" class="auth-background fill-parent">
             
-            <!-- Logo -->
-            <ui:VisualElement name="LogoContainer" class="logo-container">
-                <ui:VisualElement class="game-logo"/>
-            </ui:VisualElement>
-            
             <!-- Login Panel -->
             <ui:VisualElement name="LoginPanel" class="auth-panel">
                 <ui:Label text="WELCOME BACK" class="panel-title"/>

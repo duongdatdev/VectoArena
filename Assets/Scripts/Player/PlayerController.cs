@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     private const string BlastWeaponMeleeAnchorName = "weapon_melee";
     private const string BlastWeaponXLMeleeAnchorName = "weapon_xlmelee";
     private const string LegacyWeaponHolderName = "WeaponHolder";
+    private static readonly string[] WeaponFirePointNames = { "FirePoint", "MuzzleStandard", "Muzzle", "MuzzleFlash" };
 
     [Header("Movement Settings")]
     [Tooltip("Base speed from Blast Royale: 2.8f (BattleRoyale mode) or 3.75f (Deathmatch mode)")]
@@ -277,7 +278,7 @@ public class PlayerController : MonoBehaviour
 
                 currentMuzzleFlash = currentWeaponModel.GetComponentInChildren<ParticleSystem>();
 
-                Transform newFirePoint = FindChildTransformByName(currentWeaponModel.transform, "FirePoint");
+                Transform newFirePoint = FindWeaponFirePoint(currentWeaponModel.transform);
                 if (newFirePoint != null)
                 {
                     firePoint = newFirePoint;
@@ -285,7 +286,7 @@ public class PlayerController : MonoBehaviour
                 else
                 {
                     firePoint = null;
-                    Debug.LogWarning("The new weapon does not have a child object named 'FirePoint'. Using projectileSpawnOffset fallback for shooting.");
+                    Debug.LogWarning("The new weapon does not have a FirePoint or muzzle marker. Using projectileSpawnOffset fallback for shooting.");
                 }
             }
         }
@@ -321,6 +322,19 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void EnsureMeleeWeaponVisual(GameObject fallbackMeleeWeaponPrefab)
+    {
+        if (defaultMeleeWeaponPrefab == null)
+        {
+            defaultMeleeWeaponPrefab = fallbackMeleeWeaponPrefab;
+        }
+
+        if (currentMeleeWeaponModel == null)
+        {
+            EquipDefaultMeleeWeapon();
+        }
+    }
+
     private void HandleWeaponSwitchInput()
     {
         if (Keyboard.current == null)
@@ -336,16 +350,19 @@ public class PlayerController : MonoBehaviour
 
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
         {
-            sync.SendWeaponSwitch("melee");
-        }
+            PlayerState state = sync.GetState();
+            if (state == null || string.IsNullOrEmpty(state.rangedWeapon))
+            {
+                return;
+            }
 
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-        {
-            sync.SendWeaponSwitch("ranged");
+            bool isUsingMelee = !string.IsNullOrEmpty(state.currentWeapon) &&
+                                state.currentWeapon == state.meleeWeapon;
+            sync.SendWeaponSwitch(isUsingMelee ? "ranged" : "melee");
         }
     }
 
-    private void SyncWeaponStateFromServer()
+    public void SyncWeaponStateFromServer()
     {
         NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
         if (sync == null)
@@ -659,6 +676,21 @@ public class PlayerController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private Transform FindWeaponFirePoint(Transform weaponRoot)
+    {
+        foreach (string firePointName in WeaponFirePointNames)
+        {
+            Transform firePointCandidate = FindChildTransformByName(weaponRoot, firePointName);
+            if (firePointCandidate != null)
+            {
+                return firePointCandidate;
+            }
+        }
+
+        ParticleSystem muzzleFlash = weaponRoot != null ? weaponRoot.GetComponentInChildren<ParticleSystem>(true) : null;
+        return muzzleFlash != null ? muzzleFlash.transform : null;
     }
 
     private Transform ResolveWeaponAnchor(GameObject weaponModelPrefab, bool isMeleeModel)

@@ -2,6 +2,20 @@
 
 VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer arena game with account progression, collectible VEC rewards, cosmetic skins, and wallet-enabled NFT features. It communicates with the VectoArena server through REST endpoints for account and inventory operations and through Colyseus WebSockets for live matches.
 
+## Game Preview
+
+### Authentication Screen
+
+![VectoArena authentication screen](docs/images/authentication-screen.png)
+
+### Main Menu
+
+![VectoArena main menu](docs/images/main-menu-screen.png)
+
+### Arena Gameplay
+
+![VectoArena top-down arena gameplay](docs/images/gameplay-arena.png)
+
 ## Features
 
 - Account registration and login with token-authenticated player requests.

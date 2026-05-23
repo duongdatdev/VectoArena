@@ -218,6 +218,18 @@ public class NetworkManager : MonoBehaviour
         return JsonConvert.DeserializeObject<NftSyncResponse>(response);
     }
 
+    public async Task<NftPurchaseConfirmResponse> ConfirmNftPurchaseAsync(string skinId, string txHash)
+    {
+        string response = await SendPlayerRequestRaw(HttpMethod.Post, "/nft/purchase/confirm", new { skinId, txHash });
+        NftPurchaseConfirmResponse confirmation = JsonConvert.DeserializeObject<NftPurchaseConfirmResponse>(response);
+        if (confirmation == null || confirmation.nftSkin == null || !confirmation.nftSkin.owned)
+        {
+            throw new InvalidOperationException("NFT purchase is pending backend confirmation.");
+        }
+
+        return confirmation;
+    }
+
     public async Task<bool> VerifyDeposit(string txHash)
     {
         try
@@ -1129,6 +1141,14 @@ public class NetworkManager : MonoBehaviour
         public string walletAddress;
         public string syncedAt;
         public SyncedNftSkinResponse[] nftSkins;
+    }
+
+    [Serializable]
+    public class NftPurchaseConfirmResponse
+    {
+        public string walletAddress;
+        public string txHash;
+        public SyncedNftSkinResponse nftSkin;
     }
 
     [Serializable]

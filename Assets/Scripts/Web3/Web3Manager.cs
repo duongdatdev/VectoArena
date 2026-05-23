@@ -343,31 +343,31 @@ public class Web3Manager : MonoBehaviour
         }
     }
 
-    public async Task<BigInteger> GetErc20AllowanceAsync(string tokenAddress, string owner, string spender)
+    public async Task<BigInteger> GetErc20AllowanceAsync(string tokenAddress, string owner, string spender, ulong expectedChainId)
     {
         ValidateAddress(tokenAddress, "VEC token address");
         ValidateAddress(owner, "wallet address");
         ValidateAddress(spender, "NFT contract address");
 
-        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, ConfigManager.Config.nftChainId);
+        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, expectedChainId);
         return await token.Read<BigInteger>("function allowance(address owner, address spender) view returns (uint256)", owner, spender);
     }
 
-    public async Task<BigInteger> GetErc20BalanceAsync(string tokenAddress, string owner)
+    public async Task<BigInteger> GetErc20BalanceAsync(string tokenAddress, string owner, ulong expectedChainId)
     {
         ValidateAddress(tokenAddress, "VEC token address");
         ValidateAddress(owner, "wallet address");
 
-        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, ConfigManager.Config.nftChainId);
+        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, expectedChainId);
         return await token.Read<BigInteger>("function balanceOf(address owner) view returns (uint256)", owner);
     }
 
-    public async Task ApproveErc20Async(string tokenAddress, string spender, BigInteger amount)
+    public async Task ApproveErc20Async(string tokenAddress, string spender, BigInteger amount, ulong expectedChainId)
     {
         ValidateAddress(tokenAddress, "VEC token address");
         ValidateAddress(spender, "NFT contract address");
 
-        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, ConfigManager.Config.nftChainId);
+        ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenAddress, expectedChainId);
         ThirdwebTransactionReceipt receipt = await WaitForTransactionAsync(
             token.Write(
                 wallet: ThirdwebManager.Instance.ActiveWallet,
@@ -381,11 +381,11 @@ public class Web3Manager : MonoBehaviour
         EnsureSuccessfulReceipt(receipt, "VEC approval");
     }
 
-    public async Task BuySkinNftAsync(string contractAddress, BigInteger tokenId)
+    public async Task<string> BuySkinNftAsync(string contractAddress, BigInteger tokenId, ulong expectedChainId)
     {
         ValidateAddress(contractAddress, "NFT contract address");
 
-        ThirdwebContract contract = await ThirdwebManager.Instance.GetContract(contractAddress, ConfigManager.Config.nftChainId);
+        ThirdwebContract contract = await ThirdwebManager.Instance.GetContract(contractAddress, expectedChainId);
         ThirdwebTransactionReceipt receipt = await WaitForTransactionAsync(
             contract.Write(
                 wallet: ThirdwebManager.Instance.ActiveWallet,
@@ -397,6 +397,12 @@ public class Web3Manager : MonoBehaviour
         );
 
         EnsureSuccessfulReceipt(receipt, "NFT purchase");
+        if (string.IsNullOrWhiteSpace(receipt.TransactionHash))
+        {
+            throw new System.InvalidOperationException("NFT purchase receipt is missing its transaction hash.");
+        }
+
+        return receipt.TransactionHash;
     }
 
     private async Task<ThirdwebTransactionReceipt> WaitForTransactionAsync(Task<ThirdwebTransactionReceipt> transactionTask, string operationName)

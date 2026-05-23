@@ -7,6 +7,7 @@ using UnityEngine;
 public static class PlayerInventory
 {
     public const string DefaultSkinId = "Female01";
+    private const string PendingNftPurchaseKeyPrefix = "nft.pendingPurchase.";
     private static readonly HashSet<string> ownedSkins = new HashSet<string> { DefaultSkinId };
     private static readonly Dictionary<string, SkinOwnershipState> skinStates = new Dictionary<string, SkinOwnershipState>(StringComparer.OrdinalIgnoreCase);
     private static int coins;
@@ -197,6 +198,7 @@ public static class PlayerInventory
         string nftContractAddress;
         BigInteger tokenId;
         BigInteger priceWei;
+        string purchaseTxHash;
 
         try
         {
@@ -205,10 +207,41 @@ public static class PlayerInventory
             setStatus?.Invoke("CONNECTING WALLET");
             walletAddress = await Web3Manager.Instance.EnsureWalletConnectedAsync();
 
+            string pendingPurchaseKey = GetPendingNftPurchaseKey(item.Id);
+            string pendingTxHash = PlayerPrefs.GetString(pendingPurchaseKey, null);
+            if (!string.IsNullOrWhiteSpace(pendingTxHash))
+            {
+                setStatus?.Invoke("CONFIRMING PURCHASE");
+                try
+                {
+                    await NetworkManager.Instance.ConfirmNftPurchaseAsync(item.Id, pendingTxHash);
+                    PlayerPrefs.DeleteKey(pendingPurchaseKey);
+                    PlayerPrefs.Save();
+                    await LoadFromServer();
+                    return IsSkinOwned(item.Id) && GetSkinState(item)?.CanEquip == true;
+                }
+                catch (Exception confirmEx)
+                {
+                    Debug.LogWarning("Pending NFT purchase could not be confirmed yet: " + confirmEx.Message);
+                }
+            }
+
+            setStatus?.Invoke("CHECKING OWNERSHIP");
+            await NetworkManager.Instance.SyncNftOwnershipAsync();
+            await LoadFromServer();
+            SkinOwnershipState refreshedState = GetSkinState(item);
+            if (refreshedState != null && refreshedState.Owned && refreshedState.CanEquip)
+            {
+                PlayerPrefs.DeleteKey(pendingPurchaseKey);
+                PlayerPrefs.Save();
+                setStatus?.Invoke("NFT OWNED");
+                return await EquipSkinAsync(item.Id);
+            }
+
             setStatus?.Invoke("CHECKING NETWORK");
             await Web3Manager.Instance.EnsureCorrectChainAsync(chainId);
 
-            BigInteger balance = await Web3Manager.Instance.GetErc20BalanceAsync(vecTokenAddress, walletAddress);
+            BigInteger balance = await Web3Manager.Instance.GetErc20BalanceAsync(vecTokenAddress, walletAddress, chainId);
             if (balance < priceWei)
             {
                 lastOperationError = "Insufficient VEC.";
@@ -216,15 +249,17 @@ public static class PlayerInventory
                 return false;
             }
 
-            BigInteger allowance = await Web3Manager.Instance.GetErc20AllowanceAsync(vecTokenAddress, walletAddress, nftContractAddress);
+            BigInteger allowance = await Web3Manager.Instance.GetErc20AllowanceAsync(vecTokenAddress, walletAddress, nftContractAddress, chainId);
             if (allowance < priceWei)
             {
                 setStatus?.Invoke("APPROVING VEC");
-                await Web3Manager.Instance.ApproveErc20Async(vecTokenAddress, nftContractAddress, priceWei);
+                await Web3Manager.Instance.ApproveErc20Async(vecTokenAddress, nftContractAddress, priceWei, chainId);
             }
 
             setStatus?.Invoke("BUYING NFT");
-            await Web3Manager.Instance.BuySkinNftAsync(nftContractAddress, tokenId);
+            purchaseTxHash = await Web3Manager.Instance.BuySkinNftAsync(nftContractAddress, tokenId, chainId);
+            PlayerPrefs.SetString(GetPendingNftPurchaseKey(item.Id), purchaseTxHash);
+            PlayerPrefs.Save();
         }
         catch (Exception ex)
         {
@@ -236,19 +271,46 @@ public static class PlayerInventory
 
         try
         {
-            setStatus?.Invoke("SYNCING NFT");
-            await NetworkManager.Instance.SyncNftOwnershipAsync();
+            setStatus?.Invoke("CONFIRMING PURCHASE");
+            await NetworkManager.Instance.ConfirmNftPurchaseAsync(item.Id, purchaseTxHash);
+            PlayerPrefs.DeleteKey(GetPendingNftPurchaseKey(item.Id));
+            PlayerPrefs.Save();
             await LoadFromServer();
             lastOperationError = null;
             return IsSkinOwned(item.Id) && GetSkinState(item)?.CanEquip == true;
         }
         catch (Exception ex)
         {
-            Debug.LogError("NFT purchase confirmed but sync failed: " + ex.Message);
-            lastOperationError = "Purchase confirmed, sync failed. Please retry sync.";
+            setStatus?.Invoke("RECOVERING OWNERSHIP");
+
+            try
+            {
+                await NetworkManager.Instance.SyncNftOwnershipAsync();
+                await LoadFromServer();
+                if (IsSkinOwned(item.Id) && GetSkinState(item)?.CanEquip == true)
+                {
+                    PlayerPrefs.DeleteKey(GetPendingNftPurchaseKey(item.Id));
+                    PlayerPrefs.Save();
+                    lastOperationError = null;
+                    Debug.LogWarning("NFT purchase was recovered through on-chain ownership sync after confirmation failed: " + ex.Message);
+                    return true;
+                }
+            }
+            catch (Exception syncEx)
+            {
+                Debug.LogError("NFT ownership recovery failed: " + syncEx.Message);
+            }
+
+            Debug.LogError("NFT purchase completed on-chain but backend confirmation failed: " + ex.Message);
+            lastOperationError = "Purchase completed on-chain, but confirmation is pending. Retry to refresh ownership.";
             Changed?.Invoke();
             return false;
         }
+    }
+
+    private static string GetPendingNftPurchaseKey(string skinId)
+    {
+        return PendingNftPurchaseKeyPrefix + skinId;
     }
 
     public static async Task<bool> EquipSkinAsync(string skinId)

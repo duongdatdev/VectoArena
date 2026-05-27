@@ -6,7 +6,8 @@ VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer
 
 ### Video Demo
 
-[![VectoArena Video Demo](https://img.youtube.com/vi/4xNxysfBVFM/maxresdefault.jpg)](https://youtu.be/4xNxysfBVFM)
+[![Watch VectoArena Video Demo](https://img.youtube.com/vi/4xNxysfBVFM/maxresdefault.jpg)](https://youtu.be/4xNxysfBVFM)
+*[Click here to watch the VectoArena Gameplay Video on YouTube](https://youtu.be/4xNxysfBVFM)*
 
 ### Authentication Screen
 

@@ -73,7 +73,10 @@ public class AuthUIManager : MonoBehaviour
         }
         else
         {
-            SetLoginStatus("Login Failed. Check credentials.", Color.red);
+            string message = NetworkManager.Instance != null && !string.IsNullOrEmpty(NetworkManager.Instance.LastErrorMessage)
+                ? NetworkManager.Instance.LastErrorMessage
+                : "Login Failed. Check credentials.";
+            SetLoginStatus(message, Color.red);
             SetButtonsState(true);
         }
     }

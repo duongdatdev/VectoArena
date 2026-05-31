@@ -138,7 +138,9 @@ public class AuthScreenController : MonoBehaviour
         }
         else
         {
-            loginStatus.text = "Login Failed. Check credentials.";
+            loginStatus.text = string.IsNullOrEmpty(NetworkManager.Instance.LastErrorMessage)
+                ? "Login Failed. Check credentials."
+                : NetworkManager.Instance.LastErrorMessage;
             loginStatus.style.color = new StyleColor(Color.red);
         }
     }

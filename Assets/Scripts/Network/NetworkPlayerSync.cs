@@ -19,6 +19,13 @@ public class NetworkPlayerSync : MonoBehaviour
     private Animator animator;
     private Vector3 lastRemotePosition;
     private readonly HashSet<int> animatorParameterHashes = new HashSet<int>();
+    private const float LocalMoveSendIntervalSeconds = 0.05f;
+    private const float LocalMovePositionEpsilon = 0.0025f;
+    private const float LocalMoveRotationEpsilon = 0.5f;
+    private float nextLocalMoveSendAt;
+    private Vector3 lastSentLocalPosition;
+    private float lastSentLocalRotation;
+    private bool hasSentLocalMove;
 
     private static readonly int PIsWalking = Animator.StringToHash("isWalking");
     private static readonly int PIsHoldingRight = Animator.StringToHash("isHoldingRight");
@@ -141,14 +148,28 @@ public class NetworkPlayerSync : MonoBehaviour
 
     private void SyncLocalMovementToServer()
     {
-        // send every frame for now, but in production, you'd want rate limiting.
+        if (Time.time < nextLocalMoveSendAt) return;
+
+        Vector3 currentPosition = transform.position;
+        float currentRotation = transform.eulerAngles.y;
+        bool shouldSend = !hasSentLocalMove ||
+            Vector3.SqrMagnitude(currentPosition - lastSentLocalPosition) >= LocalMovePositionEpsilon ||
+            Mathf.Abs(Mathf.DeltaAngle(currentRotation, lastSentLocalRotation)) >= LocalMoveRotationEpsilon;
+
+        if (!shouldSend) return;
+
         room.Send("move", new
         {
-            x = transform.position.x,
-            y = transform.position.y,
-            z = transform.position.z,
-            rotation = transform.eulerAngles.y
+            x = currentPosition.x,
+            y = currentPosition.y,
+            z = currentPosition.z,
+            rotation = currentRotation
         });
+
+        hasSentLocalMove = true;
+        lastSentLocalPosition = currentPosition;
+        lastSentLocalRotation = currentRotation;
+        nextLocalMoveSendAt = Time.time + LocalMoveSendIntervalSeconds;
     }
 
     public void SendShoot(Vector3 position, Quaternion rotation)

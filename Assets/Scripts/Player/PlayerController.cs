@@ -88,6 +88,15 @@ public class PlayerController : MonoBehaviour
         gameControls?.Gameplay.Disable();
     }
 
+    private void OnDestroy()
+    {
+        if (gameControls != null)
+        {
+            gameControls.Dispose();
+            gameControls = null;
+        }
+    }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();

@@ -26,6 +26,19 @@ public class NetworkManager : MonoBehaviour
     private string authToken;
     public string LastErrorMessage { get; private set; }
 
+    private static readonly HttpClient SharedHttpClient = CreateSharedHttpClient();
+
+    private static HttpClient CreateSharedHttpClient()
+    {
+        var httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30),
+        };
+        httpClient.DefaultRequestHeaders.Accept.Clear();
+        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        return httpClient;
+    }
+
     [Header("Prefabs")]
     [SerializeField] private GameObject localPlayerPrefab;
     [SerializeField] private GameObject remotePlayerPrefab;
@@ -39,6 +52,7 @@ public class NetworkManager : MonoBehaviour
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, ItemWeaponConfig> itemWeaponConfigs = new Dictionary<string, ItemWeaponConfig>();
+    private Dictionary<string, Action> playerSchemaUnsubs = new Dictionary<string, Action>();
     private bool isSceneLoaded = false;
 
     public event Action OnGameStart;
@@ -89,16 +103,15 @@ public class NetworkManager : MonoBehaviour
 
     public async Task<bool> Login(string username, string password)
     {
-        using (var httpClient = new HttpClient())
-        {
-            var loginData = new { username = username, password = password };
-            var json = JsonConvert.SerializeObject(loginData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var loginData = new { username = username, password = password };
+        var json = JsonConvert.SerializeObject(loginData);
 
-            try
+        try
+        {
+            LastErrorMessage = null;
+            using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
             {
-                LastErrorMessage = null;
-                var response = await httpClient.PostAsync($"{HttpURL}/auth/login", content);
+                var response = await SharedHttpClient.PostAsync($"{HttpURL}/auth/login", content);
                 if (response.IsSuccessStatusCode)
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
@@ -108,50 +121,45 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log("Login successful! Token: " + authToken);
                     return true;
                 }
-                else
-                {
-                    string responseString = await response.Content.ReadAsStringAsync();
-                    LastErrorMessage = ExtractApiError(responseString, response.ReasonPhrase);
-                    Debug.LogError("Login failed: " + LastErrorMessage);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                Debug.LogError("Login error: " + ex.Message);
+
+                string errorBody = await response.Content.ReadAsStringAsync();
+                LastErrorMessage = ExtractApiError(errorBody, response.ReasonPhrase);
+                Debug.LogError("Login failed: " + LastErrorMessage);
                 return false;
             }
+        }
+        catch (Exception ex)
+        {
+            LastErrorMessage = ex.Message;
+            Debug.LogError("Login error: " + ex.Message);
+            return false;
         }
     }
 
     public async Task<bool> Register(string username, string password)
     {
-        using (var httpClient = new HttpClient())
-        {
-            var registerData = new { username = username, password = password };
-            var json = JsonConvert.SerializeObject(registerData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var registerData = new { username = username, password = password };
+        var json = JsonConvert.SerializeObject(registerData);
 
-            try
+        try
+        {
+            using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
             {
-                var response = await httpClient.PostAsync($"{HttpURL}/auth/register", content);
+                var response = await SharedHttpClient.PostAsync($"{HttpURL}/auth/register", content);
                 if (response.IsSuccessStatusCode)
                 {
                     Debug.Log("Registration successful!");
                     return true;
                 }
-                else
-                {
-                    Debug.LogError("Registration failed: " + response.ReasonPhrase);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("Registration error: " + ex.Message);
+
+                Debug.LogError("Registration failed: " + response.ReasonPhrase);
                 return false;
             }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Registration error: " + ex.Message);
+            return false;
         }
     }
 
@@ -262,7 +270,6 @@ public class NetworkManager : MonoBehaviour
             throw new InvalidOperationException("Player is not authenticated.");
         }
 
-        using (var httpClient = new HttpClient())
         using (var request = new HttpRequestMessage(method, $"{HttpURL}{path}"))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
@@ -273,7 +280,7 @@ public class NetworkManager : MonoBehaviour
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             }
 
-            var response = await httpClient.SendAsync(request);
+            var response = await SharedHttpClient.SendAsync(request);
             string responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -288,33 +295,8 @@ public class NetworkManager : MonoBehaviour
 
     private async Task<PlayerProfileResponse> SendPlayerRequest(HttpMethod method, string path, object body)
     {
-        if (string.IsNullOrEmpty(authToken))
-        {
-            throw new InvalidOperationException("Player is not authenticated.");
-        }
-
-        using (var httpClient = new HttpClient())
-        using (var request = new HttpRequestMessage(method, $"{HttpURL}{path}"))
-        {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-
-            if (body != null)
-            {
-                string json = JsonConvert.SerializeObject(body);
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-            }
-
-            var response = await httpClient.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
-                throw new InvalidOperationException(BuildApiErrorMessage(error, response.ReasonPhrase));
-            }
-
-            return JsonConvert.DeserializeObject<PlayerProfileResponse>(responseString);
-        }
+        string responseString = await SendPlayerRequestRaw(method, path, body);
+        return JsonConvert.DeserializeObject<PlayerProfileResponse>(responseString);
     }
 
     public Task ConnectAndJoinBattle()
@@ -468,13 +450,19 @@ public class NetworkManager : MonoBehaviour
         Debug.Log($"Player joined schema: {player.username}, key={key}, isSceneLoaded={isSceneLoaded}, roomSessionId={room?.SessionId}");
 
         var callbacks = Colyseus.Schema.Callbacks.Get(room);
-        callbacks.Listen(player, current => current.isDead, (_, __) =>
+        Action unsubscribe = callbacks.Listen(player, current => current.isDead, (_, __) =>
         {
             if (player.isDead)
             {
                 RemovePlayerObject(key, "Player died and object destroyed");
             }
         });
+
+        if (playerSchemaUnsubs.TryGetValue(key, out var previous))
+        {
+            try { previous?.Invoke(); } catch (Exception ex) { Debug.LogWarning($"[NetworkManager] Prior unsub for {key} threw: {ex.Message}"); }
+        }
+        playerSchemaUnsubs[key] = unsubscribe;
 
         if (isSceneLoaded)
         {
@@ -493,6 +481,12 @@ public class NetworkManager : MonoBehaviour
 
     private void RemovePlayerObject(string key, string reason)
     {
+        if (playerSchemaUnsubs.TryGetValue(key, out var unsubscribe))
+        {
+            try { unsubscribe?.Invoke(); } catch (Exception ex) { Debug.LogWarning($"[NetworkManager] Unsub for {key} threw: {ex.Message}"); }
+            playerSchemaUnsubs.Remove(key);
+        }
+
         if (!playerObjects.TryGetValue(key, out GameObject playerObject))
         {
             return;

@@ -24,6 +24,7 @@ public class NetworkManager : MonoBehaviour
 
     private Client client;
     private string authToken;
+    public string LastErrorMessage { get; private set; }
 
     [Header("Prefabs")]
     [SerializeField] private GameObject localPlayerPrefab;
@@ -41,6 +42,7 @@ public class NetworkManager : MonoBehaviour
     private bool isSceneLoaded = false;
 
     public event Action OnGameStart;
+    public event Action<string> OnConnectionFailed;
     public event Action<KillFeedMessage> OnKillFeedReceived;
     public event Action OnGameOver;
     public event Action<MatchResultMessage> OnMatchResultReceived;
@@ -95,6 +97,7 @@ public class NetworkManager : MonoBehaviour
 
             try
             {
+                LastErrorMessage = null;
                 var response = await httpClient.PostAsync($"{HttpURL}/auth/login", content);
                 if (response.IsSuccessStatusCode)
                 {
@@ -107,12 +110,15 @@ public class NetworkManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("Login failed: " + response.ReasonPhrase);
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    LastErrorMessage = ExtractApiError(responseString, response.ReasonPhrase);
+                    Debug.LogError("Login failed: " + LastErrorMessage);
                     return false;
                 }
             }
             catch (Exception ex)
             {
+                LastErrorMessage = ex.Message;
                 Debug.LogError("Login error: " + ex.Message);
                 return false;
             }
@@ -273,7 +279,7 @@ public class NetworkManager : MonoBehaviour
             if (!response.IsSuccessStatusCode)
             {
                 PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
-                throw new InvalidOperationException(error?.error ?? response.ReasonPhrase);
+                throw new InvalidOperationException(BuildApiErrorMessage(error, response.ReasonPhrase));
             }
 
             return responseString;
@@ -304,7 +310,7 @@ public class NetworkManager : MonoBehaviour
             if (!response.IsSuccessStatusCode)
             {
                 PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
-                throw new InvalidOperationException(error?.error ?? response.ReasonPhrase);
+                throw new InvalidOperationException(BuildApiErrorMessage(error, response.ReasonPhrase));
             }
 
             return JsonConvert.DeserializeObject<PlayerProfileResponse>(responseString);
@@ -331,6 +337,7 @@ public class NetworkManager : MonoBehaviour
         try
         {
             isConnectingToBattle = true;
+            LastErrorMessage = null;
             cancelMatchmakingRequested = false;
             if (leaveRoomTask != null)
             {
@@ -446,7 +453,9 @@ public class NetworkManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError("Connection failed: " + ex.Message);
+            LastErrorMessage = NormalizeConnectionError(ex.Message);
+            Debug.LogError("Connection failed: " + LastErrorMessage);
+            OnConnectionFailed?.Invoke(LastErrorMessage);
         }
         finally
         {
@@ -1117,6 +1126,52 @@ public class NetworkManager : MonoBehaviour
     private class PlayerApiError
     {
         public string error;
+        public string code;
+        public string reason;
+    }
+
+    private string ExtractApiError(string responseString, string fallback)
+    {
+        try
+        {
+            PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
+            return BuildApiErrorMessage(error, fallback);
+        }
+        catch
+        {
+            return string.IsNullOrEmpty(fallback) ? "Request failed." : fallback;
+        }
+    }
+
+    private string BuildApiErrorMessage(PlayerApiError error, string fallback)
+    {
+        if (error != null && error.code == "ACCOUNT_BANNED")
+        {
+            return string.IsNullOrEmpty(error.reason)
+                ? "Your account has been banned."
+                : $"Your account has been banned. Reason: {error.reason}";
+        }
+
+        if (error != null && !string.IsNullOrEmpty(error.error))
+        {
+            return error.error;
+        }
+
+        return string.IsNullOrEmpty(fallback) ? "Request failed." : fallback;
+    }
+
+    private string NormalizeConnectionError(string message)
+    {
+        if (!string.IsNullOrEmpty(message) && message.Contains("ACCOUNT_BANNED:"))
+        {
+            int index = message.IndexOf("ACCOUNT_BANNED:", StringComparison.Ordinal);
+            string reason = message.Substring(index + "ACCOUNT_BANNED:".Length).Trim();
+            return string.IsNullOrEmpty(reason)
+                ? "Your account has been banned."
+                : $"Your account has been banned. Reason: {reason}";
+        }
+
+        return string.IsNullOrEmpty(message) ? "Unable to connect to match." : message;
     }
 
     [Serializable]

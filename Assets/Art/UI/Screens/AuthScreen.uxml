@@ -23,6 +23,7 @@
                 <ui:Label text="CREATE ACCOUNT" class="panel-title"/>
                 <ui:TextField name="RegUsername" label="Username"/>
                 <ui:TextField name="RegPassword" label="Password" password="true"/>
+                <ui:TextField name="RegConfirmPassword" label="Confirm Password" password="true"/>
                 <ui:VisualElement style="align-items: center; margin-top: 20px;">
                     <ui:Button name="RegisterButton" text="REGISTER" class="button-long button-long--green"/>
                 </ui:VisualElement>

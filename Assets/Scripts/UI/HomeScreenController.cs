@@ -128,6 +128,7 @@ public class HomeScreenController : MonoBehaviour
         if (NetworkManager.Instance != null)
         {
             NetworkManager.Instance.OnGameStart += GoToGameplay;
+            NetworkManager.Instance.OnConnectionFailed += OnConnectionFailed;
         }
 
         // Subscribe to inventory changes
@@ -146,6 +147,7 @@ public class HomeScreenController : MonoBehaviour
         if (NetworkManager.Instance != null)
         {
             NetworkManager.Instance.OnGameStart -= GoToGameplay;
+            NetworkManager.Instance.OnConnectionFailed -= OnConnectionFailed;
         }
 
         PlayerInventory.Changed -= RefreshPlayerProfileDisplay;
@@ -652,5 +654,15 @@ public class HomeScreenController : MonoBehaviour
         matchmakingContainer.AddToClassList("hidden");
         VectoAudioManager.PlayBattleMusic();
         SceneManager.LoadScene("GameplayScene");
+    }
+
+    private void OnConnectionFailed(string message)
+    {
+        isMatchmaking = false;
+        timerSchedule.Pause();
+        if (matchTimer != null)
+        {
+            matchTimer.text = string.IsNullOrEmpty(message) ? "Unable to connect to match." : message;
+        }
     }
 }

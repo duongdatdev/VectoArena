@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour
     private static readonly int PMoving = Animator.StringToHash("moving");
     private static readonly int PAiming = Animator.StringToHash("aiming");
     private static readonly int PAttack = Animator.StringToHash("attack");
+    private static readonly int PHit = Animator.StringToHash("hit");
     private static readonly int PEquipMelee = Animator.StringToHash("equip_melee");
     private static readonly int PEquipGun = Animator.StringToHash("equip_gun");
     private static readonly int PWeaponType = Animator.StringToHash("weapon_type");
@@ -226,6 +227,12 @@ public class PlayerController : MonoBehaviour
     public void TriggerAttackAnimation()
     {
         SetAnimatorTriggerIfPresent(PAttack);
+    }
+
+    // Plays the built-in "hit" reaction clip on this character when it takes damage.
+    public void TriggerHitAnimation()
+    {
+        SetAnimatorTriggerIfPresent(PHit);
     }
 
     public void PerformShoot(Vector3 position, Quaternion rotation)

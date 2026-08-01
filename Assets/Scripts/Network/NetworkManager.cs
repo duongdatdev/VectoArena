@@ -51,6 +51,19 @@ public class NetworkManager : MonoBehaviour
 
     private Dictionary<string, GameObject> playerObjects = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> itemObjects = new Dictionary<string, GameObject>();
+
+    // Public accessor so combat feedback (damage numbers) can locate a player by sessionId.
+    public bool TryGetPlayerObject(string sessionId, out GameObject playerObject)
+    {
+        if (!string.IsNullOrEmpty(sessionId))
+        {
+            return playerObjects.TryGetValue(sessionId, out playerObject);
+        }
+
+        playerObject = null;
+        return false;
+    }
+
     private Dictionary<string, ItemWeaponConfig> itemWeaponConfigs = new Dictionary<string, ItemWeaponConfig>();
     private Dictionary<string, Action> playerSchemaUnsubs = new Dictionary<string, Action>();
     private bool isSceneLoaded = false;
@@ -60,6 +73,9 @@ public class NetworkManager : MonoBehaviour
     public event Action<KillFeedMessage> OnKillFeedReceived;
     public event Action OnGameOver;
     public event Action<MatchResultMessage> OnMatchResultReceived;
+
+    // Fired on every client when any player takes damage (for floating damage numbers).
+    public static event Action<DamageTakenMessage> OnDamageTaken;
 
     // using a generic object here for now. 
     // remember to swap this out with actual schema later.
@@ -424,6 +440,23 @@ public class NetworkManager : MonoBehaviour
             room.OnMessage<ItemPickedMessage>("item_picked", (message) =>
             {
                 OnItemPicked(message);
+            });
+
+            room.OnMessage<DamageTakenMessage>("damage_taken", (message) =>
+            {
+                if (message == null) return;
+
+                // Play the victim's built-in "hit" reaction animation (top-down feedback).
+                if (playerObjects.TryGetValue(message.victimId, out GameObject victimObj) && victimObj != null)
+                {
+                    var pc = victimObj.GetComponent<PlayerController>();
+                    if (pc != null)
+                    {
+                        pc.TriggerHitAnimation();
+                    }
+                }
+
+                OnDamageTaken?.Invoke(message);
             });
 
             var callbacks = Colyseus.Schema.Callbacks.Get(joinedRoom);
@@ -1340,6 +1373,14 @@ public class NetworkManager : MonoBehaviour
     {
         public string attackerId;
         public string targetId;
+    }
+
+    [Serializable]
+    public class DamageTakenMessage
+    {
+        public string victimId;
+        public float damage;
+        public bool lethal;
     }
 
     [Serializable]

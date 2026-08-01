@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,9 @@ public class Health : MonoBehaviour
     public float currentHealth;
 
     [Header("Health Bar")] public Image healthBarFill;
+
+    // Fired when the local player loses HP. Argument is the damage amount (positive).
+    public static event Action<float> OnLocalPlayerDamaged;
 
     private NetworkPlayerSync cachedSync;
     private bool healthBarLookupDone;
@@ -32,12 +36,21 @@ public class Health : MonoBehaviour
 
     public void SetHealth(float health)
     {
-        if (Mathf.Abs(currentHealth - health) > 0.1f)
+        float clamped = Mathf.Max(0f, health);
+
+        if (Mathf.Abs(currentHealth - clamped) > 0.1f)
         {
-            Debug.Log($"[Health] {gameObject.name} HP synced from server: {health}");
+            Debug.Log($"[Health] {gameObject.name} HP synced from server: {clamped}");
         }
 
-        currentHealth = Mathf.Max(0f, health);
+        // Detect damage (HP drop) on the local player to trigger visual feedback.
+        float delta = currentHealth - clamped;
+        if (delta > 0.1f && cachedSync != null && cachedSync.isLocalPlayer)
+        {
+            OnLocalPlayerDamaged?.Invoke(delta);
+        }
+
+        currentHealth = clamped;
         UpdateHealthBar();
     }
 

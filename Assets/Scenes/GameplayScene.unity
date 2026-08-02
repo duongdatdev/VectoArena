@@ -51320,6 +51320,7 @@ GameObject:
   - component: {fileID: 858410721}
   - component: {fileID: 858410720}
   - component: {fileID: 858410719}
+  - component: {fileID: 858410723}
   m_Layer: 5
   m_Name: GameplayUI
   m_TagString: Untagged
@@ -51353,6 +51354,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KillFeedManager
   killFeedItemTemplate: {fileID: 9197481963319205126, guid: baaf7c91c60150242b4c165e8d6ae0aa, type: 3}
   itemLifetime: 4
+--- !u!114 &858410723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858410718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6759ac0d9fc10264bb21e53188bb37cc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MobileControlsController
 --- !u!114 &858410721
 MonoBehaviour:
   m_ObjectHideFlags: 0

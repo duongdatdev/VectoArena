@@ -225,3 +225,66 @@
     height: 60px;
     font-size: 28px;
 }
+
+.mobile-compact .store-header {
+    height: 76px;
+}
+
+.mobile-compact .store-title {
+    font-size: 38px;
+}
+
+.mobile-compact .currency-display {
+    width: 142px;
+    height: 40px;
+}
+
+.mobile-compact .currency-display__icon-outline {
+    width: 58px;
+    height: 58px;
+}
+
+.mobile-compact .currency-display__icon {
+    width: 54px;
+    height: 54px;
+}
+
+.mobile-compact .currency-label {
+    font-size: 27px;
+}
+
+.mobile-compact .store-status {
+    font-size: 23px;
+    margin-top: 8px;
+}
+
+.mobile-compact .product-scroll {
+    padding: 18px;
+    margin-bottom: 76px;
+}
+
+.mobile-compact .product-card {
+    width: 240px;
+    height: 320px;
+    margin: 10px;
+    padding: 14px;
+}
+
+.mobile-compact .product-icon-frame,
+.mobile-compact .product-icon {
+    width: 170px;
+    height: 170px;
+}
+
+.mobile-compact .product-name {
+    font-size: 25px;
+}
+
+.mobile-compact .categories-bar {
+    height: 76px;
+}
+
+.mobile-compact .category-button {
+    min-height: 48px;
+    font-size: 32px;
+}

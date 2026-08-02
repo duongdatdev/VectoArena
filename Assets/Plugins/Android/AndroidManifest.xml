@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
   xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.thirdweb.unity"
+  package="com.vectoarena.game"
   xmlns:tools="http://schemas.android.com/tools"
 >
   <application>
@@ -17,9 +17,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <!-- Set your bundle id here -->
-        <!-- Replace 'com.thirdweb.unitysdk' with your desired scheme -->
-        <data android:scheme="com.thirdweb.unitysdk" />
+        <data android:scheme="com.vectoarena.game" />
       </intent-filter>
       <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
     </activity>

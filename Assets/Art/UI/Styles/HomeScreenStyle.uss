@@ -737,6 +737,50 @@
     justify-content: center;
 }
 
+.mobile-compact .player-header {
+    left: 36px;
+    top: 14px;
+    scale: 0.78 0.78;
+    transform-origin: left top;
+}
+
+.mobile-compact .top-bar {
+    right: 24px;
+    top: 16px;
+    scale: 0.8 0.8;
+    transform-origin: right top;
+}
+
+.mobile-compact .main-buttons {
+    top: 120px;
+    bottom: 18px;
+    scale: 0.78 0.78;
+}
+
+.mobile-compact .main-buttons--left {
+    left: 24px;
+    transform-origin: left bottom;
+}
+
+.mobile-compact .main-buttons--right {
+    right: 24px;
+    transform-origin: right bottom;
+}
+
+.mobile-compact .settings-button,
+.mobile-compact .wallet-button,
+.mobile-compact .button-with-icon,
+.mobile-compact .game-mode-button,
+.mobile-compact .play-button {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.mobile-compact .matchmaking-status {
+    width: 620px;
+    height: 232px;
+}
+
 .match-timer {
     font-size: 72px;
     color: white;

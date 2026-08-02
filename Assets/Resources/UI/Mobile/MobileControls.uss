@@ -1,0 +1,190 @@
+.mobile-controls-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.mobile-safe-area {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.mobile-joystick-zone {
+    position: absolute;
+    bottom: 0;
+    width: 50%;
+    height: 76%;
+}
+
+.mobile-joystick-zone--left {
+    left: 0;
+}
+
+.mobile-joystick-zone--right {
+    right: 0;
+}
+
+.mobile-joystick {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    bottom: 96px;
+    align-items: center;
+    justify-content: center;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-left-color: rgba(233, 226, 225, 0.13);
+    border-right-color: rgba(233, 226, 225, 0.13);
+    border-top-color: rgba(233, 226, 225, 0.13);
+    border-bottom-color: rgba(233, 226, 225, 0.13);
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    background-color: rgba(49, 45, 71, 0.12);
+    opacity: 0.52;
+}
+
+.mobile-joystick--move {
+    left: 132px;
+}
+
+.mobile-joystick--aim {
+    right: 132px;
+    width: 300px;
+    height: 300px;
+}
+
+.mobile-joystick--active {
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    opacity: 0.95;
+    background-color: rgba(49, 45, 71, 0.24);
+    border-left-color: rgba(255, 255, 255, 0.42);
+    border-right-color: rgba(255, 255, 255, 0.42);
+    border-top-color: rgba(255, 255, 255, 0.42);
+    border-bottom-color: rgba(255, 255, 255, 0.42);
+}
+
+.mobile-joystick__background {
+    position: absolute;
+    width: 118px;
+    height: 118px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    background-color: rgba(49, 45, 71, 0.32);
+}
+
+.mobile-joystick__stick {
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.mobile-joystick--move > .mobile-joystick__stick {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Match/icon-joystick-move.png");
+}
+
+.mobile-joystick--aim > .mobile-joystick__stick {
+    background-image: url("project://database/Assets/Art/UI/Sprites/Match/icon-joystick-shoot.png");
+}
+
+.mobile-joystick__halo {
+    position: absolute;
+    width: 252px;
+    height: 252px;
+    opacity: 0;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Match/vfx-joystick-direction.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.mobile-weapon-switch {
+    position: absolute;
+    right: 424px;
+    bottom: 112px;
+    width: 132px;
+    height: 132px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-left-color: rgba(255, 255, 255, 0.38);
+    border-right-color: rgba(255, 255, 255, 0.38);
+    border-top-color: rgba(255, 255, 255, 0.38);
+    border-bottom-color: rgba(255, 255, 255, 0.38);
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    background-color: rgba(49, 45, 71, 0.34);
+}
+
+.mobile-weapon-switch:hover,
+.mobile-weapon-switch:active {
+    background-color: rgba(242, 176, 53, 0.46);
+    border-left-color: rgba(255, 255, 255, 0.75);
+    border-right-color: rgba(255, 255, 255, 0.75);
+    border-top-color: rgba(255, 255, 255, 0.75);
+    border-bottom-color: rgba(255, 255, 255, 0.75);
+}
+
+.mobile-weapon-switch__icon {
+    width: 104px;
+    height: 104px;
+    align-self: center;
+    background-image: url("project://database/Assets/Art/UI/Sprites/Match/icon-weaponswitch.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.mobile-controls--compact .mobile-joystick {
+    width: 224px;
+    height: 224px;
+    bottom: 64px;
+}
+
+.mobile-controls--compact .mobile-joystick--aim {
+    width: 240px;
+    height: 240px;
+}
+
+.mobile-controls--compact .mobile-joystick__stick {
+    width: 112px;
+    height: 112px;
+}
+
+.mobile-controls--compact .mobile-joystick__halo {
+    width: 202px;
+    height: 202px;
+}
+
+.mobile-controls--compact .mobile-weapon-switch {
+    right: 348px;
+    bottom: 76px;
+    width: 108px;
+    height: 108px;
+}
+
+.mobile-controls--compact .mobile-weapon-switch__icon {
+    width: 84px;
+    height: 84px;
+}

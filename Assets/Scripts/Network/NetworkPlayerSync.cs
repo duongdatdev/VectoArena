@@ -59,7 +59,11 @@ public class NetworkPlayerSync : MonoBehaviour
         this.state = playerState;
         this.sessionId = sid;
         this.room = roomInstance;
-        this.isLocalPlayer = (state.id == room.SessionId);
+        // `sid` is the authoritative key from the Colyseus players map. The
+        // schema's state.id is not guaranteed to be populated on every server
+        // version, which previously caused the local Android player to be
+        // treated as remote and disabled its controller/HUD.
+        this.isLocalPlayer = room != null && string.Equals(sid, room.SessionId, StringComparison.Ordinal);
 
         if (!isLocalPlayer)
         {

@@ -146,3 +146,50 @@
     border-color: rgb(255, 241, 151);
     color: rgb(42, 26, 80);
 }
+
+.mobile-compact .settings-popup {
+    width: 92%;
+    height: 94%;
+}
+
+.mobile-compact .settings-header {
+    height: 62px;
+}
+
+.mobile-compact .settings-tabs {
+    height: 62px;
+    margin-top: 8px;
+}
+
+.mobile-compact .settings-tab-button {
+    min-height: 48px;
+    font-size: 24px;
+}
+
+.mobile-compact .settings-content {
+    padding: 18px;
+}
+
+.mobile-compact .settings-row {
+    min-height: 54px;
+    margin-bottom: 8px;
+    padding: 10px 16px;
+}
+
+.mobile-compact .settings-label {
+    font-size: 25px;
+}
+
+.mobile-compact .settings-slider {
+    width: 42%;
+}
+
+.mobile-compact .settings-choice-button {
+    min-height: 48px;
+    min-width: 130px;
+    font-size: 18px;
+}
+
+.mobile-compact .settings-choice-button--small {
+    min-width: 70px;
+}

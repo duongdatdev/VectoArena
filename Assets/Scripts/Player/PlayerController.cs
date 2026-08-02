@@ -46,6 +46,10 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private Vector2 mousePos;
     private bool isShooting;
+    private Vector2 mobileMoveInput;
+    private Vector2 mobileAimInput;
+    private bool mobileShootHeld;
+    private bool mobileControlsActive;
     private int maxAmmo = -1;
     private int currentAmmo = -1;
     private bool rangedWeaponEquipped;
@@ -133,29 +137,40 @@ public class PlayerController : MonoBehaviour
             // Reset inputs if dead
             moveInput = Vector2.zero;
             isShooting = false;
+            ResetMobileInput();
             UpdateAnimation();
             return;
         }
 
-        Ray ray = mainCam.ScreenPointToRay(mousePos);
-
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
-
-        if (groundPlane.Raycast(ray, out float rayDistance))
+        if (mobileControlsActive && mobileAimInput.sqrMagnitude > 0.001f)
         {
-            Vector3 point = ray.GetPoint(rayDistance);
+            Vector3 lookDirection = GetCameraRelativeDirection(mobileAimInput);
+            if (lookDirection.sqrMagnitude > 0.001f)
+            {
+                transform.forward = lookDirection;
+            }
+        }
+        else if (!mobileControlsActive && mainCam != null)
+        {
+            Ray ray = mainCam.ScreenPointToRay(mousePos);
+            Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
-            Vector3 lookDirection = point - transform.position;
-
-            lookDirection.y = 0f;
-
-            transform.forward = lookDirection;
+            if (groundPlane.Raycast(ray, out float rayDistance))
+            {
+                Vector3 point = ray.GetPoint(rayDistance);
+                Vector3 lookDirection = point - transform.position;
+                lookDirection.y = 0f;
+                if (lookDirection.sqrMagnitude > 0.001f)
+                {
+                    transform.forward = lookDirection;
+                }
+            }
         }
 
         HandleWeaponSwitchInput();
         SyncWeaponStateFromServer();
 
-        if (isShooting && Time.time >= nextFireTime)
+        if (IsShootHeld() && Time.time >= nextFireTime)
         {
 
             if (IsUsingMeleeWeapon())
@@ -193,7 +208,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
+        Vector2 activeMoveInput = mobileControlsActive ? mobileMoveInput : moveInput;
+        Vector3 movement = mobileControlsActive
+            ? GetCameraRelativeDirection(activeMoveInput)
+            : new Vector3(activeMoveInput.x, 0f, activeMoveInput.y);
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
 
         rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
@@ -211,11 +229,13 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateAnimation()
     {
-        bool isWalking = moveInput.magnitude > 0.1f;
+        Vector2 activeMoveInput = mobileControlsActive ? mobileMoveInput : moveInput;
+        bool isWalking = activeMoveInput.magnitude > 0.1f;
         bool isUsingMeleeWeapon = IsUsingMeleeWeapon();
         bool canShoot = CanShoot();
-        bool isHoldingRight = isShooting && (isUsingMeleeWeapon || canShoot);
-        bool isAiming = isShooting && !isUsingMeleeWeapon && canShoot;
+        bool shootHeld = IsShootHeld();
+        bool isHoldingRight = shootHeld && (isUsingMeleeWeapon || canShoot);
+        bool isAiming = shootHeld && !isUsingMeleeWeapon && canShoot;
 
         SetAnimatorBoolIfPresent(PIsWalking, isWalking);
         SetAnimatorBoolIfPresent(PIsHoldingRight, isHoldingRight);
@@ -366,16 +386,78 @@ public class PlayerController : MonoBehaviour
 
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
         {
-            PlayerState state = sync.GetState();
-            if (state == null || string.IsNullOrEmpty(state.rangedWeapon))
-            {
-                return;
-            }
-
-            bool isUsingMelee = !string.IsNullOrEmpty(state.currentWeapon) &&
-                                state.currentWeapon == state.meleeWeapon;
-            sync.SendWeaponSwitch(isUsingMelee ? "ranged" : "melee");
+            RequestWeaponSwitch();
         }
+    }
+
+    public void SetMobileControlsActive(bool active)
+    {
+        mobileControlsActive = active;
+        if (!active)
+        {
+            ResetMobileInput();
+        }
+    }
+
+    public void SetMobileMoveInput(Vector2 value)
+    {
+        mobileMoveInput = Vector2.ClampMagnitude(value, 1f);
+    }
+
+    public void SetMobileAimInput(Vector2 value)
+    {
+        mobileAimInput = Vector2.ClampMagnitude(value, 1f);
+    }
+
+    public void SetMobileShootHeld(bool held)
+    {
+        mobileShootHeld = held;
+    }
+
+    public void ResetMobileInput()
+    {
+        mobileMoveInput = Vector2.zero;
+        mobileAimInput = Vector2.zero;
+        mobileShootHeld = false;
+    }
+
+    public void RequestWeaponSwitch()
+    {
+        NetworkPlayerSync sync = GetComponent<NetworkPlayerSync>();
+        if (sync == null || !sync.isLocalPlayer)
+        {
+            return;
+        }
+
+        PlayerState state = sync.GetState();
+        if (state == null || string.IsNullOrEmpty(state.rangedWeapon))
+        {
+            return;
+        }
+
+        bool isUsingMelee = !string.IsNullOrEmpty(state.currentWeapon) && state.currentWeapon == state.meleeWeapon;
+        sync.SendWeaponSwitch(isUsingMelee ? "ranged" : "melee");
+    }
+
+    private bool IsShootHeld()
+    {
+        return mobileControlsActive ? mobileShootHeld : isShooting;
+    }
+
+    private Vector3 GetCameraRelativeDirection(Vector2 input)
+    {
+        if (input.sqrMagnitude <= 0.001f)
+        {
+            return Vector3.zero;
+        }
+
+        Camera referenceCamera = mainCam != null ? mainCam : Camera.main;
+        if (referenceCamera == null)
+        {
+            return new Vector3(input.x, 0f, input.y);
+        }
+
+        return MobileInputMath.CameraRelativeDirection(input, referenceCamera.transform.right, referenceCamera.transform.forward);
     }
 
     public void SyncWeaponStateFromServer()

@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- Custom controls use Unity 6 UxmlElement serialization. -->
+    <ui:Style src="MobileControls.uss" />
+    <ui:VisualElement name="MobileControlsRoot" class="mobile-controls-root">
+        <VectoArena.UI.SafeAreaElement name="MobileSafeArea" apply-top="true" apply-bottom="true" apply-left="true" apply-right="true" class="mobile-safe-area">
+            <ui:VisualElement name="LeftJoystickArea" class="mobile-joystick-zone mobile-joystick-zone--left">
+                <VectoArena.UI.MobileJoystickElement name="LeftJoystick" class="mobile-joystick--move" />
+            </ui:VisualElement>
+            <ui:VisualElement name="RightJoystickArea" class="mobile-joystick-zone mobile-joystick-zone--right">
+                <VectoArena.UI.MobileJoystickElement name="RightJoystick" class="mobile-joystick--aim" />
+            </ui:VisualElement>
+            <ui:Button name="WeaponSwitchButton" class="mobile-weapon-switch" tooltip="Switch weapon">
+                <ui:VisualElement name="WeaponSwitchIcon" class="mobile-weapon-switch__icon" />
+            </ui:Button>
+        </VectoArena.UI.SafeAreaElement>
+    </ui:VisualElement>
+</ui:UXML>

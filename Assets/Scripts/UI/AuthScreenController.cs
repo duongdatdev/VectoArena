@@ -22,6 +22,7 @@ public class AuthScreenController : MonoBehaviour
     // Register Elements
     private TextField regUsername;
     private TextField regPassword;
+    private TextField regConfirmPassword;
     private Button registerButton;
     private Button switchToLoginButton;
     private Label registerStatus;
@@ -54,6 +55,7 @@ public class AuthScreenController : MonoBehaviour
         // Register Query
         regUsername = root.Q<TextField>("RegUsername");
         regPassword = root.Q<TextField>("RegPassword");
+        regConfirmPassword = root.Q<TextField>("RegConfirmPassword");
         registerButton = root.Q<Button>("RegisterButton");
         switchToLoginButton = root.Q<Button>("SwitchToLogin");
         registerStatus = root.Q<Label>("RegisterStatus");
@@ -138,7 +140,9 @@ public class AuthScreenController : MonoBehaviour
         }
         else
         {
-            loginStatus.text = "Login Failed. Check credentials.";
+            loginStatus.text = string.IsNullOrEmpty(NetworkManager.Instance.LastErrorMessage)
+                ? "Login Failed. Check credentials."
+                : NetworkManager.Instance.LastErrorMessage;
             loginStatus.style.color = new StyleColor(Color.red);
         }
     }
@@ -149,10 +153,18 @@ public class AuthScreenController : MonoBehaviour
 
         string user = regUsername.value;
         string pass = regPassword.value;
+        string confirmPass = regConfirmPassword.value;
 
-        if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+        if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass) || string.IsNullOrEmpty(confirmPass))
         {
-            registerStatus.text = "Username and password are required";
+            registerStatus.text = "Username, password, and confirm password are required";
+            registerStatus.style.color = new StyleColor(Color.red);
+            return;
+        }
+
+        if (pass != confirmPass)
+        {
+            registerStatus.text = "Passwords do not match";
             registerStatus.style.color = new StyleColor(Color.red);
             return;
         }

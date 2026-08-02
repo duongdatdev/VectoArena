@@ -10,68 +10,75 @@ public class Health : MonoBehaviour
 
     [Header("Health Bar")] public Image healthBarFill;
 
+    // Fired when the local player loses HP. Argument is the damage amount (positive).
+    public static event Action<float> OnLocalPlayerDamaged;
+
+    private NetworkPlayerSync cachedSync;
+    private bool healthBarLookupDone;
+
+    private void Awake()
+    {
+        cachedSync = GetComponent<NetworkPlayerSync>();
+    }
+
     private void Start()
     {
         currentHealth = maxHealth;
-
+        TryResolveHealthBarFill();
         UpdateHealthBar();
     }
 
     public void TakeDamage(float damage)
     {
-        // Now handled by Server via Colyseus instead
-        // currentHealth -= damage;
-        // UpdateHealthBar();
+        // Damage is authoritative on the server via Colyseus.
         Debug.Log(gameObject.name + " wants to take damage, should send to server");
     }
 
     public void SetHealth(float health)
     {
-        if (Mathf.Abs(currentHealth - health) > 0.1f)
+        float clamped = Mathf.Max(0f, health);
+
+        if (Mathf.Abs(currentHealth - clamped) > 0.1f)
         {
-            Debug.Log($"[Health] {gameObject.name} HP synced from server: {health}");
+            Debug.Log($"[Health] {gameObject.name} HP synced from server: {clamped}");
         }
 
-        currentHealth = health;
-        if (currentHealth < 0) currentHealth = 0;
-        
+        // Detect damage (HP drop) on the local player to trigger visual feedback.
+        float delta = currentHealth - clamped;
+        if (delta > 0.1f && cachedSync != null && cachedSync.isLocalPlayer)
+        {
+            OnLocalPlayerDamaged?.Invoke(delta);
+        }
+
+        currentHealth = clamped;
         UpdateHealthBar();
-        
-        if (currentHealth == 0)
+    }
+
+    private void TryResolveHealthBarFill()
+    {
+        if (healthBarFill != null || healthBarLookupDone) return;
+        if (cachedSync == null || !cachedSync.isLocalPlayer) return;
+
+        healthBarLookupDone = true;
+        var hpImageObj = GameObject.Find("HealthFill");
+        if (hpImageObj != null)
         {
-            // Die();
+            healthBarFill = hpImageObj.GetComponent<Image>();
+        }
+        else
+        {
+            Debug.LogWarning("[Health] Cannot find GameObject named HealthFill");
         }
     }
 
-    void Die()
+    private void UpdateHealthBar()
     {
-        Debug.Log(gameObject.name + " dead");
-        Destroy(gameObject);
-    }
-
-    void UpdateHealthBar()
-    {
-        // Try to find the local player's health bar by tag or name if it's null
-        if (healthBarFill == null && GetComponent<NetworkPlayerSync>() != null)
+        if (healthBarFill == null)
         {
-            // Usually, we only show screen UI for the LOCAL player
-            if (GetComponent<NetworkPlayerSync>().isLocalPlayer)
-            {
-                var hpImageObj = GameObject.Find("HealthFill");
-                if (hpImageObj != null)
-                {
-                    healthBarFill = hpImageObj.GetComponent<Image>();
-                }
-                else
-                {
-                    Debug.LogWarning("can't find gameobject name HealthFill");
-                }
-            }
+            TryResolveHealthBarFill();
+            if (healthBarFill == null) return;
         }
 
-        if (healthBarFill != null)
-        {
-            healthBarFill.fillAmount = currentHealth / maxHealth;
-        }
+        healthBarFill.fillAmount = currentHealth / maxHealth;
     }
 }

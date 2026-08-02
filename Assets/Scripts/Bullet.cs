@@ -24,6 +24,20 @@ public class Bullet : MonoBehaviour
 
     // Cached direction vector set once at spawn, ensuring it never changes even while player moves
     private Vector3 flyDirection;
+    private bool alreadyHit;
+
+    private static Material s_sharedTrailMaterial;
+
+    private static Material GetSharedTrailMaterial()
+    {
+        if (s_sharedTrailMaterial != null) return s_sharedTrailMaterial;
+        Shader shader = Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Sprites/Default");
+        if (shader != null)
+        {
+            s_sharedTrailMaterial = new Material(shader) { name = "BulletTrail(Shared)" };
+        }
+        return s_sharedTrailMaterial;
+    }
 
     private void Start()
     {
@@ -90,12 +104,11 @@ public class Bullet : MonoBehaviour
         );
         trail.colorGradient = gradient;
 
-        // Assign an unlit material so the trail glows without being affected by scene lighting
-        Shader shader = Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Sprites/Default");
-        if (shader != null)
+        // Reuse a shared unlit material across all bullets to avoid per-shot allocations.
+        Material shared = GetSharedTrailMaterial();
+        if (shared != null)
         {
-            Material mat = new Material(shader);
-            trail.material = mat;
+            trail.sharedMaterial = shared;
         }
 
         // Ensure it renders above ground plane
@@ -108,21 +121,19 @@ public class Bullet : MonoBehaviour
         HandleHit(other.gameObject);
     }
 
-    private void OnCollisionEnter(Collision other)
-    {
-        HandleHit(other.gameObject);
-    }
-
     private void HandleHit(GameObject targetObj)
     {
+        if (alreadyHit) return;
         if (owner != null && targetObj == owner.gameObject) return;
+
+        alreadyHit = true;
 
         NetworkPlayerSync targetSync = targetObj.GetComponent<NetworkPlayerSync>();
         if (targetSync != null && owner != null && owner.isLocalPlayer)
         {
             owner.SendHit(targetSync.GetSessionId());
         }
-        
+
         Destroy(gameObject);
     }
 }

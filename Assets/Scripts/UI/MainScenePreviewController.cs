@@ -14,6 +14,9 @@ public class MainScenePreviewController : MonoBehaviour
     [SerializeField] private Vector3 fallbackPreviewScale = new Vector3(1.6f, 1.6f, 1.6f);
     [SerializeField] private Vector3 anchoredPreviewRotation = new Vector3(0f, 75f, 0f);
 
+    [Header("Responsive Home Screen Background")]
+    [SerializeField] private float backgroundReferenceAspect = 16f / 9f;
+
     private GameObject currentCharacter;
     private string currentSkinId;
     private RuntimeAnimatorController previewAnimatorController;
@@ -21,6 +24,10 @@ public class MainScenePreviewController : MonoBehaviour
     private Transform localAnchor;
     private Transform localCharacterAnchor;
     private Transform previewParent;
+    private Transform backgroundFill;
+    private Vector3 backgroundFillBaseScale;
+    private Camera previewCamera;
+    private float lastBackgroundAspect = -1f;
     private CancellationTokenSource loadCancellation;
 
     private void OnEnable()
@@ -46,6 +53,11 @@ public class MainScenePreviewController : MonoBehaviour
     {
         PlayerInventory.Changed -= RefreshCharacter;
         CancelPendingLoad();
+    }
+
+    private void LateUpdate()
+    {
+        ApplyResponsiveBackgroundScale();
     }
 
     private async Task LoadEquippedSkin(CancellationToken cancellationToken)
@@ -165,6 +177,7 @@ public class MainScenePreviewController : MonoBehaviour
             if (localCharacterAnchor == null) Debug.LogWarning("Local/CharacterAnchor not found in HomeScreen prefab!");
             previewParent = localCharacterAnchor != null ? localCharacterAnchor : (localAnchor != null ? localAnchor : transform);
             DisableRemotePartyMemberShadows();
+            CacheResponsiveBackground();
 
             var uiDoc = homeScreenPrefabObj.GetComponent<UnityEngine.UIElements.UIDocument>();
             if (uiDoc != null) Destroy(uiDoc);
@@ -198,7 +211,77 @@ public class MainScenePreviewController : MonoBehaviour
             {
                 Debug.LogWarning("Main Menu Camera not found in HomeScreen prefab!");
             }
+            previewCamera = Camera.main;
+            ApplyResponsiveBackgroundScale(true);
         }
+    }
+
+    private void CacheResponsiveBackground()
+    {
+        if (backgroundFill != null || homeScreenPrefabObj == null)
+        {
+            return;
+        }
+
+        backgroundFill = FindBackgroundFill(homeScreenPrefabObj.transform);
+        if (backgroundFill != null)
+        {
+            backgroundFillBaseScale = backgroundFill.localScale;
+        }
+        else
+        {
+            Debug.LogWarning("Renderable Background mesh not found in HomeScreen prefab!");
+        }
+    }
+
+    private Transform FindBackgroundFill(Transform parent)
+    {
+        if (parent.name == "Background" && parent.GetComponent<MeshRenderer>() != null)
+        {
+            return parent;
+        }
+
+        foreach (Transform child in parent)
+        {
+            Transform found = FindBackgroundFill(child);
+            if (found != null) return found;
+        }
+
+        return null;
+    }
+
+    private void ApplyResponsiveBackgroundScale(bool force = false)
+    {
+        if (backgroundFill == null)
+        {
+            return;
+        }
+
+        if (previewCamera == null)
+        {
+            previewCamera = Camera.main;
+        }
+
+        float aspect = previewCamera != null
+            ? previewCamera.aspect
+            : (Screen.height > 0 ? (float)Screen.width / Screen.height : backgroundReferenceAspect);
+
+        if (!force && Mathf.Approximately(aspect, lastBackgroundAspect))
+        {
+            return;
+        }
+
+        float widthMultiplier = 1f;
+        if (backgroundReferenceAspect > 0f && aspect > backgroundReferenceAspect)
+        {
+            widthMultiplier = aspect / backgroundReferenceAspect;
+        }
+
+        backgroundFill.localScale = new Vector3(
+            backgroundFillBaseScale.x * widthMultiplier,
+            backgroundFillBaseScale.y,
+            backgroundFillBaseScale.z);
+        lastBackgroundAspect = aspect;
     }
 
     private Transform RecursiveFind(Transform parent, string childName)

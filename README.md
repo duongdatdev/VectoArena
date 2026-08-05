@@ -30,6 +30,7 @@ VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer
 - Wallet linking through signed nonce verification.
 - VEC deposits and NFT skin purchase or ownership synchronization.
 - UI Toolkit screens for authentication, home, store, settings, gameplay HUD, and death flow.
+- Android support with responsive safe-area UI and dual-stick touch controls.
 
 ## Technology Stack
 
@@ -41,11 +42,12 @@ VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer
 | Multiplayer | Colyseus Unity SDK |
 | Input | Unity Input System |
 | Web3 | Thirdweb, Reown AppKit, Nethereum |
-| Platforms in project | Standalone and WebGL support |
+| Platforms in project | Android and Standalone; WebGL compatibility code is present but not yet verified |
 
 ## Prerequisites
 
 - Unity Hub with Unity Editor `6000.4.0f1` installed.
+- Unity Android Build Support, including the Android SDK, NDK, and OpenJDK, when building for mobile.
 - A running VectoArena server instance. Local defaults expect `http://localhost:2567` and `ws://localhost:2567`.
 - A Thirdweb client ID and blockchain contract configuration when using wallet, deposit, or NFT functionality.
 - A compatible wallet for Web3 flows. The current wallet connection flow targets MetaMask through Reown.
@@ -137,20 +139,37 @@ The client sends movement, shooting, hit, melee, weapon-switch, and pickup messa
 
 For deployed clients, replace localhost URLs with reachable HTTP and WebSocket endpoints. Browser builds also require a backend deployment that permits the origin used by the WebGL client.
 
-### Android mobile build
+## Mobile Support
 
-The Android client uses the application ID `com.vectoarena.game`, IL2CPP/ARM64, landscape-only
-autorotation, the `Mobile` quality level, and UI safe-area handling. Gameplay uses two floating
-touch sticks: the left stick moves and the right stick aims and fires. The weapon button switches
-between melee and the currently held ranged weapon.
+The mobile client currently targets Android. It uses the application ID `com.vectoarena.game`,
+IL2CPP with ARM64, landscape-only autorotation, the `Mobile` quality profile, and responsive
+safe-area layouts for devices with notches or display cutouts.
 
-- In the Unity Editor, enable `VectoArena > Mobile > Simulate Touch Controls` to test the mobile HUD
-  with pointer input in Play Mode.
-- Use `VectoArena > Build > Android Development APK` to create `Build/Android/VectoArena-dev.apk`.
-- Use `VectoArena > Build > Android Release AAB` to create `Build/Android/VectoArena-release.aab`.
+### Touch Controls
 
-Release AAB signing is intentionally kept outside source control. Configure these environment
-variables before starting Unity or invoking the release build method in batch mode:
+Gameplay displays two floating touch sticks on mobile:
+
+| Control | Action |
+| --- | --- |
+| Left stick | Move the player relative to the camera |
+| Right stick | Aim; pushing it far enough also fires the equipped ranged weapon |
+| Weapon button | Switch between melee and the currently held ranged weapon |
+
+To test the mobile HUD in Play Mode with mouse or pointer input, enable
+`VectoArena > Mobile > Simulate Touch Controls` in the Unity Editor.
+
+### Build for Android
+
+The project provides these build commands under `VectoArena > Build`:
+
+| Command | Output | Purpose |
+| --- | --- | --- |
+| `Android Development APK` | `Build/Android/VectoArena-dev.apk` | Debuggable development build |
+| `Android Development APK (Build & Run)` | `Build/Android/VectoArena-dev.apk` | Build and launch on a connected device |
+| `Android Release AAB` | `Build/Android/VectoArena-release.aab` | Signed release bundle for distribution |
+
+Release signing is intentionally kept outside source control. Configure these environment
+variables before starting Unity or creating the release AAB:
 
 | Variable | Purpose |
 | --- | --- |
@@ -159,10 +178,10 @@ variables before starting Unity or invoking the release build method in batch mo
 | `VECTO_ANDROID_KEY_ALIAS` | Upload key alias |
 | `VECTO_ANDROID_KEY_PASSWORD` | Upload key password |
 
-Android devices cannot reach a development server through `localhost`. Set `serverUrl` and
-`httpUrl` in the local runtime configuration to LAN-accessible or deployed `wss://` and `https://`
-endpoints. Wallet callbacks use the `com.vectoarena.game://` URI scheme declared in the Android
-manifest.
+Android devices cannot reach a development server through the computer's `localhost`. Set
+`serverUrl` and `httpUrl` in the local runtime configuration to LAN-accessible endpoints for local
+testing, or deployed `wss://` and `https://` endpoints for release builds. Wallet callbacks use the
+`com.vectoarena.game://` URI scheme declared in the Android manifest.
 
 ## Project Structure
 

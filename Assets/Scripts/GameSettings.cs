@@ -195,7 +195,18 @@ public static class GameSettings
     private static void ApplyFrameRate()
     {
         QualitySettings.vSyncCount = SupportsVSync && vSync ? 1 : 0;
-        Application.targetFrameRate = QualitySettings.vSyncCount > 0 ? -1 : fpsLimit;
+        Application.targetFrameRate = QualitySettings.vSyncCount > 0 ? -1 : GetTargetFrameRate();
+    }
+
+    private static int GetTargetFrameRate()
+    {
+        if (!Application.isMobilePlatform || fpsLimit > 0)
+        {
+            return fpsLimit;
+        }
+
+        double refreshRate = Screen.currentResolution.refreshRateRatio.value;
+        return refreshRate > 0d ? Mathf.RoundToInt((float)refreshRate) : 60;
     }
 
     private static void ApplyFullscreen()

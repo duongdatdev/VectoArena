@@ -1,0 +1,169 @@
+name: Build unsigned Unity iOS IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-xcode-project:
+    name: Generate Unity Xcode project
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Build Unity project for iOS
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          targetPlatform: iOS
+          buildsPath: build
+          buildName: iOS
+
+      - name: Verify generated Xcode project
+        shell: bash
+        run: |
+          set -e
+
+          if [ ! -d "build/iOS" ]; then
+            echo "The build/iOS directory was not generated."
+            exit 1
+          fi
+
+          XCODE_PROJECT=$(find build/iOS -name "Unity-iPhone.xcodeproj" -print -quit)
+
+          if [ -z "$XCODE_PROJECT" ]; then
+            echo "Unity-iPhone.xcodeproj was not found."
+            find build/iOS -maxdepth 3 -type f | head -100
+            exit 1
+          fi
+
+          echo "Found Xcode project:"
+          echo "$XCODE_PROJECT"
+
+      - name: Upload Xcode project
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-ios-xcode-project
+          path: build/iOS
+          retention-days: 1
+          if-no-files-found: error
+
+  compile-unsigned-ipa:
+    name: Compile unsigned IPA
+    needs: generate-xcode-project
+    runs-on: macos-15-intel
+    timeout-minutes: 120
+
+    steps:
+      - name: Download Xcode project
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-ios-xcode-project
+          path: build/iOS
+
+      - name: Display Xcode version
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Restore script permissions
+        shell: bash
+        run: |
+          chmod -R +x build/iOS
+
+      - name: Compile application without code signing
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          XCODE_PROJECT=$(find build/iOS \
+            -name "Unity-iPhone.xcodeproj" \
+            -print \
+            -quit)
+
+          if [ -z "$XCODE_PROJECT" ]; then
+            echo "Unity-iPhone.xcodeproj was not found."
+            exit 1
+          fi
+
+          echo "Building project: $XCODE_PROJECT"
+
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$GITHUB_WORKSPACE/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APP_PATH=$(find \
+            "$GITHUB_WORKSPACE/DerivedData/Build/Products/Release-iphoneos" \
+            -maxdepth 1 \
+            -name "*.app" \
+            -print \
+            -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "Compiled iOS .app was not found."
+            find "$GITHUB_WORKSPACE/DerivedData/Build/Products" \
+              -maxdepth 3 \
+              -type d
+            exit 1
+          fi
+
+          echo "Found application: $APP_PATH"
+
+          rm -rf "$GITHUB_WORKSPACE/output"
+          mkdir -p "$GITHUB_WORKSPACE/output/Payload"
+
+          cp -R \
+            "$APP_PATH" \
+            "$GITHUB_WORKSPACE/output/Payload/"
+
+          cd "$GITHUB_WORKSPACE/output"
+
+          ditto \
+            -c \
+            -k \
+            --sequesterRsrc \
+            --keepParent \
+            Payload \
+            UnityGame-unsigned.ipa
+
+          echo "Generated IPA:"
+          ls -lh UnityGame-unsigned.ipa
+
+          echo "SHA-256:"
+          shasum -a 256 UnityGame-unsigned.ipa
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: UnityGame-iOS-unsigned
+          path: output/UnityGame-unsigned.ipa
+          retention-days: 1
+          if-no-files-found: error

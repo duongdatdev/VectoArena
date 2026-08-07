@@ -18,9 +18,7 @@ public class Web3Manager : MonoBehaviour
 
     [Header("Web3 Configuration (Loaded from Config)")]
     private ulong chainId => ConfigManager.Config.chainId;
-    private string tokenContractAddress => !string.IsNullOrWhiteSpace(ConfigManager.Config.vecTokenAddress)
-        ? ConfigManager.Config.vecTokenAddress
-        : ConfigManager.Config.tokenContractAddress;
+    private string tokenContractAddress => ConfigManager.Config.vecTokenAddress;
     private string treasuryWalletAddress => ConfigManager.Config.treasuryWalletAddress;
     
     private void Awake()

@@ -399,7 +399,7 @@ public static class PlayerInventory
         chainId = profileChainId.HasValue && profileChainId.Value > 0 ? (ulong)profileChainId.Value : config.nftChainId;
 
         nftContractAddress = FirstNonEmpty(nftInfo?.contractAddress, nft?.contractAddress, config.skinNftContractAddress);
-        vecTokenAddress = FirstNonEmpty(config.vecTokenAddress, config.tokenContractAddress);
+        vecTokenAddress = config.vecTokenAddress;
 
         string tokenIdText = FirstNonEmpty(nftInfo?.tokenId, nft?.tokenId, configuredSkin?.tokenId);
 

@@ -18,7 +18,7 @@ public class Web3Manager : MonoBehaviour
 
     [Header("Web3 Configuration (Loaded from Config)")]
     private ulong chainId => ConfigManager.Config.chainId;
-    private string tokenContractAddress => ConfigManager.Config.vecTokenAddress;
+    private string vecTokenAddress => ConfigManager.Config.vecTokenAddress;
     private string treasuryWalletAddress => ConfigManager.Config.treasuryWalletAddress;
     
     private void Awake()
@@ -448,9 +448,9 @@ public class Web3Manager : MonoBehaviour
                 return false;
             }
 
-            if (string.IsNullOrEmpty(tokenContractAddress))
+            if (string.IsNullOrEmpty(vecTokenAddress))
             {
-                Debug.LogError("Token contract address is empty. Check tokenContractAddress in appsettings.json.");
+                Debug.LogError("VEC token address is empty. Check vecTokenAddress in appsettings.json.");
                 return false;
             }
 
@@ -460,14 +460,14 @@ public class Web3Manager : MonoBehaviour
                 return false;
             }
 
-            ValidateAddress(tokenContractAddress, "VEC token address");
+            ValidateAddress(vecTokenAddress, "VEC token address");
             ValidateAddress(treasuryWalletAddress, "treasury wallet address");
 
             await EnsureCorrectChainAsync(this.chainId);
 
             Debug.Log($"Transferring VEC to {treasuryWalletAddress}...");
 
-            ThirdwebContract token = await ThirdwebManager.Instance.GetContract(tokenContractAddress, this.chainId);
+            ThirdwebContract token = await ThirdwebManager.Instance.GetContract(vecTokenAddress, this.chainId);
             var transferTask = token.Write(
                 wallet: ThirdwebManager.Instance.ActiveWallet,
                 method: "function transfer(address to, uint256 amount) returns (bool)",

@@ -2,7 +2,6 @@
     "serverUrl": "ws://localhost:2567",
     "httpUrl": "http://localhost:2567",
     "chainId": 11155111,
-    "tokenContractAddress": "0x9102A00B13670f39F0e84051e903dEA4050de782",
     "vecTokenAddress": "0x9102A00B13670f39F0e84051e903dEA4050de782",
     "skinNftContractAddress": "0x9e713aC20EA540438Ea4d91cEF23B6DB2DCae159",
     "nftChainId": 11155111,

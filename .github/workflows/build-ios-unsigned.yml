@@ -51,7 +51,6 @@ jobs:
           const requiredStrings = [
             'serverUrl',
             'httpUrl',
-            'tokenContractAddress',
             'vecTokenAddress',
             'skinNftContractAddress',
             'treasuryWalletAddress',

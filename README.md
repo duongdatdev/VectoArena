@@ -78,11 +78,10 @@ The game loads configuration from `Assets/Resources/Config/appsettings.json` thr
 | `serverUrl` | Colyseus WebSocket endpoint | `ws://localhost:2567` |
 | `httpUrl` | REST API base URL | `http://localhost:2567` |
 | `chainId` | Network for VEC deposit operations | `11155111` |
-| `tokenContractAddress` | VEC ERC-20 contract used for deposits | Environment-specific address |
 | `treasuryWalletAddress` | Destination wallet for VEC deposits | Environment-specific address |
 | `thirdwebClientId` | Thirdweb application client ID | Environment-specific value |
 | `nftChainId` | Chain used for NFT skin operations | `11155111` |
-| `vecTokenAddress` | Token used to purchase NFT skins | Environment-specific address |
+| `vecTokenAddress` | VEC ERC-20 token used for deposits and NFT skin purchases | Environment-specific address |
 | `skinNftContractAddress` | NFT skin contract address | Environment-specific address |
 | `nftSkinPriceWei` | Default skin price in token base units | `1000000000000000000` |
 | `nftSkins` | Client mapping of skin IDs, token IDs, and prices | Array of configured skins |

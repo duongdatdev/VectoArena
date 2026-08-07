@@ -22,6 +22,70 @@ jobs:
         with:
           lfs: true
 
+      - name: Restore and validate build configuration
+        shell: bash
+        env:
+          APPSETTINGS_JSON: ${{ secrets.APPSETTINGS_JSON }}
+        run: |
+          set -euo pipefail
+
+          node <<'NODE'
+          const fs = require('fs');
+
+          const target = 'Assets/Resources/Config/appsettings.json';
+          const raw = process.env.APPSETTINGS_JSON;
+
+          if (!raw || !raw.trim()) {
+            throw new Error(
+              'Missing APPSETTINGS_JSON. Add it in GitHub: Settings > Secrets and variables > Actions.'
+            );
+          }
+
+          let config;
+          try {
+            config = JSON.parse(raw);
+          } catch {
+            throw new Error('APPSETTINGS_JSON must be valid JSON.');
+          }
+
+          const requiredStrings = [
+            'serverUrl',
+            'httpUrl',
+            'tokenContractAddress',
+            'vecTokenAddress',
+            'skinNftContractAddress',
+            'treasuryWalletAddress',
+            'thirdwebClientId'
+          ];
+          const missing = requiredStrings.filter(
+            (key) => typeof config[key] !== 'string' || !config[key].trim()
+          );
+          const requiredNumbers = ['chainId', 'nftChainId'];
+          const invalidNumbers = requiredNumbers.filter(
+            (key) => !Number.isInteger(config[key]) || config[key] <= 0
+          );
+
+          if (!/^wss?:\/\/.+/.test(config.serverUrl || '')) {
+            throw new Error('serverUrl must begin with ws:// or wss://.');
+          }
+          if (!/^https?:\/\/.+/.test(config.httpUrl || '')) {
+            throw new Error('httpUrl must begin with http:// or https://.');
+          }
+          if (!Array.isArray(config.nftSkins)) {
+            throw new Error('nftSkins must be an array.');
+          }
+          if (missing.length || invalidNumbers.length) {
+            throw new Error(
+              `Invalid app settings. Missing: ${missing.join(', ') || 'none'}; ` +
+              `invalid numbers: ${invalidNumbers.join(', ') || 'none'}.`
+            );
+          }
+
+          fs.mkdirSync('Assets/Resources/Config', { recursive: true });
+          fs.writeFileSync(target, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+          console.log(`Validated and restored ${target}.`);
+          NODE
+
       - name: Build Unity project for iOS
         uses: game-ci/unity-builder@v4
         env:

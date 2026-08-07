@@ -3,6 +3,7 @@ using Colyseus;
 using System.Threading.Tasks;
 using System;
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,6 +11,7 @@ using System.Text;
 using Newtonsoft.Json;
 using VectoArena.Schema;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -74,6 +76,8 @@ public class NetworkManager : MonoBehaviour
     public event Action OnGameOver;
     public event Action<MatchResultMessage> OnMatchResultReceived;
 
+    public bool IsGameplayInputBlocked { get; private set; }
+
     // Fired on every client when any player takes damage (for floating damage numbers).
     public static event Action<DamageTakenMessage> OnDamageTaken;
 
@@ -83,6 +87,24 @@ public class NetworkManager : MonoBehaviour
     private bool isConnectingToBattle = false;
     private Task leaveRoomTask;
     private bool cancelMatchmakingRequested = false;
+    private bool returningToMenuAfterDisconnect = false;
+    private VisualElement connectionOverlay;
+    private Label connectionStatusLabel;
+    private readonly ConcurrentQueue<RoomConnectionEvent> roomConnectionEvents = new ConcurrentQueue<RoomConnectionEvent>();
+
+    private enum RoomConnectionEventType
+    {
+        Dropped,
+        Reconnected,
+        Failed
+    }
+
+    private sealed class RoomConnectionEvent
+    {
+        public Room<GameState> SourceRoom;
+        public RoomConnectionEventType Type;
+        public int Code;
+    }
 
     private void Awake()
     {
@@ -102,6 +124,7 @@ public class NetworkManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         isSceneLoaded = (scene.name == "GameplayScene");
+        BindConnectionOverlay();
         Debug.Log($"OnSceneLoaded: {scene.name}, mode={mode}, isSceneLoaded={isSceneLoaded}");
         if (isSceneLoaded)
         {
@@ -115,6 +138,14 @@ public class NetworkManager : MonoBehaviour
     void Start()
     {
         client = new Client(ServerURL);
+    }
+
+    private void Update()
+    {
+        while (roomConnectionEvents.TryDequeue(out RoomConnectionEvent connectionEvent))
+        {
+            HandleRoomConnectionEvent(connectionEvent);
+        }
     }
 
     public async Task<bool> Login(string username, string password)
@@ -371,6 +402,7 @@ public class NetworkManager : MonoBehaviour
             }
 
             room = joinedRoom;
+            ConfigureRoomReconnection(joinedRoom);
             Debug.Log("Connected to room! Session ID: " + joinedRoom.SessionId);
             
 
@@ -475,6 +507,120 @@ public class NetworkManager : MonoBehaviour
         finally
         {
             isConnectingToBattle = false;
+        }
+    }
+
+    private void ConfigureRoomReconnection(Room<GameState> joinedRoom)
+    {
+        joinedRoom.Reconnection.Enabled = true;
+        joinedRoom.Reconnection.MinUptime = 0;
+        joinedRoom.Reconnection.MaxRetries = 10;
+        joinedRoom.Reconnection.MinDelay = 250;
+        joinedRoom.Reconnection.Delay = 250;
+        joinedRoom.Reconnection.MaxDelay = 2000;
+        joinedRoom.Reconnection.MaxEnqueuedMessages = 0;
+
+        joinedRoom.OnDrop += code => EnqueueRoomConnectionEvent(joinedRoom, RoomConnectionEventType.Dropped, code);
+        joinedRoom.OnReconnect += () => EnqueueRoomConnectionEvent(joinedRoom, RoomConnectionEventType.Reconnected, 0);
+        joinedRoom.OnLeave += code => EnqueueRoomConnectionEvent(joinedRoom, RoomConnectionEventType.Failed, code);
+    }
+
+    private void EnqueueRoomConnectionEvent(Room<GameState> sourceRoom, RoomConnectionEventType type, int code)
+    {
+        roomConnectionEvents.Enqueue(new RoomConnectionEvent
+        {
+            SourceRoom = sourceRoom,
+            Type = type,
+            Code = code
+        });
+    }
+
+    private void HandleRoomConnectionEvent(RoomConnectionEvent connectionEvent)
+    {
+        if (connectionEvent.SourceRoom != room)
+        {
+            return;
+        }
+
+        switch (connectionEvent.Type)
+        {
+            case RoomConnectionEventType.Dropped:
+                Debug.LogWarning($"[NetworkManager] Connection dropped (code {connectionEvent.Code}); reconnecting...");
+                SetGameplayInputBlocked(true, "ĐANG KẾT NỐI LẠI...");
+                break;
+
+            case RoomConnectionEventType.Reconnected:
+                Debug.Log("[NetworkManager] Reconnected to the active room.");
+                SetGameplayInputBlocked(false, null);
+                break;
+
+            case RoomConnectionEventType.Failed:
+                LastErrorMessage = "Mất kết nối tới trận đấu.";
+                Debug.LogError($"[NetworkManager] Unable to reconnect to room (code {connectionEvent.Code}).");
+                room = null;
+                hasGameStarted = false;
+                SetGameplayInputBlocked(true, "MẤT KẾT NỐI - ĐANG VỀ SẢNH...");
+                OnConnectionFailed?.Invoke(LastErrorMessage);
+                _ = ReturnToMenuAfterDisconnect();
+                break;
+        }
+    }
+
+    private async Task ReturnToMenuAfterDisconnect()
+    {
+        if (returningToMenuAfterDisconnect)
+        {
+            return;
+        }
+
+        returningToMenuAfterDisconnect = true;
+        await Task.Delay(1500);
+
+        if (SceneManager.GetActiveScene().name == "GameplayScene")
+        {
+            SceneManager.LoadScene("MainScene");
+        }
+
+        SetGameplayInputBlocked(false, null);
+        returningToMenuAfterDisconnect = false;
+    }
+
+    private void BindConnectionOverlay()
+    {
+        connectionOverlay = null;
+        connectionStatusLabel = null;
+
+        UIDocument[] documents = FindObjectsByType<UIDocument>(FindObjectsSortMode.None);
+        foreach (UIDocument document in documents)
+        {
+            if (document.gameObject.name != "GameplayUI" || document.rootVisualElement == null)
+            {
+                continue;
+            }
+
+            connectionOverlay = document.rootVisualElement.Q<VisualElement>("ConnectionOverlay");
+            connectionStatusLabel = document.rootVisualElement.Q<Label>("ConnectionStatusLabel");
+            break;
+        }
+
+        if (connectionOverlay != null)
+        {
+            connectionOverlay.style.display = IsGameplayInputBlocked ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+    }
+
+    private void SetGameplayInputBlocked(bool blocked, string status)
+    {
+        IsGameplayInputBlocked = blocked;
+
+        if (connectionStatusLabel != null && !string.IsNullOrWhiteSpace(status))
+        {
+            connectionStatusLabel.text = status;
+        }
+
+        if (connectionOverlay != null)
+        {
+            connectionOverlay.style.display = blocked ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 

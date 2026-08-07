@@ -132,6 +132,15 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         var sync = GetComponent<NetworkPlayerSync>();
+        if (NetworkManager.Instance != null && NetworkManager.Instance.IsGameplayInputBlocked)
+        {
+            moveInput = Vector2.zero;
+            isShooting = false;
+            ResetMobileInput();
+            UpdateAnimation();
+            return;
+        }
+
         if (sync != null && sync.GetState() != null && sync.GetState().isDead)
         {
             // Reset inputs if dead
@@ -202,6 +211,13 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         var sync = GetComponent<NetworkPlayerSync>();
+        if (NetworkManager.Instance != null && NetworkManager.Instance.IsGameplayInputBlocked)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            return;
+        }
+
         if (sync != null && sync.GetState() != null && sync.GetState().isDead)
         {
             rb.linearVelocity = Vector3.zero;

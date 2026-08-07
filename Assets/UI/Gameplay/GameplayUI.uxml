@@ -4,6 +4,13 @@
     
     <!-- Vùng chứa Kill Feed ở góc trên bên phải -->
     <ui:VisualElement name="KillFeedContainer" class="kill-feed-container" />
+
+    <ui:VisualElement name="ConnectionOverlay" class="connection-overlay">
+        <ui:VisualElement class="connection-overlay__panel">
+            <ui:VisualElement class="connection-overlay__spinner" />
+            <ui:Label name="ConnectionStatusLabel" text="ĐANG KẾT NỐI LẠI..." class="connection-overlay__label" />
+        </ui:VisualElement>
+    </ui:VisualElement>
     
     <!-- Màn hình Death Screen - inline trực tiếp (ẩn mặc định) -->
     <ui:VisualElement name="DeathScreenContainer" class="death-screen-container">

@@ -152,6 +152,7 @@ public class NetworkPlayerSync : MonoBehaviour
 
     private void SyncLocalMovementToServer()
     {
+        if (!CanSendGameplayMessage()) return;
         if (Time.time < nextLocalMoveSendAt) return;
 
         Vector3 currentPosition = transform.position;
@@ -178,7 +179,7 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendShoot(Vector3 position, Quaternion rotation)
     {
-        if (!isLocalPlayer || room == null) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage()) return;
 
         room.Send("shoot", new {
             x = position.x,
@@ -321,7 +322,7 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendHit(string targetId)
     {
-        if (!isLocalPlayer || room == null) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage()) return;
         
         room.Send("hit", new
         {
@@ -331,13 +332,13 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendMeleeAttack(string targetId)
     {
-        if (!isLocalPlayer || room == null) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage()) return;
         room.Send("melee_attack", new { targetId = targetId ?? string.Empty });
     }
 
     public void SendWeaponSwitch(string slot)
     {
-        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(slot)) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage() || string.IsNullOrEmpty(slot)) return;
 
         room.Send("switch_weapon", new
         {
@@ -347,7 +348,7 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendPickupItem(string itemId)
     {
-        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(itemId)) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage() || string.IsNullOrEmpty(itemId)) return;
 
         room.Send("pickup_item", new
         {
@@ -357,12 +358,17 @@ public class NetworkPlayerSync : MonoBehaviour
 
     public void SendPickupProgress(string itemId, float progress)
     {
-        if (!isLocalPlayer || room == null || string.IsNullOrEmpty(itemId)) return;
+        if (!isLocalPlayer || !CanSendGameplayMessage() || string.IsNullOrEmpty(itemId)) return;
 
         room.Send("pickup_progress", new
         {
             itemId = itemId,
             progress = Mathf.Clamp01(progress)
         });
+    }
+
+    private bool CanSendGameplayMessage()
+    {
+        return room != null && (NetworkManager.Instance == null || !NetworkManager.Instance.IsGameplayInputBlocked);
     }
 }

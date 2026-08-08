@@ -649,6 +649,14 @@ public class HomeScreenController : MonoBehaviour
 
     private void GoToGameplay()
     {
+        // A GAME_START packet from the room we just left can arrive after MainScene
+        // has loaded. Only a matchmaking request started by this screen may enter gameplay.
+        if (!isMatchmaking)
+        {
+            Debug.Log("Ignoring GAME_START because no matchmaking request is active.");
+            return;
+        }
+
         isMatchmaking = false;
         timerSchedule.Pause();
         matchmakingContainer.AddToClassList("hidden");

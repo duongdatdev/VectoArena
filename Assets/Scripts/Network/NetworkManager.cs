@@ -407,8 +407,10 @@ public class NetworkManager : MonoBehaviour
             
 
 
-            room.OnStateChange += (state, isFirstState) =>
+            joinedRoom.OnStateChange += (state, isFirstState) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
+
                 UpdateZoneState();
                 if (state.matchState == "PLAYING")
                 {
@@ -416,31 +418,39 @@ public class NetworkManager : MonoBehaviour
                 }
             };
 
-            room.OnMessage<object>("GAME_START", (message) =>
+            joinedRoom.OnMessage<object>("GAME_START", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
+
                 Debug.Log("GAME_START message received");
                 UpdateZoneState();
                 HandleGameStart();
             });
 
-            room.OnMessage<object>("GAME_OVER", (message) =>
+            joinedRoom.OnMessage<object>("GAME_OVER", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
+
                 Debug.Log("GAME_OVER message received");
                 OnGameOver?.Invoke();
             });
 
-            room.OnMessage<MatchResultMessage>("match_result", (message) =>
+            joinedRoom.OnMessage<MatchResultMessage>("match_result", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
                 OnMatchResultReceived?.Invoke(message);
             });
 
-            room.OnMessage<KillFeedMessage>("kill_feed", (message) =>
+            joinedRoom.OnMessage<KillFeedMessage>("kill_feed", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
                 OnKillFeedReceived?.Invoke(message);
             });
 
-            room.OnMessage<ShootMessage>("shoot", (message) =>
+            joinedRoom.OnMessage<ShootMessage>("shoot", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
+
                 if (playerObjects.TryGetValue(message.clientId, out GameObject playerObj))
                 {
                     var pc = playerObj.GetComponent<PlayerController>();
@@ -453,10 +463,11 @@ public class NetworkManager : MonoBehaviour
                 }
             });
 
-            room.OnMessage<MeleeAttackMessage>("melee_attack", (message) =>
+            joinedRoom.OnMessage<MeleeAttackMessage>("melee_attack", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
                 if (message == null || string.IsNullOrEmpty(message.attackerId)) return;
-                if (message.attackerId == room.SessionId) return;
+                if (message.attackerId == joinedRoom.SessionId) return;
 
                 if (playerObjects.TryGetValue(message.attackerId, out GameObject playerObj))
                 {
@@ -469,13 +480,15 @@ public class NetworkManager : MonoBehaviour
                 }
             });
 
-            room.OnMessage<ItemPickedMessage>("item_picked", (message) =>
+            joinedRoom.OnMessage<ItemPickedMessage>("item_picked", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
                 OnItemPicked(message);
             });
 
-            room.OnMessage<DamageTakenMessage>("damage_taken", (message) =>
+            joinedRoom.OnMessage<DamageTakenMessage>("damage_taken", (message) =>
             {
+                if (!IsCurrentRoom(joinedRoom)) return;
                 if (message == null) return;
 
                 // Play the victim's built-in "hit" reaction animation (top-down feedback).
@@ -492,11 +505,23 @@ public class NetworkManager : MonoBehaviour
             });
 
             var callbacks = Colyseus.Schema.Callbacks.Get(joinedRoom);
-            callbacks.OnAdd(state => state.players, (key, player) => OnPlayerJoin(key, player));
-            callbacks.OnRemove(state => state.players, (key, player) => OnPlayerLeave(key, player));
+            callbacks.OnAdd(state => state.players, (key, player) =>
+            {
+                if (IsCurrentRoom(joinedRoom)) OnPlayerJoin(key, player);
+            });
+            callbacks.OnRemove(state => state.players, (key, player) =>
+            {
+                if (IsCurrentRoom(joinedRoom)) OnPlayerLeave(key, player);
+            });
             
-            callbacks.OnAdd(state => state.items, (key, item) => OnItemAdd(key, item));
-            callbacks.OnRemove(state => state.items, (key, item) => OnItemRemove(key, item));
+            callbacks.OnAdd(state => state.items, (key, item) =>
+            {
+                if (IsCurrentRoom(joinedRoom)) OnItemAdd(key, item);
+            });
+            callbacks.OnRemove(state => state.items, (key, item) =>
+            {
+                if (IsCurrentRoom(joinedRoom)) OnItemRemove(key, item);
+            });
         }
         catch (Exception ex)
         {
@@ -508,6 +533,11 @@ public class NetworkManager : MonoBehaviour
         {
             isConnectingToBattle = false;
         }
+    }
+
+    private bool IsCurrentRoom(Room<GameState> sourceRoom)
+    {
+        return sourceRoom != null && ReferenceEquals(sourceRoom, room) && !cancelMatchmakingRequested;
     }
 
     private void ConfigureRoomReconnection(Room<GameState> joinedRoom)

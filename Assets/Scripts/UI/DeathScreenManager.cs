@@ -135,8 +135,7 @@ public class DeathScreenManager : MonoBehaviour
             if (localPlayerSync.GetState().isDead)
             {
                 isDead = true;
-                SpectateRandomAlivePlayer();
-                ShowSpectatingScreen("THE ZONE");
+                ShowMatchResultScreen(CreateFallbackResult(false));
             }
         }
     }
@@ -147,26 +146,13 @@ public class DeathScreenManager : MonoBehaviour
         {
             if (msg.victimName == localPlayerSync.GetState().username)
             {
-                if (string.IsNullOrEmpty(msg.killerName))
-                {
-                    SpectateRandomAlivePlayer();
-                }
-                else
-                {
-                    SpectatePlayer(msg.killerName);
-                }
-
                 if (isDead)
                 {
-                    if (defeatedByName != null)
-                    {
-                        defeatedByName.text = string.IsNullOrEmpty(msg.killerName) ? "THE ZONE" : msg.killerName;
-                    }
                     return;
                 }
 
                 isDead = true;
-                ShowSpectatingScreen(string.IsNullOrEmpty(msg.killerName) ? "THE ZONE" : msg.killerName);
+                ShowMatchResultScreen(CreateFallbackResult(false));
             }
         }
     }
@@ -175,10 +161,7 @@ public class DeathScreenManager : MonoBehaviour
     {
         if (lastMatchResult != null)
         {
-            if (!isDead || isViewingResults)
-            {
-                ShowMatchResultOrCelebrate(lastMatchResult);
-            }
+            ShowMatchResultOrCelebrate(lastMatchResult);
             return;
         }
 
@@ -187,7 +170,7 @@ public class DeathScreenManager : MonoBehaviour
             // We survived!
             ShowMatchResultOrCelebrate(CreateFallbackResult(true));
         }
-        else if (!isDead)
+        else
         {
             ShowMatchResultScreen(CreateFallbackResult(false));
         }
@@ -196,10 +179,7 @@ public class DeathScreenManager : MonoBehaviour
     private void HandleMatchResult(NetworkManager.MatchResultMessage result)
     {
         lastMatchResult = result;
-        if (!isDead || isViewingResults)
-        {
-            ShowMatchResultOrCelebrate(result);
-        }
+        ShowMatchResultOrCelebrate(result);
     }
 
     private void ShowMatchResultOrCelebrate(NetworkManager.MatchResultMessage result)
@@ -259,7 +239,9 @@ public class DeathScreenManager : MonoBehaviour
         if (titleLabel != null) titleLabel.text = title;
         if (subtitleLabel != null)
         {
-            subtitleLabel.text = result.isWinner ? "LAST SURVIVOR BONUS CLAIMED" : "MATCH REWARDS";
+            subtitleLabel.text = result.isFinalized
+                ? (result.isWinner ? "LAST SURVIVOR BONUS CLAIMED" : "MATCH REWARDS")
+                : "REWARDS FINALIZE WHEN THE MATCH ENDS";
         }
 
         string placementText = result.placement > 0 ? $"{result.placement}." : "--";
@@ -271,9 +253,11 @@ public class DeathScreenManager : MonoBehaviour
         if (vecRewardValueRow != null) vecRewardValueRow.text = $"+{result.vecEarned:N0} VEC";
         if (vecRewardHint != null)
         {
-            vecRewardHint.text = result.vecEarned > 0
-                ? "Added to locked VEC when you return"
-                : "No VEC earned this match";
+            vecRewardHint.text = !result.isFinalized
+                ? "Secured reward - finalizing in background"
+                : result.vecEarned > 0
+                    ? "Added to locked VEC when you return"
+                    : "No VEC earned this match";
         }
 
         if (levelValue != null)
@@ -400,24 +384,49 @@ public class DeathScreenManager : MonoBehaviour
     private NetworkManager.MatchResultMessage CreateFallbackResult(bool isWinner)
     {
         int kills = 0;
+        int vecEarned = 0;
         if (localPlayerSync != null && localPlayerSync.GetState() != null)
         {
             kills = Mathf.RoundToInt(localPlayerSync.GetState().kills);
+            vecEarned = Mathf.Max(0, Mathf.FloorToInt(localPlayerSync.GetState().vecCarried));
         }
+
+        int placement = isWinner ? 1 : EstimatePlacement();
+        int maxPlayers = NetworkManager.Instance != null
+            ? Mathf.Max(placement, NetworkManager.Instance.GetMatchPlayerCount())
+            : placement;
+        int xpEarned = 25 + (kills * 20) + (isWinner ? 50 : 0)
+            + Mathf.Max(0, (maxPlayers - placement + 1) * 10);
 
         return new NetworkManager.MatchResultMessage
         {
-            placement = isWinner ? 1 : 0,
+            placement = placement,
             kills = kills,
-            xpEarned = 0,
-            level = 0,
-            xp = 0,
-            xpToNextLevel = 0,
-            xpProgress = 0f,
+            xpEarned = xpEarned,
+            level = PlayerInventory.Level,
+            xp = PlayerInventory.Xp,
+            xpToNextLevel = PlayerInventory.XpToNextLevel,
+            xpProgress = PlayerInventory.XpProgress,
             levelsGained = 0,
-            vecEarned = 0,
-            isWinner = isWinner
+            vecEarned = vecEarned,
+            isWinner = isWinner,
+            isFinalized = false
         };
+    }
+
+    private int EstimatePlacement()
+    {
+        if (NetworkManager.Instance == null)
+        {
+            return 1;
+        }
+
+        int aliveCount = Mathf.Max(0, NetworkManager.Instance.GetAlivePlayerCount());
+        bool localStateIsDead = localPlayerSync != null
+            && localPlayerSync.GetState() != null
+            && localPlayerSync.GetState().isDead;
+
+        return Mathf.Max(1, aliveCount + (localStateIsDead ? 1 : 0));
     }
 
     private void SetLocalPlayerLabels()

@@ -1095,6 +1095,18 @@ public class NetworkManager : MonoBehaviour
         return aliveCount;
     }
 
+    public int GetMatchPlayerCount()
+    {
+        if (room == null || room.State == null || room.State.players == null)
+        {
+            return 0;
+        }
+
+        int playerCount = 0;
+        room.State.players.ForEach((_, __) => playerCount++);
+        return playerCount;
+    }
+
     private void SpawnPlayer(string key, PlayerState playerState)
     {
         if (playerState.isDead)
@@ -1454,6 +1466,7 @@ public class NetworkManager : MonoBehaviour
         public int levelsGained;
         public int vecEarned;
         public bool isWinner;
+        public bool isFinalized;
     }
 
     [Serializable]

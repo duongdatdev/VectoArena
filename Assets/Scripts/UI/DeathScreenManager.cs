@@ -38,6 +38,11 @@ public class DeathScreenManager : MonoBehaviour
     private bool isCelebratingWin = false;
     private Coroutine winCelebrationRoutine;
     private NetworkPlayerSync localPlayerSync;
+    private string localPlayerSessionId;
+    private string localPlayerUsername;
+    private string spectatedPlayerUsername;
+    private int cachedLocalKills;
+    private int cachedLocalVecCarried;
     private NetworkManager.MatchResultMessage lastMatchResult;
 
     private void OnEnable()
@@ -125,6 +130,7 @@ public class DeathScreenManager : MonoBehaviour
                 if (sync.isLocalPlayer)
                 {
                     localPlayerSync = sync;
+                    CacheLocalPlayerState(sync);
                     break;
                 }
             }
@@ -132,29 +138,51 @@ public class DeathScreenManager : MonoBehaviour
 
         if (!isDead && localPlayerSync != null && localPlayerSync.GetState() != null)
         {
+            CacheLocalPlayerState(localPlayerSync);
             if (localPlayerSync.GetState().isDead)
             {
                 isDead = true;
-                ShowMatchResultScreen(CreateFallbackResult(false));
+                SpectateRandomAlivePlayer();
+                ShowSpectatingScreen("THE ZONE");
             }
         }
     }
 
     private void HandleKillFeed(NetworkManager.KillFeedMessage msg)
     {
-        if (localPlayerSync != null && localPlayerSync.GetState() != null)
+        if (msg == null)
         {
-            if (msg.victimName == localPlayerSync.GetState().username)
-            {
-                if (isDead)
-                {
-                    return;
-                }
-
-                isDead = true;
-                ShowMatchResultScreen(CreateFallbackResult(false));
-            }
+            return;
         }
+
+        if (IsSpectatedPlayerVictim(msg.victimName))
+        {
+            SpectateKillerOrRandomAlivePlayer(msg.killerName);
+            return;
+        }
+
+        if (!IsLocalPlayerVictim(msg.victimName))
+        {
+            return;
+        }
+
+        string killerName = string.IsNullOrEmpty(msg.killerName) ? "THE ZONE" : msg.killerName;
+        if (!isViewingResults)
+        {
+            SpectateKillerOrRandomAlivePlayer(msg.killerName);
+        }
+
+        if (isDead)
+        {
+            if (!isViewingResults && defeatedByName != null)
+            {
+                defeatedByName.text = killerName;
+            }
+            return;
+        }
+
+        isDead = true;
+        ShowSpectatingScreen(killerName);
     }
 
     private void HandleGameOver()
@@ -179,6 +207,14 @@ public class DeathScreenManager : MonoBehaviour
     private void HandleMatchResult(NetworkManager.MatchResultMessage result)
     {
         lastMatchResult = result;
+
+        // Elimination results arrive while the match is still running. Keep
+        // them ready for Leave/Game Over without replacing spectating.
+        if (isDead && !isViewingResults)
+        {
+            return;
+        }
+
         ShowMatchResultOrCelebrate(result);
     }
 
@@ -310,8 +346,7 @@ public class DeathScreenManager : MonoBehaviour
             return;
         }
 
-        string localSessionId = localPlayerSync != null ? localPlayerSync.GetSessionId() : null;
-        GameObject targetPlayer = NetworkManager.Instance.FindRandomAlivePlayerObject(localSessionId);
+        GameObject targetPlayer = NetworkManager.Instance.FindRandomAlivePlayerObject(localPlayerSessionId);
         if (targetPlayer == null)
         {
             return;
@@ -320,40 +355,104 @@ public class DeathScreenManager : MonoBehaviour
         SetCameraTarget(targetPlayer.transform);
     }
 
-    private void SpectatePlayer(string playerName)
+    private bool SpectatePlayer(string playerName)
     {
         if (NetworkManager.Instance == null || string.IsNullOrEmpty(playerName))
         {
-            return;
+            return false;
         }
 
         GameObject targetPlayer = NetworkManager.Instance.FindPlayerObjectByUsername(playerName);
         if (targetPlayer == null)
         {
-            return;
+            return false;
         }
 
-        SetCameraTarget(targetPlayer.transform);
+        return SetCameraTarget(targetPlayer.transform);
     }
 
-    private void SetCameraTarget(Transform target)
+    private bool SetCameraTarget(Transform target)
     {
         if (target == null)
         {
-            return;
+            return false;
         }
 
         Camera mainCamera = Camera.main;
         if (mainCamera == null)
         {
-            return;
+            return false;
         }
 
         CameraFollow cameraFollow = mainCamera.GetComponent<CameraFollow>();
-        if (cameraFollow != null)
+        if (cameraFollow == null)
         {
-            cameraFollow.target = target;
+            return false;
         }
+
+        NetworkPlayerSync targetSync = target.GetComponent<NetworkPlayerSync>();
+        var targetState = targetSync != null ? targetSync.GetState() : null;
+        spectatedPlayerUsername = targetState != null ? targetState.username : null;
+        cameraFollow.target = target;
+        return true;
+    }
+
+    private void SpectateKillerOrRandomAlivePlayer(string killerName)
+    {
+        bool isFollowingKiller = !string.IsNullOrEmpty(killerName) && SpectatePlayer(killerName);
+        if (!isFollowingKiller)
+        {
+            SpectateRandomAlivePlayer();
+        }
+    }
+
+    private bool IsSpectatedPlayerVictim(string victimName)
+    {
+        return isDead
+            && !isViewingResults
+            && !string.IsNullOrEmpty(victimName)
+            && !string.IsNullOrEmpty(spectatedPlayerUsername)
+            && string.Equals(victimName, spectatedPlayerUsername, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void CacheLocalPlayerState(NetworkPlayerSync sync)
+    {
+        if (sync == null)
+        {
+            return;
+        }
+
+        string sessionId = sync.GetSessionId();
+        if (!string.IsNullOrEmpty(sessionId))
+        {
+            localPlayerSessionId = sessionId;
+        }
+
+        var state = sync.GetState();
+        if (state == null)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(state.username))
+        {
+            localPlayerUsername = state.username;
+        }
+
+        cachedLocalKills = Mathf.RoundToInt(state.kills);
+        cachedLocalVecCarried = Mathf.Max(0, Mathf.FloorToInt(state.vecCarried));
+    }
+
+    private bool IsLocalPlayerVictim(string victimName)
+    {
+        if (localPlayerSync != null)
+        {
+            CacheLocalPlayerState(localPlayerSync);
+        }
+
+        return !string.IsNullOrEmpty(victimName)
+            && !string.IsNullOrEmpty(localPlayerUsername)
+            && string.Equals(victimName, localPlayerUsername, StringComparison.OrdinalIgnoreCase);
     }
 
     private void LeaveSpectating()
@@ -383,10 +482,11 @@ public class DeathScreenManager : MonoBehaviour
 
     private NetworkManager.MatchResultMessage CreateFallbackResult(bool isWinner)
     {
-        int kills = 0;
-        int vecEarned = 0;
+        int kills = cachedLocalKills;
+        int vecEarned = cachedLocalVecCarried;
         if (localPlayerSync != null && localPlayerSync.GetState() != null)
         {
+            CacheLocalPlayerState(localPlayerSync);
             kills = Mathf.RoundToInt(localPlayerSync.GetState().kills);
             vecEarned = Mathf.Max(0, Mathf.FloorToInt(localPlayerSync.GetState().vecCarried));
         }
@@ -422,18 +522,19 @@ public class DeathScreenManager : MonoBehaviour
         }
 
         int aliveCount = Mathf.Max(0, NetworkManager.Instance.GetAlivePlayerCount());
-        bool localStateIsDead = localPlayerSync != null
+        bool localStateIsDead = isDead || (localPlayerSync != null
             && localPlayerSync.GetState() != null
-            && localPlayerSync.GetState().isDead;
+            && localPlayerSync.GetState().isDead);
 
         return Mathf.Max(1, aliveCount + (localStateIsDead ? 1 : 0));
     }
 
     private void SetLocalPlayerLabels()
     {
-        string playerName = "YOU";
+        string playerName = string.IsNullOrEmpty(localPlayerUsername) ? "YOU" : localPlayerUsername;
         if (localPlayerSync != null && localPlayerSync.GetState() != null && !string.IsNullOrEmpty(localPlayerSync.GetState().username))
         {
+            CacheLocalPlayerState(localPlayerSync);
             playerName = localPlayerSync.GetState().username;
         }
 

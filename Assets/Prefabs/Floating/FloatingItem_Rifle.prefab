@@ -358,7 +358,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4375449635245516858}
+  - {fileID: 473819505502955661}
   m_Father: {fileID: 2320333358525143479}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1879395237057086875
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FloatingItem
   rotationSpeed: 90
   rotationAxis: {x: 0, y: 1, z: 0}
---- !u!1001 &150478054418030025
+--- !u!1001 &4052530380519529854
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -389,11 +389,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4516585669790791155, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.178
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4516585669790791155, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.217
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4516585669790791155, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
       propertyPath: m_LocalRotation.w
@@ -427,15 +427,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: Weapon_Rifle
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7243241392649272683, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
-    - {fileID: 1840466360724175263, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
---- !u!4 &4375449635245516858 stripped
+--- !u!4 &473819505502955661 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4516585669790791155, guid: 71ad5927d45a012478b7d986e018f104, type: 3}
-  m_PrefabInstance: {fileID: 150478054418030025}
+  m_PrefabInstance: {fileID: 4052530380519529854}
   m_PrefabAsset: {fileID: 0}

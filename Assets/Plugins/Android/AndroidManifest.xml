@@ -4,6 +4,10 @@
   package="com.vectoarena.game"
   xmlns:tools="http://schemas.android.com/tools"
 >
+  <queries>
+    <!-- Required by Reown's installed-wallet detection on Android 11+. -->
+    <package android:name="io.metamask" />
+  </queries>
   <application>
     <activity
       android:name="com.unity3d.player.UnityPlayerActivity"

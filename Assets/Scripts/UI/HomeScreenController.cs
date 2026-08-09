@@ -31,6 +31,7 @@ public class HomeScreenController : MonoBehaviour
     private Button walletButton;
     private Label walletLabel;
     private bool isWalletConnected;
+    private bool isWalletConnectionInProgress;
 
     // Deposit Popup
     private VisualElement depositPopup;
@@ -309,6 +310,11 @@ public class HomeScreenController : MonoBehaviour
 
     private async void OnClickWallet()
     {
+        if (isWalletConnectionInProgress)
+        {
+            return;
+        }
+
         VectoAudioManager.Play2D(VectoAudioId.ButtonClickForward);
 
         if (isWalletConnected)
@@ -325,14 +331,24 @@ public class HomeScreenController : MonoBehaviour
             return;
         }
 
-        walletLabel.text = "...";
-        bool success = await Web3Manager.Instance.ConnectAndLinkWallet();
-        
-        RefreshWalletState();
-        if (success)
+        isWalletConnectionInProgress = true;
+        walletButton.SetEnabled(false);
+        walletLabel.text = "CONNECTING...";
+
+        try
         {
-            await PlayerInventory.LoadFromServer();
-            RefreshCurrencyDisplay();
+            bool success = await Web3Manager.Instance.ConnectAndLinkWallet();
+            if (success)
+            {
+                await PlayerInventory.LoadFromServer();
+                RefreshCurrencyDisplay();
+            }
+        }
+        finally
+        {
+            isWalletConnectionInProgress = false;
+            walletButton.SetEnabled(true);
+            RefreshWalletState();
         }
     }
 

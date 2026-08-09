@@ -125,6 +125,8 @@ namespace Reown.AppKit.Unity
 
         protected override async Task ConnectAsyncCore(Wallet wallet)
         {
+            const int connectionTimeoutMilliseconds = 120000;
+
             WalletUtils.SetLastViewedWallet(wallet);
 
 #if UNITY_STANDALONE || UNITY_WEBGL
@@ -198,11 +200,17 @@ namespace Reown.AppKit.Unity
 
                 Linker.OpenSessionProposalDeepLink(connectionProposal.Uri, baseUrl);
 
+                var timeoutTask = Task.Delay(connectionTimeoutMilliseconds);
+                var completedTask = await Task.WhenAny(tcsConnection.Task, timeoutTask);
+                if (completedTask != tcsConnection.Task)
+                    throw new TimeoutException("Wallet connection timed out. Return to the game and try again.");
+
                 await tcsConnection.Task;
             }
             finally
             {
                 ConnectorController.AccountConnected -= LocalAccountConnectedHandler;
+                connectionProposal.Dispose();
             }
         }
 

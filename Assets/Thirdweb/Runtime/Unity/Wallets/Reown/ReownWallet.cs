@@ -325,11 +325,16 @@ namespace Thirdweb.Unity
             {
                 await ThirdwebTask.Delay(250);
 
+                Task directConnectionTask = null;
+
                 if (!AppKit.ConnectorController.IsAccountConnected)
                 {
                     if (singleWalletId != null)
                     {
-                        await AppKit.ConnectAsync(singleWalletId);
+                        // Do not await here. The direct-connect task only completes after the
+                        // wallet responds, so awaiting it before Task.WhenAny made the timeout
+                        // below unreachable when MetaMask stalled on a slow device.
+                        directConnectionTask = AppKit.ConnectAsync(singleWalletId);
                     }
                     else
                     {
@@ -339,11 +344,20 @@ namespace Thirdweb.Unity
 
                 var timeoutMilliseconds = (int)Math.Max(0, timeout.TotalMilliseconds);
                 var timeoutTask = ThirdwebTask.Delay(timeoutMilliseconds);
-                var completedTask = await Task.WhenAny(connectedTcs.Task, timeoutTask);
+                var completedTask = directConnectionTask == null
+                    ? await Task.WhenAny(connectedTcs.Task, timeoutTask)
+                    : await Task.WhenAny(connectedTcs.Task, directConnectionTask, timeoutTask);
 
                 if (completedTask == connectedTcs.Task)
                 {
                     return await connectedTcs.Task;
+                }
+
+                if (directConnectionTask != null && completedTask == directConnectionTask)
+                {
+                    // Propagate direct-connect errors instead of leaving the UI waiting.
+                    await directConnectionTask;
+                    return AppKit.ConnectorController.IsAccountConnected;
                 }
 
                 ThirdwebDebug.LogWarning($"Reown connection timed out after {timeout.TotalSeconds} seconds.");

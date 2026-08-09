@@ -167,7 +167,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.vectoarena.game
     Standalone: com.Unity-Technologies.com.unity.template.urp-blank
-    iPhone: com.Unity-Technologies.com.unity.template.urp-blank
+    iPhone: com.vectoarena.game
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -234,7 +234,8 @@ PlayerSettings:
   iOSLaunchScreenCustomStoryboardPath: 
   iOSLaunchScreeniPadCustomStoryboardPath: 
   iOSDeviceRequirements: []
-  iOSURLSchemes: []
+  iOSURLSchemes:
+  - com.vectoarena.game
   macOSURLSchemes: []
   iOSBackgroundModes: 0
   iOSMetalForceHardShadows: 0
@@ -833,6 +834,7 @@ PlayerSettings:
   scriptingDefineSymbols:
     Android: THIRDWEB_REOWN
     Standalone: THIRDWEB_REOWN
+    iPhone: THIRDWEB_REOWN
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

@@ -5,6 +5,8 @@ using VectoArena.Schema;
 
 public class AmmoHUDController : MonoBehaviour
 {
+    private const float WeaponHudHorizontalOffset = 400f;
+
     [Header("HUD References")]
     [SerializeField] private TextMeshProUGUI ammoText;
     [SerializeField] private TextMeshProUGUI weaponLabel;
@@ -47,7 +49,13 @@ public class AmmoHUDController : MonoBehaviour
     private TextMeshProUGUI activeWeaponFallback;
     private TextMeshProUGUI ammoBadge;
     private GameObject switchPrompt;
+    private Image switchPromptBackground;
     private TextMeshProUGUI switchKeyLabel;
+
+    public RectTransform SwitchPromptRect => switchPrompt != null && switchPrompt.activeInHierarchy
+        ? switchPrompt.transform as RectTransform
+        : null;
+    public bool CanSwitchWeapon => switchPrompt != null && switchPrompt.activeInHierarchy;
 
     private void Awake()
     {
@@ -115,7 +123,8 @@ public class AmmoHUDController : MonoBehaviour
         hudRoot.anchorMin = new Vector2(0.5f, 0f);
         hudRoot.anchorMax = new Vector2(0.5f, 0f);
         hudRoot.pivot = new Vector2(0.5f, 0.5f);
-        hudRoot.anchoredPosition = new Vector2(340f, 96f);
+        // Leave enough room between the ammo badge and the centered health bar.
+        hudRoot.anchoredPosition = new Vector2(WeaponHudHorizontalOffset, 96f);
         hudCanvasGroup = hudRoot.gameObject.AddComponent<CanvasGroup>();
 
         inactiveSlotBg = CreateImage("InactiveSlot", hudRoot, softCircleSprite, new Color(0.09f, 0.09f, 0.12f, 0.72f));
@@ -165,15 +174,28 @@ public class AmmoHUDController : MonoBehaviour
 
         switchPrompt = new GameObject("SwitchKeyPrompt", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         switchPrompt.transform.SetParent(hudRoot, false);
-        Image promptBg = switchPrompt.GetComponent<Image>();
-        promptBg.sprite = circleSprite;
-        promptBg.color = new Color(0.94f, 0.77f, 0.86f, 0.95f);
+        switchPromptBackground = switchPrompt.GetComponent<Image>();
+        switchPromptBackground.sprite = circleSprite;
+        switchPromptBackground.color = new Color(0.94f, 0.77f, 0.86f, 0.95f);
         SetupRect((RectTransform)switchPrompt.transform, new Vector2(40f, 40f), new Vector2(48f, 48f));
 
         switchKeyLabel = CreateLabel("Key", (RectTransform)switchPrompt.transform, "1", 22, new Color(0.23f, 0.11f, 0.18f, 1f));
         switchKeyLabel.alignment = TextAlignmentOptions.Center;
         switchKeyLabel.fontStyle = FontStyles.Bold;
         SetupRect(switchKeyLabel.rectTransform, new Vector2(36f, 36f), Vector2.zero);
+    }
+
+    public void SetMobileSwitchPromptReplacement(bool replacedByMobileButton)
+    {
+        if (switchPromptBackground != null)
+        {
+            switchPromptBackground.enabled = !replacedByMobileButton;
+        }
+
+        if (switchKeyLabel != null)
+        {
+            switchKeyLabel.enabled = !replacedByMobileButton;
+        }
     }
 
     private void UpdateBlastStyleHud(PlayerState state)

@@ -10,6 +10,8 @@ public class Health : MonoBehaviour
 
     [Header("Health Bar")] public Image healthBarFill;
 
+    private PlayerHealthBarUI playerHealthBar;
+
     // Fired when the local player loses HP. Argument is the damage amount (positive).
     public static event Action<float> OnLocalPlayerDamaged;
 
@@ -56,16 +58,31 @@ public class Health : MonoBehaviour
 
     private void TryResolveHealthBarFill()
     {
-        if (healthBarFill != null || healthBarLookupDone) return;
+        if (healthBarLookupDone) return;
         if (cachedSync == null || !cachedSync.isLocalPlayer) return;
 
         healthBarLookupDone = true;
-        var hpImageObj = GameObject.Find("HealthFill");
-        if (hpImageObj != null)
+        var healthBarObject = GameObject.Find("PlayerHealthBar");
+        if (healthBarObject != null)
         {
-            healthBarFill = hpImageObj.GetComponent<Image>();
+            playerHealthBar = healthBarObject.GetComponent<PlayerHealthBarUI>();
         }
-        else
+
+        if (healthBarFill == null && playerHealthBar != null)
+        {
+            healthBarFill = playerHealthBar.HealthFill;
+        }
+
+        if (healthBarFill == null)
+        {
+            var hpImageObj = GameObject.Find("HealthFill");
+            if (hpImageObj != null)
+            {
+                healthBarFill = hpImageObj.GetComponent<Image>();
+            }
+        }
+
+        if (healthBarFill == null)
         {
             Debug.LogWarning("[Health] Cannot find GameObject named HealthFill");
         }
@@ -79,6 +96,8 @@ public class Health : MonoBehaviour
             if (healthBarFill == null) return;
         }
 
-        healthBarFill.fillAmount = currentHealth / maxHealth;
+        float normalizedHealth = maxHealth > 0f ? Mathf.Clamp01(currentHealth / maxHealth) : 0f;
+        healthBarFill.fillAmount = normalizedHealth;
+        playerHealthBar?.SetHealth(currentHealth, maxHealth);
     }
 }

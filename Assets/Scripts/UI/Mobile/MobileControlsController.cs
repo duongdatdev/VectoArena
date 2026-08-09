@@ -17,7 +17,14 @@ public sealed class MobileControlsController : MonoBehaviour
     private MobileJoystickElement movementJoystick;
     private MobileJoystickElement aimingJoystick;
     private Button weaponSwitchButton;
+    private VisualElement weaponSwitchVisual;
+    private VisualElement weaponSwitchIcon;
     private PlayerController localPlayer;
+    private AmmoHUDController ammoHud;
+    private readonly Vector3[] switchPromptWorldCorners = new Vector3[4];
+    private Rect lastSwitchPromptPanelRect;
+    private Rect lastSwitchParentBounds;
+    private bool switchLayoutValid;
     private bool isFocused = true;
     private bool controlsEnabled;
 
@@ -89,6 +96,8 @@ public sealed class MobileControlsController : MonoBehaviour
         movementJoystick = instance.Q<MobileJoystickElement>("LeftJoystick");
         aimingJoystick = instance.Q<MobileJoystickElement>("RightJoystick");
         weaponSwitchButton = instance.Q<Button>("WeaponSwitchButton");
+        weaponSwitchVisual = instance.Q<VisualElement>("WeaponSwitchVisual");
+        weaponSwitchIcon = instance.Q<VisualElement>("WeaponSwitchIcon");
         deathOverlay = document.rootVisualElement.Q<VisualElement>("DeathScreenContainer");
 
         if (controlsRoot == null || movementJoystick == null || aimingJoystick == null || weaponSwitchButton == null)
@@ -136,6 +145,7 @@ public sealed class MobileControlsController : MonoBehaviour
         }
 
         ReleaseLocalPlayer();
+        ammoHud?.SetMobileSwitchPromptReplacement(false);
         controlsRoot?.RemoveFromHierarchy();
     }
 
@@ -147,6 +157,7 @@ public sealed class MobileControlsController : MonoBehaviour
         }
 
         RefreshVisibility(false);
+        SyncWeaponSwitchPresentation();
     }
 
     private void OnApplicationFocus(bool hasFocus)
@@ -236,6 +247,89 @@ public sealed class MobileControlsController : MonoBehaviour
     private void OnGeometryChanged(GeometryChangedEvent evt)
     {
         controlsRoot.EnableInClassList("mobile-controls--compact", evt.newRect.height > 0f && evt.newRect.height < 760f);
+        switchLayoutValid = false;
+        SyncWeaponSwitchPresentation();
+    }
+
+    private void SyncWeaponSwitchPresentation()
+    {
+        if (weaponSwitchButton == null || weaponSwitchButton.panel == null)
+        {
+            return;
+        }
+
+        if (ammoHud == null)
+        {
+            ammoHud = FindAnyObjectByType<AmmoHUDController>();
+        }
+
+        if (ammoHud == null)
+        {
+            return;
+        }
+
+        ammoHud.SetMobileSwitchPromptReplacement(controlsEnabled);
+        RectTransform promptRect = ammoHud.SwitchPromptRect;
+        bool showButton = controlsEnabled && ammoHud.CanSwitchWeapon && promptRect != null;
+        weaponSwitchButton.style.display = showButton ? DisplayStyle.Flex : DisplayStyle.None;
+        if (!showButton)
+        {
+            switchLayoutValid = false;
+            return;
+        }
+
+        Canvas canvas = promptRect.GetComponentInParent<Canvas>();
+        Camera canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        promptRect.GetWorldCorners(switchPromptWorldCorners);
+        Vector2 screenBottomLeft = RectTransformUtility.WorldToScreenPoint(canvasCamera, switchPromptWorldCorners[0]);
+        Vector2 screenTopRight = RectTransformUtility.WorldToScreenPoint(canvasCamera, switchPromptWorldCorners[2]);
+        Vector2 panelTopLeft = RuntimePanelUtils.ScreenToPanel(
+            weaponSwitchButton.panel,
+            new Vector2(screenBottomLeft.x, Screen.height - screenTopRight.y));
+        Vector2 panelBottomRight = RuntimePanelUtils.ScreenToPanel(
+            weaponSwitchButton.panel,
+            new Vector2(screenTopRight.x, Screen.height - screenBottomLeft.y));
+
+        Vector2 promptSize = panelBottomRight - panelTopLeft;
+        float visualSize = Mathf.Max(promptSize.x, promptSize.y) * 1.18f;
+        // Keep the visible control only slightly larger than the old "1" prompt,
+        // while retaining a comfortable touch target around it.
+        float buttonSize = Mathf.Max(64f, visualSize);
+        Vector2 center = (panelTopLeft + panelBottomRight) * 0.5f;
+        Rect parentBounds = weaponSwitchButton.parent.worldBound;
+        Rect promptPanelRect = new Rect(panelTopLeft, promptSize);
+
+        if (switchLayoutValid && promptPanelRect == lastSwitchPromptPanelRect && parentBounds == lastSwitchParentBounds)
+        {
+            return;
+        }
+
+        lastSwitchPromptPanelRect = promptPanelRect;
+        lastSwitchParentBounds = parentBounds;
+        switchLayoutValid = true;
+
+        weaponSwitchButton.style.right = StyleKeyword.Auto;
+        weaponSwitchButton.style.bottom = StyleKeyword.Auto;
+        weaponSwitchButton.style.left = center.x - parentBounds.xMin - buttonSize * 0.5f;
+        weaponSwitchButton.style.top = center.y - parentBounds.yMin - buttonSize * 0.5f;
+        weaponSwitchButton.style.width = buttonSize;
+        weaponSwitchButton.style.height = buttonSize;
+
+        if (weaponSwitchVisual != null)
+        {
+            weaponSwitchVisual.style.width = visualSize;
+            weaponSwitchVisual.style.height = visualSize;
+        }
+
+        if (weaponSwitchIcon != null)
+        {
+            float iconSize = visualSize * 0.78f;
+            weaponSwitchIcon.style.width = iconSize;
+            weaponSwitchIcon.style.height = iconSize;
+        }
     }
 
     private void OnMoveChanged(Vector2 value)

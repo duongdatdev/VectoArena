@@ -10,7 +10,9 @@
                 <VectoArena.UI.MobileJoystickElement name="RightJoystick" class="mobile-joystick--aim" />
             </ui:VisualElement>
             <ui:Button name="WeaponSwitchButton" class="mobile-weapon-switch" tooltip="Switch weapon">
-                <ui:VisualElement name="WeaponSwitchIcon" class="mobile-weapon-switch__icon" />
+                <ui:VisualElement name="WeaponSwitchVisual" class="mobile-weapon-switch__visual">
+                    <ui:VisualElement name="WeaponSwitchIcon" class="mobile-weapon-switch__icon" />
+                </ui:VisualElement>
             </ui:Button>
         </VectoArena.UI.SafeAreaElement>
     </ui:VisualElement>

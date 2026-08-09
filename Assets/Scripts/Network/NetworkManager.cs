@@ -165,7 +165,7 @@ public class NetworkManager : MonoBehaviour
                     var result = JsonConvert.DeserializeObject<LoginResponse>(responseString);
                     authToken = result.token;
                     await PlayerInventory.LoadFromServer();
-                    Debug.Log("Login successful! Token: " + authToken);
+                    // Debug.Log("Login successful! Token: " + authToken);
                     return true;
                 }
 

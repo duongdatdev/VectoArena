@@ -124,6 +124,20 @@
     padding-right: 0;
     padding-top: 0;
     padding-bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.mobile-weapon-switch__visual {
+    width: 104px;
+    height: 104px;
+    align-items: center;
+    justify-content: center;
     border-left-width: 4px;
     border-right-width: 4px;
     border-top-width: 4px;
@@ -139,8 +153,8 @@
     background-color: rgba(49, 45, 71, 0.34);
 }
 
-.mobile-weapon-switch:hover,
-.mobile-weapon-switch:active {
+.mobile-weapon-switch:hover .mobile-weapon-switch__visual,
+.mobile-weapon-switch:active .mobile-weapon-switch__visual {
     background-color: rgba(242, 176, 53, 0.46);
     border-left-color: rgba(255, 255, 255, 0.75);
     border-right-color: rgba(255, 255, 255, 0.75);
@@ -149,8 +163,8 @@
 }
 
 .mobile-weapon-switch__icon {
-    width: 104px;
-    height: 104px;
+    width: 82px;
+    height: 82px;
     align-self: center;
     background-image: url("project://database/Assets/Art/UI/Sprites/Match/icon-weaponswitch.png");
     -unity-background-scale-mode: scale-to-fit;
@@ -185,6 +199,6 @@
 }
 
 .mobile-controls--compact .mobile-weapon-switch__icon {
-    width: 84px;
-    height: 84px;
+    width: 66px;
+    height: 66px;
 }

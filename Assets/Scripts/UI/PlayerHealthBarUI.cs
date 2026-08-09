@@ -16,6 +16,8 @@ public sealed class PlayerHealthBarUI : MonoBehaviour
     [SerializeField, Min(0.01f)] private float damageCatchUpDuration = 1.15f;
 
     private Coroutine damageAnimation;
+    private float lastNormalizedHealth;
+    private bool hasHealthValue;
 
     public Image HealthFill => healthFill;
 
@@ -56,15 +58,34 @@ public sealed class PlayerHealthBarUI : MonoBehaviour
             return;
         }
 
+        if (!hasHealthValue)
+        {
+            lastNormalizedHealth = normalized;
+            hasHealthValue = true;
+            damageFill.fillAmount = normalized;
+            return;
+        }
+
+        // NetworkPlayerSync sends the authoritative HP every frame. Repeated values
+        // must not restart the delayed damage animation, or the red layer never fades.
+        if (Mathf.Approximately(normalized, lastNormalizedHealth))
+        {
+            return;
+        }
+
+        bool tookDamage = normalized < lastNormalizedHealth;
+        lastNormalizedHealth = normalized;
+
         if (damageAnimation != null)
         {
             StopCoroutine(damageAnimation);
+            damageAnimation = null;
         }
 
-        if (normalized >= damageFill.fillAmount)
+        // Healing is reflected immediately. Only HP loss uses the delayed red layer.
+        if (!tookDamage)
         {
             damageFill.fillAmount = normalized;
-            damageAnimation = null;
             return;
         }
 

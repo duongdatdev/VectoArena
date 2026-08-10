@@ -1,10 +1,10 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_IOS
 using System;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using UnityEditor.iOS.Xcode;
 
 public static class IOSWalletBuildPostprocessor
 {
@@ -22,32 +22,34 @@ public static class IOSWalletBuildPostprocessor
         }
 
         string plistPath = Path.Combine(buildPath, "Info.plist");
-        XDocument plist = XDocument.Load(plistPath, LoadOptions.PreserveWhitespace);
-        XElement rootDictionary = plist.Root?.Element("dict")
-            ?? throw new InvalidOperationException("Generated iOS Info.plist has no root dictionary.");
+        PlistDocument plist = new PlistDocument();
+        plist.ReadFromFile(plistPath);
 
-        XElement querySchemes = GetOrCreateArray(rootDictionary, "LSApplicationQueriesSchemes");
+        PlistElementArray querySchemes = GetOrCreateArray(
+            plist.root,
+            "LSApplicationQueriesSchemes");
         foreach (string scheme in WalletQuerySchemes)
         {
-            bool alreadyRegistered = querySchemes.Elements("string")
-                .Any(element => string.Equals(element.Value, scheme, StringComparison.OrdinalIgnoreCase));
+            bool alreadyRegistered = querySchemes.values
+                .Any(element => string.Equals(
+                    element.AsString(),
+                    scheme,
+                    StringComparison.OrdinalIgnoreCase));
 
             if (!alreadyRegistered)
             {
-                querySchemes.Add(new XElement("string", scheme));
+                querySchemes.AddString(scheme);
             }
         }
 
-        plist.Save(plistPath, SaveOptions.DisableFormatting);
+        plist.WriteToFile(plistPath);
     }
 
-    private static XElement GetOrCreateArray(XElement dictionary, string keyName)
+    private static PlistElementArray GetOrCreateArray(PlistElementDict dictionary, string keyName)
     {
-        XElement key = dictionary.Elements("key").FirstOrDefault(element => element.Value == keyName);
-        if (key != null)
+        if (dictionary.values.TryGetValue(keyName, out PlistElement existingElement))
         {
-            XElement existingArray = key.ElementsAfterSelf().FirstOrDefault();
-            if (existingArray?.Name == "array")
+            if (existingElement is PlistElementArray existingArray)
             {
                 return existingArray;
             }
@@ -55,10 +57,7 @@ public static class IOSWalletBuildPostprocessor
             throw new InvalidOperationException($"Info.plist key '{keyName}' is not an array.");
         }
 
-        key = new XElement("key", keyName);
-        XElement array = new XElement("array");
-        dictionary.Add(key, array);
-        return array;
+        return dictionary.CreateArray(keyName);
     }
 }
 #endif

@@ -355,9 +355,22 @@ namespace Thirdweb.Unity
 
                 if (directConnectionTask != null && completedTask == directConnectionTask)
                 {
-                    // Propagate direct-connect errors instead of leaving the UI waiting.
+                    // On Standalone, AppKit.ConnectAsync completes as soon as it opens the
+                    // wallet modal. It does not mean that the user has connected or cancelled.
+                    // Still await it to propagate setup/API errors, then keep waiting for the
+                    // AccountConnected event (or a real modal close/timeout).
                     await directConnectionTask;
-                    return AppKit.ConnectorController.IsAccountConnected;
+
+                    if (AppKit.ConnectorController.IsAccountConnected)
+                    {
+                        return true;
+                    }
+
+                    completedTask = await Task.WhenAny(connectedTcs.Task, timeoutTask);
+                    if (completedTask == connectedTcs.Task)
+                    {
+                        return await connectedTcs.Task;
+                    }
                 }
 
                 ThirdwebDebug.LogWarning($"Reown connection timed out after {timeout.TotalSeconds} seconds.");

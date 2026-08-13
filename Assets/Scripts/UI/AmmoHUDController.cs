@@ -7,12 +7,6 @@ public class AmmoHUDController : MonoBehaviour
 {
     private const float WeaponHudHorizontalOffset = 400f;
 
-    [Header("HUD References")]
-    [SerializeField] private TextMeshProUGUI ammoText;
-    [SerializeField] private TextMeshProUGUI weaponLabel;
-    [SerializeField] private Image weaponIcon;
-    [SerializeField] private GameObject root;
-
     [Header("Weapon Icons")]
     [SerializeField] private Sprite swordIcon;
     [SerializeField] private Sprite rifleIcon;
@@ -33,9 +27,6 @@ public class AmmoHUDController : MonoBehaviour
     private static Sprite softCircleSprite;
 
     private NetworkPlayerSync localPlayerSync;
-    private CanvasGroup rootCanvasGroup;
-    private bool usesCanvasGroupVisibility;
-    private bool legacyRootDetached;
 
     private RectTransform hudRoot;
     private CanvasGroup hudCanvasGroup;
@@ -49,8 +40,6 @@ public class AmmoHUDController : MonoBehaviour
     private TextMeshProUGUI activeWeaponFallback;
     private TextMeshProUGUI ammoBadge;
     private GameObject switchPrompt;
-    private Image switchPromptBackground;
-    private TextMeshProUGUI switchKeyLabel;
 
     public RectTransform SwitchPromptRect => switchPrompt != null && switchPrompt.activeInHierarchy
         ? switchPrompt.transform as RectTransform
@@ -59,22 +48,6 @@ public class AmmoHUDController : MonoBehaviour
 
     private void Awake()
     {
-        if (root == null)
-        {
-            root = gameObject;
-        }
-
-        usesCanvasGroupVisibility = root == gameObject;
-        if (usesCanvasGroupVisibility)
-        {
-            rootCanvasGroup = root.GetComponent<CanvasGroup>();
-            if (rootCanvasGroup == null)
-            {
-                rootCanvasGroup = root.AddComponent<CanvasGroup>();
-            }
-        }
-
-        HideLegacyHudElements();
         LoadBlastRoyaleWeaponIcons();
         BuildBlastStyleHud();
     }
@@ -107,17 +80,14 @@ public class AmmoHUDController : MonoBehaviour
     {
         EnsureGeneratedSprites();
 
-        Canvas canvas = root.GetComponentInParent<Canvas>();
+        Canvas canvas = GetComponentInParent<Canvas>();
         RectTransform parent = canvas != null
             ? canvas.GetComponent<RectTransform>()
-            : root.GetComponent<RectTransform>();
+            : GetComponent<RectTransform>();
         if (parent == null)
         {
             return;
         }
-
-        RectTransform rootRect = root.GetComponent<RectTransform>();
-        legacyRootDetached = rootRect != null && parent != rootRect;
 
         hudRoot = CreateRect("BlastWeaponHud", parent, new Vector2(190f, 126f), new Vector2(0f, 0f));
         hudRoot.anchorMin = new Vector2(0.5f, 0f);
@@ -172,30 +142,14 @@ public class AmmoHUDController : MonoBehaviour
         ammoBadge.textWrappingMode = TextWrappingModes.NoWrap;
         SetupRect(ammoBadge.rectTransform, new Vector2(62f, 44f), new Vector2(-84f, -2f));
 
-        switchPrompt = new GameObject("SwitchKeyPrompt", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        switchPrompt = new GameObject("SwitchKeyPrompt", typeof(RectTransform));
         switchPrompt.transform.SetParent(hudRoot, false);
-        switchPromptBackground = switchPrompt.GetComponent<Image>();
-        switchPromptBackground.sprite = circleSprite;
-        switchPromptBackground.color = new Color(0.94f, 0.77f, 0.86f, 0.95f);
         SetupRect((RectTransform)switchPrompt.transform, new Vector2(40f, 40f), new Vector2(48f, 48f));
-
-        switchKeyLabel = CreateLabel("Key", (RectTransform)switchPrompt.transform, "1", 22, new Color(0.23f, 0.11f, 0.18f, 1f));
-        switchKeyLabel.alignment = TextAlignmentOptions.Center;
-        switchKeyLabel.fontStyle = FontStyles.Bold;
-        SetupRect(switchKeyLabel.rectTransform, new Vector2(36f, 36f), Vector2.zero);
     }
 
     public void SetMobileSwitchPromptReplacement(bool replacedByMobileButton)
     {
-        if (switchPromptBackground != null)
-        {
-            switchPromptBackground.enabled = !replacedByMobileButton;
-        }
-
-        if (switchKeyLabel != null)
-        {
-            switchKeyLabel.enabled = !replacedByMobileButton;
-        }
+        // The prompt itself is only an invisible anchor used by the mobile switch button.
     }
 
     private void UpdateBlastStyleHud(PlayerState state)
@@ -231,12 +185,6 @@ public class AmmoHUDController : MonoBehaviour
     {
         int ammo = Mathf.Max(0, Mathf.RoundToInt(state.ammo));
 
-        if (ammoText != null)
-        {
-            ammoText.text = isMeleeWeapon ? string.Empty : ammo.ToString();
-            ammoText.color = ammo > 0 ? readyAmmoColor : emptyAmmoColor;
-        }
-
         if (ammoBadge == null)
         {
             return;
@@ -251,17 +199,6 @@ public class AmmoHUDController : MonoBehaviour
     {
         Sprite icon = GetIconForWeapon(weaponName);
         string fallbackText = GetFallbackText(weaponName);
-
-        if (weaponIcon != null)
-        {
-            weaponIcon.sprite = icon;
-            weaponIcon.enabled = false;
-        }
-
-        if (weaponLabel != null)
-        {
-            weaponLabel.text = string.Empty;
-        }
 
         if (targetIcon != null)
         {
@@ -328,24 +265,6 @@ public class AmmoHUDController : MonoBehaviour
         return weaponName.Length <= 6 ? weaponName.ToUpperInvariant() : weaponName.Substring(0, 6).ToUpperInvariant();
     }
 
-    private void HideLegacyHudElements()
-    {
-        if (ammoText != null)
-        {
-            ammoText.text = string.Empty;
-        }
-
-        if (weaponLabel != null)
-        {
-            weaponLabel.text = string.Empty;
-        }
-
-        if (weaponIcon != null)
-        {
-            weaponIcon.enabled = false;
-        }
-    }
-
     private void SetVisible(bool visible)
     {
         if (hudCanvasGroup != null)
@@ -355,33 +274,6 @@ public class AmmoHUDController : MonoBehaviour
             hudCanvasGroup.blocksRaycasts = visible;
         }
 
-        if (root == null)
-        {
-            return;
-        }
-
-        if (legacyRootDetached)
-        {
-            if (root.activeSelf)
-            {
-                root.SetActive(false);
-            }
-
-            return;
-        }
-
-        if (usesCanvasGroupVisibility && rootCanvasGroup != null)
-        {
-            rootCanvasGroup.alpha = visible ? 1f : 0f;
-            rootCanvasGroup.interactable = false;
-            rootCanvasGroup.blocksRaycasts = false;
-            return;
-        }
-
-        if (root.activeSelf != visible)
-        {
-            root.SetActive(visible);
-        }
     }
 
     private NetworkPlayerSync FindLocalPlayerSync()
@@ -495,4 +387,5 @@ public class AmmoHUDController : MonoBehaviour
         texture.Apply();
         return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
     }
+
 }

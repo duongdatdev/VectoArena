@@ -151,30 +151,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (mobileControlsActive && mobileAimInput.sqrMagnitude > 0.001f)
-        {
-            Vector3 lookDirection = GetCameraRelativeDirection(mobileAimInput);
-            if (lookDirection.sqrMagnitude > 0.001f)
-            {
-                transform.forward = lookDirection;
-            }
-        }
-        else if (!mobileControlsActive && mainCam != null)
-        {
-            Ray ray = mainCam.ScreenPointToRay(mousePos);
-            Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
-
-            if (groundPlane.Raycast(ray, out float rayDistance))
-            {
-                Vector3 point = ray.GetPoint(rayDistance);
-                Vector3 lookDirection = point - transform.position;
-                lookDirection.y = 0f;
-                if (lookDirection.sqrMagnitude > 0.001f)
-                {
-                    transform.forward = lookDirection;
-                }
-            }
-        }
+        UpdateFacingDirection();
 
         HandleWeaponSwitchInput();
         SyncWeaponStateFromServer();
@@ -474,6 +451,52 @@ public class PlayerController : MonoBehaviour
         }
 
         return MobileInputMath.CameraRelativeDirection(input, referenceCamera.transform.right, referenceCamera.transform.forward);
+    }
+
+    private void UpdateFacingDirection()
+    {
+        Vector3 lookDirection = Vector3.zero;
+
+        // Aim takes priority only while the player is actively attacking.
+        if (IsShootHeld())
+        {
+            lookDirection = mobileControlsActive
+                ? GetCameraRelativeDirection(mobileAimInput)
+                : GetMouseAimDirection();
+        }
+
+        // During normal movement, face the direction the character is travelling.
+        if (lookDirection.sqrMagnitude <= 0.001f)
+        {
+            Vector2 activeMoveInput = mobileControlsActive ? mobileMoveInput : moveInput;
+            lookDirection = mobileControlsActive
+                ? GetCameraRelativeDirection(activeMoveInput)
+                : new Vector3(activeMoveInput.x, 0f, activeMoveInput.y);
+        }
+
+        if (lookDirection.sqrMagnitude > 0.001f)
+        {
+            transform.forward = lookDirection.normalized;
+        }
+    }
+
+    private Vector3 GetMouseAimDirection()
+    {
+        if (mainCam == null)
+        {
+            return Vector3.zero;
+        }
+
+        Ray ray = mainCam.ScreenPointToRay(mousePos);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        if (!groundPlane.Raycast(ray, out float rayDistance))
+        {
+            return Vector3.zero;
+        }
+
+        Vector3 lookDirection = ray.GetPoint(rayDistance) - transform.position;
+        lookDirection.y = 0f;
+        return lookDirection;
     }
 
     public void SyncWeaponStateFromServer()

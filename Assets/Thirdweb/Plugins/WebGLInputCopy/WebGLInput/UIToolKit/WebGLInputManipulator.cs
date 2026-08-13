@@ -20,7 +20,6 @@ namespace WebGLSupport
             {
                 var textInput = target.Q("unity-text-input");
                 textInput.RegisterCallback<FocusInEvent>(OnFocusInEvent);
-                textInput.RegisterCallback<FocusOutEvent>(OnFocusOutEvent);
             }
         }
 
@@ -31,7 +30,12 @@ namespace WebGLSupport
             {
                 var textInput = target.Q("unity-text-input");
                 textInput.UnregisterCallback<FocusInEvent>(OnFocusInEvent);
-                textInput.UnregisterCallback<FocusOutEvent>(OnFocusOutEvent);
+            }
+
+            if (go != null)
+            {
+                GameObject.Destroy(go);
+                go = null;
             }
         }
 
@@ -57,13 +61,5 @@ namespace WebGLSupport
             webglInput.OnSelect();
         }
 
-        private void OnFocusOutEvent(FocusOutEvent evt)
-        {
-            if (go != null)
-            {
-                GameObject.Destroy(go);
-                go = null;
-            }
-        }
     }
 }

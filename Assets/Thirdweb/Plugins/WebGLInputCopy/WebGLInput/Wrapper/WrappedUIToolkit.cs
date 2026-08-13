@@ -35,8 +35,11 @@ namespace WebGLSupport
 
         public int fontSize
         {
-            /// MEMO : how to get the fontsize?
-            get { return 20; }
+            get
+            {
+                var textInput = input.Q("unity-text-input");
+                return Mathf.Max(14, Mathf.RoundToInt(textInput.resolvedStyle.fontSize));
+            }
         }
 
         public ContentType contentType
@@ -90,7 +93,12 @@ namespace WebGLSupport
 
         public bool isFocused
         {
-            get { return true; }
+            get
+            {
+                var focusedElement = input.focusController?.focusedElement as VisualElement;
+                return focusedElement != null &&
+                       (focusedElement == input || input.Contains(focusedElement));
+            }
         }
 
         public int selectionFocusPosition

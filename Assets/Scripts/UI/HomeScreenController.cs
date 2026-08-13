@@ -44,6 +44,10 @@ public class HomeScreenController : MonoBehaviour
     private Label transactionHistoryStatus;
     private VisualElement transactionHistoryList;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+    private WebGLSupport.WebGLInputManipulator depositAmountWebGLInput;
+#endif
+
     // Popups
     public SettingsPopupController settingsController;
     public StoreScreenController storeController;
@@ -97,6 +101,8 @@ public class HomeScreenController : MonoBehaviour
         transactionHistoryButton = root.Q<Button>("TransactionHistoryButton");
         transactionHistoryStatus = root.Q<Label>("TransactionHistoryStatus");
         transactionHistoryList = root.Q<VisualElement>("TransactionHistoryList");
+
+        ConfigureWebGLTextInput();
 
         matchmakingContainer = root.Q<VisualElement>("Matchmaking");
         matchTimer = root.Q<Label>("MatchTimer");
@@ -153,6 +159,27 @@ public class HomeScreenController : MonoBehaviour
 
         PlayerInventory.Changed -= RefreshPlayerProfileDisplay;
         collectionController?.Dispose();
+        RemoveWebGLTextInput();
+    }
+
+    private void ConfigureWebGLTextInput()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (depositAmountField == null || depositAmountWebGLInput != null) return;
+
+        depositAmountWebGLInput = new WebGLSupport.WebGLInputManipulator(showHtmlElement: true);
+        depositAmountField.AddManipulator(depositAmountWebGLInput);
+#endif
+    }
+
+    private void RemoveWebGLTextInput()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (depositAmountField == null || depositAmountWebGLInput == null) return;
+
+        depositAmountField.RemoveManipulator(depositAmountWebGLInput);
+        depositAmountWebGLInput = null;
+#endif
     }
 
     // =============== CURRENCY DISPLAY ===============

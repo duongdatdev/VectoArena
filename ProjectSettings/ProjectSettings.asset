@@ -167,6 +167,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.vectoarena.game
     Standalone: com.Unity-Technologies.com.unity.template.urp-blank
+    WebGL: com.vectoarena.game
     iPhone: com.vectoarena.game
   buildNumber:
     Standalone: 0
@@ -297,7 +298,7 @@ PlayerSettings:
   AndroidReportGooglePlayAppDependencies: 1
   androidSymbolsSizeThreshold: 800
   m_BuildTargetIcons:
-  - m_BuildTarget:
+  - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
       m_Icon: {fileID: 2800000, guid: c0d7f62c9d4f4497b66ca1e4c41283de, type: 3}
@@ -561,6 +562,9 @@ PlayerSettings:
     m_DynamicBatching: 0
   - m_BuildTarget: Android
     m_StaticBatching: 1
+    m_DynamicBatching: 0
+  - m_BuildTarget: WebGL
+    m_StaticBatching: 0
     m_DynamicBatching: 0
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs: []
@@ -849,8 +853,8 @@ PlayerSettings:
   webGLWasmArithmeticExceptions: 0
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
-  webGLDecompressionFallback: 0
-  webGLInitialMemorySize: 32
+  webGLDecompressionFallback: 1
+  webGLInitialMemorySize: 256
   webGLMaximumMemorySize: 2048
   webGLMemoryGrowthMode: 2
   webGLMemoryLinearGrowthStep: 16
@@ -865,6 +869,7 @@ PlayerSettings:
   scriptingDefineSymbols:
     Android: THIRDWEB_REOWN
     Standalone: THIRDWEB_REOWN
+    WebGL: THIRDWEB_REOWN
     iPhone: THIRDWEB_REOWN
   additionalCompilerArguments: {}
   platformArchitecture: {}
@@ -974,7 +979,7 @@ PlayerSettings:
   hmiLoadingImage: {fileID: 0}
   platformRequiresReadableAssets: 0
   virtualTexturingSupportEnabled: 0
-  insecureHttpOption: 1
+  insecureHttpOption: 0
   androidVulkanDenyFilterList: []
   androidVulkanAllowFilterList: []
   androidVulkanDeviceFilterListAsset: {fileID: 0}

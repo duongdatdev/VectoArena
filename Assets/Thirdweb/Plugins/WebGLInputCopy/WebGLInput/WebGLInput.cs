@@ -289,7 +289,6 @@ namespace WebGLSupport
             WebGLInputPlugin.WebGLInputOnBlur(id, OnBlur);
             WebGLInputPlugin.WebGLInputOnValueChange(id, OnValueChange);
             WebGLInputPlugin.WebGLInputOnEditEnd(id, OnEditEnd);
-            WebGLInputPlugin.WebGLInputOnKeyboardEvent(id, OnKeyboardEvent);
             WebGLInputPlugin.WebGLInputTab(id, OnTab);
 
             // default value : https://www.w3schools.com/tags/att_input_maxlength.asp
@@ -339,6 +338,12 @@ namespace WebGLSupport
             if (!instances.ContainsKey(id))
                 return;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // WebGLInputDelete suppresses the DOM blur callback during teardown,
+            // so restore Unity keyboard capture explicitly before deleting it.
+            UnityEngine.WebGLInput.captureAllKeyboardInput = true;
+            Input.ResetInputAxes();
+#endif
             WebGLInputPlugin.WebGLInputDelete(id);
             input.DeactivateInputField();
             instances.Remove(id);
@@ -362,7 +367,14 @@ namespace WebGLSupport
             UnityEngine.WebGLInput.captureAllKeyboardInput = true;
             Input.ResetInputAxes(); // Inputの状態リセット
 #endif
-            instances[id].StartCoroutine(Blur(id));
+            if (!instances.TryGetValue(id, out WebGLInput instance) ||
+                instance == null ||
+                !instance.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            instance.StartCoroutine(Blur(id));
         }
 
         static IEnumerator Blur(int id)

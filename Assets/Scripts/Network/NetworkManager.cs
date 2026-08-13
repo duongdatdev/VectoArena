@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using VectoArena.Schema;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using UnityEngine.Networking;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -28,6 +29,16 @@ public class NetworkManager : MonoBehaviour
     private string authToken;
     public string LastErrorMessage { get; private set; }
 
+    private sealed class HttpResult
+    {
+        public long StatusCode;
+        public string Body;
+        public string Error;
+
+        public bool IsSuccessStatusCode => StatusCode >= 200 && StatusCode < 300;
+    }
+
+#if !UNITY_WEBGL || UNITY_EDITOR
     private static readonly HttpClient SharedHttpClient = CreateSharedHttpClient();
 
     private static HttpClient CreateSharedHttpClient()
@@ -39,6 +50,72 @@ public class NetworkManager : MonoBehaviour
         httpClient.DefaultRequestHeaders.Accept.Clear();
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         return httpClient;
+    }
+#endif
+
+    private static async Task<HttpResult> SendHttpRequestAsync(
+        HttpMethod method,
+        string url,
+        string json = null,
+        string bearerToken = null)
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        using (var request = new UnityWebRequest(url, method.Method))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.timeout = 30;
+            request.SetRequestHeader("Accept", "application/json");
+
+            if (json != null)
+            {
+                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                request.SetRequestHeader("Content-Type", "application/json");
+            }
+
+            if (!string.IsNullOrEmpty(bearerToken))
+            {
+                request.SetRequestHeader("Authorization", "Bearer " + bearerToken);
+            }
+
+            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+            if (!operation.isDone)
+            {
+                var completionSource = new TaskCompletionSource<bool>();
+                operation.completed += _ => completionSource.TrySetResult(true);
+                await completionSource.Task;
+            }
+
+            return new HttpResult
+            {
+                StatusCode = request.responseCode,
+                Body = request.downloadHandler != null ? request.downloadHandler.text : string.Empty,
+                Error = request.error
+            };
+        }
+#else
+        using (var request = new HttpRequestMessage(method, url))
+        {
+            if (!string.IsNullOrEmpty(bearerToken))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            }
+
+            if (json != null)
+            {
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            }
+
+            using (HttpResponseMessage response = await SharedHttpClient.SendAsync(request))
+            {
+                return new HttpResult
+                {
+                    StatusCode = (long)response.StatusCode,
+                    Body = await response.Content.ReadAsStringAsync(),
+                    Error = response.ReasonPhrase
+                };
+            }
+        }
+#endif
     }
 
     [Header("Prefabs")]
@@ -156,24 +233,25 @@ public class NetworkManager : MonoBehaviour
         try
         {
             LastErrorMessage = null;
-            using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
+            HttpResult response = await SendHttpRequestAsync(
+                HttpMethod.Post,
+                $"{HttpURL}/auth/login",
+                json);
+            if (response.IsSuccessStatusCode)
             {
-                var response = await SharedHttpClient.PostAsync($"{HttpURL}/auth/login", content);
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<LoginResponse>(responseString);
-                    authToken = result.token;
-                    await PlayerInventory.LoadFromServer();
-                    // Debug.Log("Login successful! Token: " + authToken);
-                    return true;
-                }
-
-                string errorBody = await response.Content.ReadAsStringAsync();
-                LastErrorMessage = ExtractApiError(errorBody, response.ReasonPhrase);
-                Debug.LogError("Login failed: " + LastErrorMessage);
-                return false;
+                var result = JsonConvert.DeserializeObject<LoginResponse>(response.Body);
+                authToken = result.token;
+                await PlayerInventory.LoadFromServer();
+                // Debug.Log("Login successful! Token: " + authToken);
+                return true;
             }
+
+            LastErrorMessage = ExtractApiError(
+                response.Body,
+                response.Error,
+                (int)response.StatusCode);
+            Debug.LogError("Login failed: " + LastErrorMessage);
+            return false;
         }
         catch (Exception ex)
         {
@@ -190,18 +268,18 @@ public class NetworkManager : MonoBehaviour
 
         try
         {
-            using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
+            HttpResult response = await SendHttpRequestAsync(
+                HttpMethod.Post,
+                $"{HttpURL}/auth/register",
+                json);
+            if (response.IsSuccessStatusCode)
             {
-                var response = await SharedHttpClient.PostAsync($"{HttpURL}/auth/register", content);
-                if (response.IsSuccessStatusCode)
-                {
-                    Debug.Log("Registration successful!");
-                    return true;
-                }
-
-                Debug.LogError("Registration failed: " + response.ReasonPhrase);
-                return false;
+                Debug.Log("Registration successful!");
+                return true;
             }
+
+            Debug.LogError("Registration failed: " + response.Error);
+            return false;
         }
         catch (Exception ex)
         {
@@ -317,27 +395,20 @@ public class NetworkManager : MonoBehaviour
             throw new InvalidOperationException("Player is not authenticated.");
         }
 
-        using (var request = new HttpRequestMessage(method, $"{HttpURL}{path}"))
+        string json = body != null ? JsonConvert.SerializeObject(body) : null;
+        HttpResult response = await SendHttpRequestAsync(
+            method,
+            $"{HttpURL}{path}",
+            json,
+            authToken);
+
+        if (!response.IsSuccessStatusCode)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-
-            if (body != null)
-            {
-                string json = JsonConvert.SerializeObject(body);
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-            }
-
-            var response = await SharedHttpClient.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);
-                throw new InvalidOperationException(BuildApiErrorMessage(error, response.ReasonPhrase));
-            }
-
-            return responseString;
+            PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(response.Body);
+            throw new InvalidOperationException(BuildApiErrorMessage(error, response.Error));
         }
+
+        return response.Body;
     }
 
     private async Task<PlayerProfileResponse> SendPlayerRequest(HttpMethod method, string path, object body)
@@ -1345,8 +1416,15 @@ public class NetworkManager : MonoBehaviour
         public string reason;
     }
 
-    private string ExtractApiError(string responseString, string fallback)
+    private string ExtractApiError(string responseString, string fallback, int statusCode = 0)
     {
+        if (statusCode == 530 &&
+            !string.IsNullOrEmpty(responseString) &&
+            responseString.Contains("1033"))
+        {
+            return "Server is temporarily unavailable (Cloudflare Tunnel offline).";
+        }
+
         try
         {
             PlayerApiError error = JsonConvert.DeserializeObject<PlayerApiError>(responseString);

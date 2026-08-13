@@ -5,28 +5,33 @@ var WebGLInput = {
     WebGLInputCreate: function (canvasId, x, y, width, height, fontsize, text, placeholder, isMultiLine, isPassword, isHidden, isMobile) {
 
         var container = document.getElementById(UTF8ToString(canvasId));
-        var canvas = container.getElementsByTagName('canvas')[0];
+        var canvas = container ? container.getElementsByTagName('canvas')[0] : null;
 
-        // if container is null and have canvas
-        if (!container && canvas)
-        {
-            // set the container to canvas.parentNode
+        if (!canvas) {
+            canvas = document.querySelector('canvas');
+        }
+        if (!container && canvas) {
             container = canvas.parentNode;
         }
-
-        if(canvas)
-        {
-            var scaleX = container.offsetWidth / canvas.width;
-            var scaleY = container.offsetHeight / canvas.height;
-
-            if(scaleX && scaleY)
-            {
-                x *= scaleX;
-                width *= scaleX;
-                y *= scaleY;
-                height *= scaleY;
-            }
+        if (!container || !canvas) {
+            console.error('WebGLInput: Unity canvas container was not found.');
+            return -1;
         }
+
+        // UI Toolkit coordinates are expressed in Unity render-target pixels.
+        // Convert them to CSS pixels using the canvas itself. The surrounding
+        // container may include Unity's footer, so its offset size is not valid
+        // for input placement.
+        var canvasRect = canvas.getBoundingClientRect();
+        var containerRect = container.getBoundingClientRect();
+        var scaleX = canvas.width ? canvasRect.width / canvas.width : 1;
+        var scaleY = canvas.height ? canvasRect.height / canvas.height : 1;
+
+        x = canvasRect.left - containerRect.left + x * scaleX;
+        y = canvasRect.top - containerRect.top + y * scaleY;
+        width *= scaleX;
+        height *= scaleY;
+        fontsize *= scaleY;
 
         var input = document.createElement(isMultiLine?"textarea":"input");
         input.style.position = "absolute";
@@ -51,10 +56,24 @@ var WebGLInput = {
         input.style.opacity = isHidden?0:1;
         input.style.resize = 'none'; // for textarea
         input.style.padding = '0px 1px';
-        input.style.cursor = "default";
+        input.style.cursor = "text";
         input.style.touchAction = 'none';
 
+        // UI Toolkit already draws the field text. On desktop, keep the native
+        // browser input transparent but visible so IME works and its caret is shown.
+        if (!isMobile && !isHidden) {
+            input.style.background = 'transparent';
+            input.style.border = 'none';
+            input.style.outline = 'none';
+            input.style.color = 'transparent';
+            input.style.caretColor = '#ffffff';
+            input.style.boxSizing = 'border-box';
+            input.style.zIndex = '10';
+        }
+
         input.spellcheck = false;
+        input.autocomplete = 'off';
+        input.autocapitalize = 'none';
         input.value = UTF8ToString(text);
         input.placeholder = UTF8ToString(placeholder);
         input.style.outlineColor = 'black';
@@ -186,7 +205,21 @@ var WebGLInput = {
     },
     WebGLInputDelete:function(id){
         var input = instances[id];
-        input.parentNode.removeChild(input);
+        if (!input) {
+            return;
+        }
+
+        // Removing a focused HTML input fires blur synchronously. Detach the
+        // managed callbacks first so scene teardown cannot re-enter IL2CPP
+        // through a callback whose Unity object is already being destroyed.
+        input.onfocus = null;
+        input.onblur = null;
+        input.oninput = null;
+        input.onchange = null;
+
+        if (input.parentNode) {
+            input.parentNode.removeChild(input);
+        }
         instances[id] = null;
     },
     WebGLInputEnableTabText:function(id, enable) {

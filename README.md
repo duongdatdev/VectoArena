@@ -138,6 +138,24 @@ The client sends movement, shooting, hit, melee, weapon-switch, and pickup messa
 
 For deployed clients, replace localhost URLs with reachable HTTP and WebSocket endpoints. Browser builds also require a backend deployment that permits the origin used by the WebGL client.
 
+### Build for WebGL
+
+Open `VectoArena > Build > WebGL Build Tool` for the one-click WebGL builder. Run
+`Prepare WebGL Settings` once, wait for Unity to finish compiling, and then choose a build:
+
+| Command | Output | Purpose |
+| --- | --- | --- |
+| `Development` | `Build/WebGL` | Uncompressed debuggable browser build |
+| `Development (Build & Run)` | `Build/WebGL` | Build and launch with Unity's local web server |
+| `Release` | `Build/WebGL` | Brotli-compressed deployable build |
+| `Clean Release` | `Build/WebGL` | Remove stale output and rebuild from a clean cache |
+
+The builder validates the production scene order and runtime endpoints before starting. Release
+builds require `wss://` and `https://` endpoints and include a `build-info.json` deployment
+manifest. The output must be served over HTTP(S); opening `index.html` directly is not supported.
+
+For CI, invoke `VectoWebGLBuild.BuildRelease` with Unity's `-executeMethod` argument.
+
 ## Mobile Support
 
 The mobile client currently targets Android. It uses the application ID `com.vectoarena.game`,

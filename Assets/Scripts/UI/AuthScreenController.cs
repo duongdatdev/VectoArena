@@ -32,6 +32,11 @@ public class AuthScreenController : MonoBehaviour
 
     private float spinnerAngle = 0f;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+    private TextField[] webGLInputFields;
+    private WebGLSupport.WebGLInputManipulator[] webGLInputManipulators;
+#endif
+
     private void OnEnable()
     {
         document = GetComponent<UIDocument>();
@@ -60,6 +65,8 @@ public class AuthScreenController : MonoBehaviour
         switchToLoginButton = root.Q<Button>("SwitchToLogin");
         registerStatus = root.Q<Label>("RegisterStatus");
 
+        ConfigureWebGLTextInput();
+
         // Register Callbacks
         loginButton.clicked += OnLoginClick;
         switchToRegisterButton.clicked += ShowRegisterPanel;
@@ -76,6 +83,62 @@ public class AuthScreenController : MonoBehaviour
         spinnerSchedule.Pause();
 
         ShowLoginPanel();
+    }
+
+    private void OnDisable()
+    {
+        if (loginButton != null) loginButton.clicked -= OnLoginClick;
+        if (switchToRegisterButton != null) switchToRegisterButton.clicked -= ShowRegisterPanel;
+        if (registerButton != null) registerButton.clicked -= OnRegisterClick;
+        if (switchToLoginButton != null) switchToLoginButton.clicked -= ShowLoginPanel;
+
+        spinnerSchedule?.Pause();
+        RemoveWebGLTextInput();
+    }
+
+    private void ConfigureWebGLTextInput()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        webGLInputFields = new[]
+        {
+            loginUsername,
+            loginPassword,
+            regUsername,
+            regPassword,
+            regConfirmPassword
+        };
+        webGLInputManipulators = new WebGLSupport.WebGLInputManipulator[webGLInputFields.Length];
+
+        for (int i = 0; i < webGLInputFields.Length; i++)
+        {
+            TextField field = webGLInputFields[i];
+            if (field == null) continue;
+
+            var manipulator = new WebGLSupport.WebGLInputManipulator(showHtmlElement: true);
+            field.AddManipulator(manipulator);
+            webGLInputManipulators[i] = manipulator;
+        }
+#endif
+    }
+
+    private void RemoveWebGLTextInput()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (webGLInputFields == null || webGLInputManipulators == null) return;
+
+        for (int i = 0; i < webGLInputFields.Length; i++)
+        {
+            TextField field = webGLInputFields[i];
+            WebGLSupport.WebGLInputManipulator manipulator = webGLInputManipulators[i];
+            if (field != null && manipulator != null)
+            {
+                field.RemoveManipulator(manipulator);
+            }
+        }
+
+        webGLInputFields = null;
+        webGLInputManipulators = null;
+#endif
     }
 
     private void ShowLoginPanel()

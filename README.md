@@ -21,6 +21,14 @@ VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer
 
 ![VectoArena top-down arena gameplay](docs/images/gameplay-arena.png)
 
+### Mobile Gameplay
+
+![VectoArena mobile gameplay with touch controls](docs/images/gameplay-mobile.jpg)
+
+The Android version uses a landscape HUD with left and right touch sticks, health and ammo
+status, weapon switching, match statistics, and a minimap so players can control the match on a
+touchscreen.
+
 ## Features
 
 - Account registration and login with token-authenticated player requests.
@@ -30,7 +38,7 @@ VectoArena Client is the Unity front end for VectoArena, a real-time multiplayer
 - Wallet linking through signed nonce verification.
 - VEC deposits and NFT skin purchase or ownership synchronization.
 - UI Toolkit screens for authentication, home, store, settings, gameplay HUD, and death flow.
-- Android support with responsive safe-area UI and dual-stick touch controls.
+- Android support with a responsive landscape HUD, safe-area layout, and dual-stick touch controls.
 
 ## Technology Stack
 

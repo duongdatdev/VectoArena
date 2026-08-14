@@ -92,7 +92,7 @@ public sealed class CanvasSafeAreaController : MonoBehaviour
 {
     private static readonly string[] TargetNames =
     {
-        "MinimapBorder", "WeaponIcoBack", "HealthFill", "ZoneTimerText", "BlastCombatStatsHud"
+        "MinimapBorder", "WeaponIcoBack", "HealthFill", "ZoneTimerCounter", "ZoneStatusNotification", "BlastCombatStatsHud"
     };
 
     private readonly Dictionary<RectTransform, Vector2> initialPositions = new Dictionary<RectTransform, Vector2>();

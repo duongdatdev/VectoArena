@@ -531,6 +531,11 @@ public class NetworkManager : MonoBehaviour
                         Quaternion rot = Quaternion.Euler(message.rx, message.ry, message.rz);
                         pc.PerformShoot(pos, rot);
                     }
+
+                    // Remote PlayerController instances are intentionally disabled, so their
+                    // Start method never caches an Animator. NetworkPlayerSync owns the live
+                    // remote Animator and must trigger the replicated attack animation.
+                    playerObj.GetComponent<NetworkPlayerSync>()?.TriggerAttackAnimation();
                 }
             });
 
@@ -543,11 +548,7 @@ public class NetworkManager : MonoBehaviour
                 if (playerObjects.TryGetValue(message.attackerId, out GameObject playerObj))
                 {
                     VectoAudioManager.PlayMelee(playerObj.transform.position, false);
-                    var pc = playerObj.GetComponent<PlayerController>();
-                    if (pc != null)
-                    {
-                        pc.TriggerAttackAnimation();
-                    }
+                    playerObj.GetComponent<NetworkPlayerSync>()?.TriggerAttackAnimation();
                 }
             });
 

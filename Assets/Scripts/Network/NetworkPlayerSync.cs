@@ -31,6 +31,7 @@ public class NetworkPlayerSync : MonoBehaviour
     private static readonly int PIsHoldingRight = Animator.StringToHash("isHoldingRight");
     private static readonly int PMoving = Animator.StringToHash("moving");
     private static readonly int PAiming = Animator.StringToHash("aiming");
+    private static readonly int PAttack = Animator.StringToHash("attack");
     private static readonly int PWeaponType = Animator.StringToHash("weapon_type");
     private static readonly int PWeaponTypeFloat = Animator.StringToHash("weapon_type_float");
     private static readonly int PDeath = Animator.StringToHash("death");
@@ -52,6 +53,11 @@ public class NetworkPlayerSync : MonoBehaviour
     {
         animator = resolvedAnimator != null ? resolvedAnimator : PlayerSkinApplier.ResolveSkinAnimator(gameObject);
         CacheAnimatorParameters();
+    }
+
+    public void TriggerAttackAnimation()
+    {
+        SetAnimatorTriggerIfPresent(PAttack);
     }
 
     public void Initialize(PlayerState playerState, string sid, Room<GameState> roomInstance)

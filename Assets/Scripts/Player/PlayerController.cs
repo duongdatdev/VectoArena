@@ -29,7 +29,8 @@ public class PlayerController : MonoBehaviour
     public Transform weaponMeleeHolder;
     public Transform weaponXLMeleeHolder;
     public GameObject defaultMeleeWeaponPrefab;
-    public float meleeAttackRange = 2.5f;
+    [Tooltip("Hammer reach. Blast Royale's Hammer AttackRange is 1 world unit.")]
+    public float meleeAttackRange = 1f;
     public float meleeAttackRadius = 1.15f;
     public float meleeAttackAngle = 85f;
     public float meleeAttackCooldown = 0.7f;

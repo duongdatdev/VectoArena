@@ -87,7 +87,7 @@ MonoBehaviour:
   weaponHolder: {fileID: 0}
   weaponMeleeHolder: {fileID: 0}
   weaponXLMeleeHolder: {fileID: 0}
-  meleeAttackRange: 2.5
+  meleeAttackRange: 1
   meleeAttackRadius: 1.15
   meleeAttackCooldown: 0.7
 --- !u!114 &5530090605755481710

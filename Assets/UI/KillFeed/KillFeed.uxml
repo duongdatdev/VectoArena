@@ -1,9 +1,12 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="KillFeed.uss" />
-    <ui:VisualElement name="KillFeedItem" class="kill-feed-item">
-        <ui:Label name="KillerName" text="KillerName" class="kill-feed-text killer-name" />
-        <ui:VisualElement name="WeaponIcon" class="kill-feed-icon" />
-        <ui:Label name="WeaponName" text="Rifle" class="kill-feed-text weapon-name" />
-        <ui:Label name="VictimName" text="VictimName" class="kill-feed-text victim-name" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="KillFeed.uss" />
+    <ui:VisualElement name="KillFeedItem" picking-mode="Ignore" class="death-notification death-notification--hidden">
+        <ui:VisualElement name="Container" picking-mode="Ignore" class="death-notification__container">
+            <ui:VisualElement name="KillerPfp" picking-mode="Ignore" class="death-notification__pfp death-notification__pfp--killer" />
+            <ui:Label name="KillerName" text="KILLER" picking-mode="Ignore" class="death-notification__name death-notification__name--killer" />
+            <ui:VisualElement name="KillIcon" picking-mode="Ignore" class="death-notification__kill-icon" />
+            <ui:Label name="VictimName" text="VICTIM" picking-mode="Ignore" class="death-notification__name death-notification__name--victim" />
+            <ui:VisualElement name="VictimPfp" picking-mode="Ignore" class="death-notification__pfp death-notification__pfp--victim" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

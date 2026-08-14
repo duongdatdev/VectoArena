@@ -1,9 +1,9 @@
 .kill-feed-container {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 300px;
-    align-items: flex-end;
+    left: 56px;
+    top: 22px;
+    flex-direction: column-reverse;
+    align-items: flex-start;
 }
 
 .connection-overlay {

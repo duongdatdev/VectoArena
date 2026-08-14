@@ -1,24 +1,27 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
-using System.Collections;
 
-public class KillFeedManager : MonoBehaviour
+public sealed class KillFeedManager : MonoBehaviour
 {
+    private const int MaxVisibleItems = 3;
+    private const float ReleaseDelaySeconds = 1f;
+
+    [SerializeField] private VisualTreeAsset killFeedItemTemplate;
+    [SerializeField, Min(0.1f)] private float itemLifetime = 5f;
+
+    private readonly List<VisualElement> visibleItems = new List<VisualElement>(MaxVisibleItems);
     private UIDocument document;
     private VisualElement killFeedContainer;
-    public VisualTreeAsset killFeedItemTemplate;
-
-    [Tooltip("How long before a kill feed item disappears")]
-    public float itemLifetime = 4.0f;
 
     private void OnEnable()
     {
         document = GetComponent<UIDocument>();
-        if (document != null && document.rootVisualElement != null)
-        {
-            killFeedContainer = document.rootVisualElement.Q<VisualElement>("KillFeedContainer");
-        }
+        killFeedContainer = document != null
+            ? document.rootVisualElement?.Q<VisualElement>("KillFeedContainer")
+            : null;
 
         if (NetworkManager.Instance != null)
         {
@@ -32,38 +35,108 @@ public class KillFeedManager : MonoBehaviour
         {
             NetworkManager.Instance.OnKillFeedReceived -= HandleKillFeed;
         }
+
+        StopAllCoroutines();
+        visibleItems.Clear();
     }
 
-    private void HandleKillFeed(NetworkManager.KillFeedMessage msg)
+    private void HandleKillFeed(NetworkManager.KillFeedMessage message)
     {
-        if (killFeedContainer == null || killFeedItemTemplate == null)
+        if (message == null || killFeedContainer == null || killFeedItemTemplate == null)
+        {
             return;
+        }
 
-        VisualElement newItem = killFeedItemTemplate.Instantiate();
-        newItem.AddToClassList("kill-feed-item");
-        
-        Label killerLabel = newItem.Q<Label>("KillerName");
-        Label victimLabel = newItem.Q<Label>("VictimName");
-        Label weaponLabel = newItem.Q<Label>("WeaponName");
+        TemplateContainer templateRoot = killFeedItemTemplate.Instantiate();
+        VisualElement notification = templateRoot.Q<VisualElement>("KillFeedItem");
+        if (notification == null)
+        {
+            return;
+        }
 
-        if (killerLabel != null) killerLabel.text = msg.killerName;
-        if (victimLabel != null) victimLabel.text = msg.victimName;
-        if (weaponLabel != null) weaponLabel.text = msg.weapon;
+        bool suicide = string.IsNullOrWhiteSpace(message.killerName) ||
+                       string.Equals(message.killerName, message.victimName, StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(message.weapon, "Zone", StringComparison.OrdinalIgnoreCase);
 
-        killFeedContainer.Add(newItem);
+        SetName(notification.Q<Label>("KillerName"), message.killerName);
+        SetName(notification.Q<Label>("VictimName"), message.victimName);
+        SetPortrait(notification.Q<VisualElement>("KillerPfp"), ResolvePlayerPortrait(message.killerName));
+        SetPortrait(notification.Q<VisualElement>("VictimPfp"), ResolvePlayerPortrait(message.victimName));
+        notification.EnableInClassList("death-notification--suicide", suicide);
 
-        StartCoroutine(RemoveItemAfterDelay(newItem));
+        if (visibleItems.Count >= MaxVisibleItems)
+        {
+            VisualElement oldest = visibleItems[0];
+            visibleItems.RemoveAt(0);
+            HideAndRelease(oldest);
+        }
+
+        killFeedContainer.Add(templateRoot);
+        visibleItems.Add(notification);
+
+        notification.schedule.Execute(() => notification.RemoveFromClassList("death-notification--hidden"))
+            .StartingIn(10);
+        StartCoroutine(RemoveItemAfterDelay(notification));
     }
 
-    private IEnumerator RemoveItemAfterDelay(VisualElement item)
+    private IEnumerator RemoveItemAfterDelay(VisualElement notification)
     {
         yield return new WaitForSeconds(itemLifetime);
-        item.AddToClassList("kill-feed-item--fade-out");
-        
-        yield return new WaitForSeconds(0.5f); // wait for fade animation
-        if (killFeedContainer != null && killFeedContainer.Contains(item))
+
+        if (!visibleItems.Remove(notification))
         {
-            killFeedContainer.Remove(item);
+            yield break;
         }
+
+        HideAndRelease(notification);
+    }
+
+    private void HideAndRelease(VisualElement notification)
+    {
+        if (notification == null || notification.panel == null)
+        {
+            return;
+        }
+
+        notification.RemoveFromClassList("death-notification--hidden");
+        notification.AddToClassList("death-notification--hidden-end");
+        notification.schedule.Execute(() =>
+        {
+            VisualElement templateRoot = notification.parent;
+            if (templateRoot != null)
+            {
+                templateRoot.RemoveFromHierarchy();
+            }
+        }).StartingIn(Mathf.CeilToInt(ReleaseDelaySeconds * 1000f));
+    }
+
+    private static void SetName(Label label, string value)
+    {
+        if (label != null)
+        {
+            label.text = string.IsNullOrWhiteSpace(value) ? string.Empty : value.ToUpperInvariant();
+        }
+    }
+
+    private static void SetPortrait(VisualElement portraitElement, Sprite portrait)
+    {
+        if (portraitElement != null && portrait != null)
+        {
+            portraitElement.style.backgroundImage = new StyleBackground(portrait);
+        }
+    }
+
+    private static Sprite ResolvePlayerPortrait(string playerName)
+    {
+        if (string.IsNullOrWhiteSpace(playerName) || NetworkManager.Instance == null)
+        {
+            return null;
+        }
+
+        GameObject playerObject = NetworkManager.Instance.FindPlayerObjectByUsername(playerName);
+        NetworkPlayerSync playerSync = playerObject != null ? playerObject.GetComponent<NetworkPlayerSync>() : null;
+        string skinId = playerSync?.GetState()?.skinId;
+        SkinCatalogItem skin = SkinCatalog.GetById(skinId);
+        return skin != null ? Resources.Load<Sprite>(skin.IconResourcePath) : null;
     }
 }
